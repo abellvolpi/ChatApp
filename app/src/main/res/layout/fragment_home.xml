@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".ui.HomeFragment">
+
+    <EditText
+        android:id="@+id/ip_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="IP" />
+
+    <EditText
+        android:id="@+id/port_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Porta" />
+
+    <EditText
+        android:id="@+id/name_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nome" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="connect" />
+
+</LinearLayout>
