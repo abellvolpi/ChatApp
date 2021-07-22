@@ -39,7 +39,7 @@ class ChatFragment : Fragment() {
                 if(messageField.text.isNotBlank()){
                     val message = Message("Testando", messageField.text.toString())
                     ConnectionFactory.sendMessage(message)
-                    ConnectionFactory.readAllMessage {
+                    ConnectionFactory.readMessage {
                         it.forEach {
                             println(it.message)
                         }

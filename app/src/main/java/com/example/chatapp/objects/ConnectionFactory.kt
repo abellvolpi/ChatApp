@@ -5,7 +5,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.io.*
 import java.net.Socket
 import kotlin.coroutines.CoroutineContext
 
@@ -19,8 +18,10 @@ object ConnectionFactory: CoroutineScope {
         }
     }
 
-    fun readMessage(){
-
+    fun readMessage(onResult : (List<Message>) -> Unit){
+        launch(Dispatchers.IO) {
+            socket.getOutputStream()
+        }
     }
     fun sendMessage(message: Message) {
         launch(Dispatchers.IO) {
