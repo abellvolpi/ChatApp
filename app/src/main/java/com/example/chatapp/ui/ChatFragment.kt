@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.objects.ConnectionFactory
-import com.example.chatapp.ui.model.Message
+import com.example.chatapp.models.Message
 
 
 class ChatFragment : Fragment() {

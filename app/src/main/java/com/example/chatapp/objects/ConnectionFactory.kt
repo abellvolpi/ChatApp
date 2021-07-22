@@ -1,6 +1,7 @@
 package com.example.chatapp.objects
 
-import com.example.chatapp.ui.model.Message
+import com.example.chatapp.models.Message
+import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

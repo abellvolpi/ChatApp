@@ -1,14 +1,12 @@
 
-package com.example.chatapp.objects
+package com.example.chatapp.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.util.Log
-import android.util.Log
-import com.example.chatapp.ui.model.Message
+import com.example.chatapp.models.Message
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 
 import java.net.Inet4Address
 

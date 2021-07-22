@@ -1,4 +1,4 @@
-package com.example.chatapp.ui.adapter
+package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,8 +9,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.MessageReceivedItemBinding
-import com.example.chatapp.objects.Utils
-import com.example.chatapp.ui.model.Message
+import com.example.chatapp.utils.Utils
+import com.example.chatapp.models.Message
 import java.text.SimpleDateFormat
 
 class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

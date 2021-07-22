@@ -1,6 +1,6 @@
-package com.example.chatapp.ui.model
+package com.example.chatapp.models
 
-import com.example.chatapp.objects.Utils
+import com.example.chatapp.utils.Utils
 import java.util.*
 
 class Message(val name: String,
