@@ -27,9 +27,19 @@
         android:hint="Nome" />
 
     <Button
+        android:id="@+id/connect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:text="connect" />
+
+    <TextView
+        android:id="@+id/create_server"
+        android:text="Criar Servidor"
+        android:textColor="?android:colorPrimary"
+        android:layout_marginTop="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </TextView>
 
 </LinearLayout>
