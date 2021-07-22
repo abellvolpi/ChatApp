@@ -1,3 +1,4 @@
+
 package com.example.chatapp.objects
 
 import android.annotation.SuppressLint
@@ -23,7 +24,6 @@ object Utils {
     }
 
     fun messageClassToJSON(dataClass: Message): String {
-        Log.i()
         return Gson().toJson(dataClass)
     }
 

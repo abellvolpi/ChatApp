@@ -22,10 +22,11 @@
         android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/received_message_shape"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <EditText
+            android:layout_marginHorizontal="5dp"
+            android:background="@drawable/notify_shape"
             android:id="@+id/message_field"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,6 +36,8 @@
             android:hint="message..." />
 
         <LinearLayout
+            android:layout_marginRight="3dp"
+            android:layout_marginBottom="5dp"
             android:id="@+id/button_send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

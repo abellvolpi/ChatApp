@@ -12,7 +12,7 @@ import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.objects.ServerFactory
 
 class HomeFragment : Fragment() {
-    private lateinit var binding : FragmentHomeBinding
+    private lateinit var binding: FragmentHomeBinding
     private val navController by lazy {
         findNavController()
     }
@@ -34,13 +34,13 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    private fun initViews(){
-        with(binding){
+    private fun initViews() {
+        with(binding) {
             connect.setOnClickListener {
-                if(!isEditTextIsEmpy()){
+                if (!isEditTextIsEmpty()) {
                     val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
                     ConnectionFactory.clientConnecting(ipField.text.toString(), portField.text.toString().toInt())
-                        findNavController().navigate(action)
+                    findNavController().navigate(action)
                 }
             }
 
@@ -51,17 +51,17 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun isEditTextIsEmpy(): Boolean{
-        with(binding){
-            if(ipField.text.isBlank()){
+    private fun isEditTextIsEmpty(): Boolean {
+        with(binding) {
+            if (ipField.text.isBlank()) {
                 ipField.error = "Please, insert a ip"
                 return true
             }
-            if(nameField.text.isBlank()){
+            if (nameField.text.isBlank()) {
                 nameField.error = "Please, insert your name"
                 return true
             }
-            if(portField.text.isBlank()){
+            if (portField.text.isBlank()) {
                 portField.error = "Please, insert port of server connection"
                 return true
             }

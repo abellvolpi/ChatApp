@@ -16,7 +16,6 @@ object ConnectionFactory: CoroutineScope {
     fun clientConnecting(ip: String, porta: Int){
         launch (Dispatchers.IO) {
             socket = Socket(ip, porta)
-
         }
     }
 
@@ -27,9 +26,6 @@ object ConnectionFactory: CoroutineScope {
         launch(Dispatchers.IO) {
             val bw = socket.getOutputStream()
             bw.write(Utils.messageClassToJSON(message).toByteArray())
-//        socket.getOutputStream().bufferedWriter().use {
-//            it.appendLine(Utils.messageClassToJSON(message)+"@%#")
-//        }
         }
     }
 
