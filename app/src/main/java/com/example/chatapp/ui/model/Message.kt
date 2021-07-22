@@ -1,10 +1,13 @@
 package com.example.chatapp.ui.model
 
+import com.example.chatapp.objects.Utils
+import java.util.*
+
 class Message(val name: String,
               val message: String,
               val typeMesage: Int,
-              val date: Long,
-              val macAndress: String) {
+              val date: Long = Calendar.getInstance().time.time,
+              val macAndress: String = Utils.getMacAndress()) {
 
     companion object{
         // type of messages
