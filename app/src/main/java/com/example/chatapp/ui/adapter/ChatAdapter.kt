@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.MessageReceivedItemBinding
+import com.example.chatapp.objects.Utils
 import com.example.chatapp.ui.model.Message
 import java.text.SimpleDateFormat
 
@@ -17,7 +18,6 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
 
     inner class ViewHolder(binding: MessageReceivedItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -27,15 +27,16 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        verifyMessageType(position)
         val context = holder.itemView.context
         when (data[position].typeMesage) {
-            0 -> {
+            Message.SENT_MESSAGE -> {
                 setSentMessageParams(context, position)
             }
-            1 -> {
+            Message.RECEIVED_MESSAGE -> {
                 setReceivedMessageParams(context, position)
             }
-            2 -> {
+            Message.NOTIFY_CHAT -> {
                 setNotificationLayoutParams(context, position)
             }
         }
@@ -86,4 +87,19 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
         return dtf.format(time)
     }
 
+    private fun verifyMessageType(position: Int){
+        data[position].typeMesage = Message.NOTIFY_CHAT
+        if(isMessageSent(data[position].macAndress)){
+            data[position].typeMesage = Message.SENT_MESSAGE
+        }else {
+            data[position].typeMesage = Message.RECEIVED_MESSAGE
+        }
+    }
+
+    private fun isMessageSent(macAndress: String): Boolean{
+        if(macAndress == Utils.getMacAndress()){
+            return true
+        }
+        return false
+    }
 }
