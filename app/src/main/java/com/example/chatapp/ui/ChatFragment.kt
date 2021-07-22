@@ -39,6 +39,11 @@ class ChatFragment : Fragment() {
                 if(messageField.text.isNotBlank()){
                     val message = Message("Testando", messageField.text.toString())
                     ConnectionFactory.sendMessage(message)
+                    ConnectionFactory.readAllMessage {
+                        it.forEach {
+                            println(it.message)
+                        }
+                    }
                 }else{
                     Toast.makeText(requireContext(), "Mensage cannot be blank", Toast.LENGTH_LONG).show()
                 }
