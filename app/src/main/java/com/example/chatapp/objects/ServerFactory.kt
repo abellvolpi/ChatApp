@@ -1,7 +1,6 @@
 package com.example.chatapp.objects
 
 import android.content.Context
-import android.widget.Toast
 import kotlinx.coroutines.*
 import java.net.ServerSocket
 import java.net.Socket

@@ -1,5 +1,6 @@
 package com.example.chatapp.objects
 
+import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,6 +21,9 @@ object ConnectionFactory: CoroutineScope {
             val socket: Socket = Socket(ip, porta)
             val outputStream = socket.getOutputStream()
             val input = BufferedReader(InputStreamReader(socket.getInputStream()))
+            while (input.ready()){
+               input.readLines().last()
+            }
             val str = input.readLine()
             outputStream.write(str.toByteArray(Charsets.US_ASCII))
             socket.close()

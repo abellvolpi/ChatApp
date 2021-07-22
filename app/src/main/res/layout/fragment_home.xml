@@ -8,6 +8,7 @@
     android:orientation="vertical"
     tools:context=".ui.HomeFragment">
 
+
     <EditText
         android:id="@+id/ip_field"
         android:layout_width="match_parent"
