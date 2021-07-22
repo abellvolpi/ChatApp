@@ -15,19 +15,15 @@ object ConnectionFactory: CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-    fun clientConnecting(){
+    fun clientConnecting(ip: String = "", porta: Int = 0){
         launch (Dispatchers.IO) {
-            var socket: Socket = Socket("algum.ip", 1025)
+            val socket: Socket = Socket("192.168.11.78", 1337)
             val outputStream = socket.getOutputStream()
-            //ok
-
-            var input = BufferedReader(InputStreamReader(socket.getInputStream()))
-            var str = input.readLine()
+            val input = BufferedReader(InputStreamReader(socket.getInputStream()))
+            val str = input.readLine()
             outputStream.write(str.toByteArray(Charsets.US_ASCII))
-            println("Teste: " + input.readLine())
             socket.close()
         }
-
     }
 
 

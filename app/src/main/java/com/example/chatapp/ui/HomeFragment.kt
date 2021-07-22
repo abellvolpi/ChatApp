@@ -26,8 +26,7 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         initViews()
 
-        ServerFactory.serverConnecting(requireContext())
-
+        ConnectionFactory.clientConnecting()
         return binding.root
     }
 
