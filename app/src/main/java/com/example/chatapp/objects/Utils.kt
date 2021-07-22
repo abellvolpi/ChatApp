@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.text.format.Formatter
+import android.util.Log
 import com.example.chatapp.ui.model.Message
 import com.google.gson.Gson
 import java.net.Inet4Address
@@ -22,6 +23,7 @@ object Utils {
     }
 
     fun messageClassToJSON(dataClass: Message): String {
+        Log.i()
         return Gson().toJson(dataClass)
     }
 
