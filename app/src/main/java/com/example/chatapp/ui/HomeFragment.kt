@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
+import com.example.chatapp.objects.ConnectionFactory
+import com.example.chatapp.objects.ServerFactory
 
 class HomeFragment : Fragment() {
     private lateinit var binding : FragmentHomeBinding
@@ -23,6 +25,9 @@ class HomeFragment : Fragment() {
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         initViews()
+
+        ServerFactory.serverConnecting(requireContext())
+
         return binding.root
     }
 
