@@ -1,32 +1,22 @@
 package com.example.chatapp.objects
 
-import android.animation.TimeAnimator
 import android.content.Context
 import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
 import kotlinx.coroutines.*
-import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 object ServerFactory : CoroutineScope {
-
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
-
-    var serverSocket = ServerSocket(1025)
     private lateinit var socket: Socket
 
-    fun serverConnecting(context: Context) {
+    fun serverConnecting(context: Context, port: Int) {
         launch(Dispatchers.IO) {
+                val serverSocket = ServerSocket(port)
                 socket = serverSocket.accept()
                 val outputStream = socket.getOutputStream()
-                outputStream.write("test333222\n".toByteArray(Charsets.US_ASCII))
-                withContext(Dispatchers.Main){
-                    Toast.makeText(context, "aloga", Toast.LENGTH_SHORT).show()
-                }
-
+//                outputStream.write("test333222\n".toByteArray(Charsets.US_ASCII))
             }
     }
 

@@ -15,9 +15,9 @@ object ConnectionFactory: CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-    fun clientConnecting(ip: String = "", porta: Int = 0){
+    fun clientConnecting(ip: String, porta: Int){
         launch (Dispatchers.IO) {
-            val socket: Socket = Socket("192.168.11.78", 1337)
+            val socket: Socket = Socket(ip, porta)
             val outputStream = socket.getOutputStream()
             val input = BufferedReader(InputStreamReader(socket.getInputStream()))
             val str = input.readLine()
