@@ -16,21 +16,21 @@ object ConnectionFactory: CoroutineScope {
     fun clientConnecting(ip: String, porta: Int){
         launch (Dispatchers.IO) {
             socket = Socket(ip, porta)
-            val outputStream = socket.getOutputStream()
-            val inputStream = socket.getInputStream()
+//            val outputStream = socket.getOutputStream()
+//            val inputStream = socket.getInputStream()
 
-            val dataOutputStream = DataOutputStream(outputStream)
-            dataOutputStream.write("teste".toByteArray(Charsets.US_ASCII))
-            dataOutputStream.flush()
-            dataOutputStream.close()
-
-//            val output = PrintWriter(OutputStreamWriter(socket.getOutputStream())) //ok
-//            val input = BufferedReader(InputStreamReader(socket.getInputStream())) //ok
-//            val str = input.readLine()
-//            outputStream.write(str.toByteArray(Charsets.US_ASCII))
-
-
-            socket.close()
+//            val dataOutputStream = DataOutputStream(outputStream)
+//            dataOutputStream.write("teste".toByteArray(Charsets.US_ASCII))
+//            dataOutputStream.flush()
+//            dataOutputStream.close()
+//
+////            val output = PrintWriter(OutputStreamWriter(socket.getOutputStream())) //ok
+////            val input = BufferedReader(InputStreamReader(socket.getInputStream())) //ok
+////            val str = input.readLine()
+////            outputStream.write(str.toByteArray(Charsets.US_ASCII))
+//
+//
+//            socket.close()
         }
     }
 
@@ -38,9 +38,11 @@ object ConnectionFactory: CoroutineScope {
 
     }
     fun sendMessage(message: Message){
-        socket.getOutputStream().bufferedWriter().use {
-            it.appendLine(Utils.messageClassToJSON(message)+"@%#")
-        }
+        val bw = socket.getOutputStream()
+        bw.write(Utils.messageClassToJSON(message).toByteArray())
+//        socket.getOutputStream().bufferedWriter().use {
+//            it.appendLine(Utils.messageClassToJSON(message)+"@%#")
+//        }
     }
 
 
