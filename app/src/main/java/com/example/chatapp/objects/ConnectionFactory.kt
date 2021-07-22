@@ -1,23 +1,21 @@
 package com.example.chatapp.objects
 
+import com.example.chatapp.ui.model.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.xml.sax.DTDHandler
 import java.io.*
-import java.net.Inet4Address
 import java.net.Socket
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 object ConnectionFactory: CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
-
+    private lateinit var socket: Socket
     fun clientConnecting(ip: String, porta: Int){
         launch (Dispatchers.IO) {
-            val socket: Socket = Socket(ip, porta)
+            socket = Socket(ip, porta)
             val outputStream = socket.getOutputStream()
             val inputStream = socket.getInputStream()
 
@@ -33,6 +31,15 @@ object ConnectionFactory: CoroutineScope {
 
 
             socket.close()
+        }
+    }
+
+    fun readMessage(){
+
+    }
+    fun sendMessage(message: Message){
+        socket.getOutputStream().bufferedWriter().use {
+            it.appendLine(Utils.messageClassToJSON(message)+"@%#")
         }
     }
 

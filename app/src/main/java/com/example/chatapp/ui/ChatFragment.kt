@@ -5,9 +5,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.chatapp.R
+import android.widget.Toast
 import com.example.chatapp.databinding.FragmentChatBinding
-import java.net.ServerSocket
+import com.example.chatapp.objects.ConnectionFactory
+import com.example.chatapp.ui.model.Message
 
 
 class ChatFragment : Fragment() {
@@ -24,11 +25,25 @@ class ChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
+        initView()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+    }
+
+    private fun initView(){
+        with(binding){
+            buttonSend.setOnClickListener {
+                if(messageField.text.isNotBlank()){
+                    val message = Message("Testando", messageField.text.toString())
+                    ConnectionFactory.sendMessage(message)
+                }else{
+                    Toast.makeText(requireContext(), "Mensage cannot be blank", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
 }

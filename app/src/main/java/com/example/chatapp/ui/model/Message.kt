@@ -5,7 +5,7 @@ import java.util.*
 
 class Message(val name: String,
               val message: String,
-              var typeMesage: Int,
+              var typeMesage: Int? = null,
               val date: Long = Calendar.getInstance().time.time,
               val macAndress: String = Utils.getMacAndress()) {
 
