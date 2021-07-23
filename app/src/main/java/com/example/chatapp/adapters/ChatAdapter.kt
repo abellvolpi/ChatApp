@@ -28,6 +28,7 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         verifyMessageType(position)
+        holder.setIsRecyclable(false)
         val context = holder.itemView.context
         when (data[position].typeMesage) {
             Message.SENT_MESSAGE -> {
@@ -88,12 +89,12 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
     }
 
     private fun verifyMessageType(position: Int){
-        data[position].typeMesage = Message.NOTIFY_CHAT
-        if(isMessageSent(data[position].macAndress)){
-            data[position].typeMesage = Message.SENT_MESSAGE
-        }else {
-            data[position].typeMesage = Message.RECEIVED_MESSAGE
-        }
+//        data[position].typeMesage = Message.NOTIFY_CHAT
+//        if(isMessageSent(data[position].macAndress)){
+//            data[position].typeMesage = Message.SENT_MESSAGE
+//        }else {
+//            data[position].typeMesage = Message.RECEIVED_MESSAGE
+//        }
     }
 
     private fun isMessageSent(macAndress: String): Boolean{
@@ -101,5 +102,12 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
             return true
         }
         return false
+    }
+
+    fun addData(message: Message){
+        val oldvalue = data.size
+        data.add(message)
+        val newValue = data.size
+        notifyItemInserted(data.size-1)
     }
 }

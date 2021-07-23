@@ -28,10 +28,14 @@
         android:id="@+id/chatFragment"
         android:name="com.example.chatapp.ui.ChatFragment"
         android:label="fragment_chat"
-        tools:layout="@layout/fragment_chat" />
+        tools:layout="@layout/fragment_chat">
+        <argument
+            android:name="connection"
+            app:argType="com.example.chatapp.objects.ConnectionFactory"/>
+    </fragment>
     <fragment
         android:id="@+id/createServer"
-        android:name="com.example.chatapp.models.CreateServer"
+        android:name="com.example.chatapp.ui.CreateServer"
         android:label="fragment_create_server"
         tools:layout="@layout/fragment_create_server" />
 </navigation>

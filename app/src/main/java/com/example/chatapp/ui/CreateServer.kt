@@ -1,10 +1,12 @@
-package com.example.chatapp.models
+package com.example.chatapp.ui
 
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.objects.ServerFactory
 
@@ -28,7 +30,8 @@ class CreateServer : Fragment() {
         with(binding){
             btnCreateServer.setOnClickListener {
                if(!verifyIfEditTextisEmpy()){
-                   ServerFactory.serverConnecting(requireContext(), portField.text.toString().toInt())
+                   val serverFactory = ServerFactory(requireContext(), portField.text.toString().toInt())
+                   serverFactory.serverConnecting()
                }
             }
         }

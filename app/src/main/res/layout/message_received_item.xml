@@ -9,8 +9,8 @@
 
 
     <LinearLayout
-        android:paddingHorizontal="25dp"
-        android:paddingTop="10dp"
+        android:paddingHorizontal="15dp"
+        android:minWidth="100dp"
         android:id="@+id/childLinearLayoutChat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,23 +19,25 @@
         android:orientation="vertical">
 
         <TextView
+            android:paddingHorizontal="15dp"
             android:textColor="@color/grey"
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
-            android:text="NAME"
+            android:text="you"
             android:textStyle="bold" />
 
         <TextView
+            android:paddingHorizontal="15dp"
             android:textColor="@color/white"
-
             android:id="@+id/message"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="asdasdasdasdasdadadasdasdasdsadasdadasdasdasdasdasdasdasd" />
+            android:text="a" />
 
         <TextView
+            android:paddingHorizontal="20dp"
             android:textColor="@color/grey"
             android:id="@+id/time"
             android:layout_width="match_parent"
@@ -43,7 +45,6 @@
             android:textAlignment="viewEnd"
             android:textStyle="italic"
             android:text="time" />
-
     </LinearLayout>
 
 
