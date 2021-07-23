@@ -1,6 +1,7 @@
 package com.example.chatapp.objects
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.*
 import java.io.*
@@ -17,12 +18,14 @@ object ServerFactory : CoroutineScope {
     fun serverConnecting(context: Context, port: Int) {
         launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
-            socket = serverSocket.accept()
-
-
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
+            while (true){
+                socket = serverSocket.accept()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
+                }
+                val input = DataInputStream(BufferedInputStream(socket.getInputStream()))
+                val message = input.readLine()
+                Log.e("OutPutMessage1", message)
             }
 
         }
