@@ -6,9 +6,11 @@ import kotlinx.coroutines.*
 import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 object ServerFactory : CoroutineScope {
+
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     lateinit var socket: Socket
 
@@ -22,9 +24,9 @@ object ServerFactory : CoroutineScope {
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
             }
+
         }
     }
-
 
     fun closeConnection() {
         socket.close()
