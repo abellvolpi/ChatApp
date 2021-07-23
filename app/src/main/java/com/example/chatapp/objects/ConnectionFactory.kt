@@ -1,12 +1,18 @@
 package com.example.chatapp.objects
 
+import android.util.Log
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.io.BufferedInputStream
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.net.Socket
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 object ConnectionFactory: CoroutineScope {
@@ -21,13 +27,18 @@ object ConnectionFactory: CoroutineScope {
 
     fun readMessage(onResult : (List<Message>) -> Unit){
         launch(Dispatchers.IO) {
-            socket.getOutputStream()
+            val bfr = BufferedReader(InputStreamReader(socket.getInputStream()))
+            while(bfr.ready()){
+                val string = bfr.readText()
+                Log.e("OutPutMessage", string)
+            }
         }
     }
     fun sendMessage(message: Message) {
         launch(Dispatchers.IO) {
             val bw = socket.getOutputStream()
             bw.write(Utils.messageClassToJSON(message).toByteArray())
+            bw.flush()
         }
     }
 

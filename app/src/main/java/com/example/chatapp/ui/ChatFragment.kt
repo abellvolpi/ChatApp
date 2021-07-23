@@ -45,7 +45,7 @@ class ChatFragment : Fragment() {
                         }
                     }
                 }else{
-                    Toast.makeText(requireContext(), "Mensage cannot be blank", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "Menssage cannot be blank", Toast.LENGTH_LONG).show()
                 }
             }
         }
