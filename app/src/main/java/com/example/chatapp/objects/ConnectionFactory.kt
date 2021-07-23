@@ -7,10 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.PrintWriter
+import java.io.*
 import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -27,20 +24,18 @@ object ConnectionFactory: CoroutineScope {
 
     fun readMessage(onResult : (List<Message>) -> Unit){
         launch(Dispatchers.IO) {
-            val bfr = BufferedReader(InputStreamReader(socket.getInputStream()))
-            while(bfr.ready()){
-                val string = bfr.readText()
-                Log.e("OutPutMessage", string)
+            val bfr = DataInputStream(BufferedInputStream(ServerFactory.socket.getInputStream()))
+                Log.e("OutPutMessage2", bfr.readLine())
             }
         }
-    }
-    fun sendMessage(message: Message) {
+
+    fun sendMessage(message: Message, onResult: () -> Unit) {
         launch(Dispatchers.IO) {
             val bw = socket.getOutputStream()
             bw.write(Utils.messageClassToJSON(message).toByteArray())
             bw.flush()
+            bw.close()
+            onResult.invoke()
         }
     }
-
-
 }
