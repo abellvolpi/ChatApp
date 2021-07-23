@@ -18,17 +18,36 @@ object ServerFactory : CoroutineScope {
     fun serverConnecting(context: Context, port: Int) {
         launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
-            while (true){
-                socket = serverSocket.accept()
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
-                }
-                val input = DataInputStream(BufferedInputStream(socket.getInputStream()))
-                val message = input.readLine()
-                Log.e("OutPutMessage1", message)
+            socket = serverSocket.accept()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
+
             }
 
+            val br = BufferedReader(InputStreamReader(socket.getInputStream()))
+            var scanner = Scanner(socket.getInputStream())
+
+            var msg = ""
+            var msg2 = ""
+
+            while (msg!="sair") {
+
+                if (br.ready()){
+                    msg2 = br.readLine()
+                }
+
+                msg = scanner.nextLine()
+
+                scanner.close()
+                br.close()
+
+                Log.e("OutPutMessage2", msg)
+                Log.e("OutPutMessage2", msg2)
+
+
+            }
         }
+
     }
 
     fun closeConnection() {

@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="1025"
-            android:inputType="number"></EditText>
+            android:inputType="number"/>
 
         <EditText
             android:id="@+id/name_field"
@@ -34,6 +34,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="30dp"
-            android:text="Create"></Button>
+            android:text="Create"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
