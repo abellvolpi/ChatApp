@@ -10,9 +10,11 @@ import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.objects.ServerFactory
+import com.example.chatapp.utils.Utils.hideSoftKeyboard
+import kotlinx.coroutines.Dispatchers
 
 class HomeFragment : Fragment() {
-    private lateinit var binding : FragmentHomeBinding
+    private lateinit var binding: FragmentHomeBinding
     private val navController by lazy {
         findNavController()
     }
@@ -34,10 +36,16 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    private fun initViews(){
-        with(binding){
+    private fun initViews() {
+        with(binding) {
+
+            constraintLayoutHome.setOnClickListener {
+                activity?.hideSoftKeyboard()
+            }
+
             connect.setOnClickListener {
-                if(!isEditTextIsEmpy()){
+                if (!isEditTextIsEmpty()) {
+                    progressBar.alpha = 1f
                     val connectionFactory = ConnectionFactory(ipField.text.toString(), portField.text.toString().toInt())
                     val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
                     findNavController().navigate(action)
@@ -51,17 +59,17 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun isEditTextIsEmpy(): Boolean{
-        with(binding){
-            if(ipField.text.isBlank()){
+    private fun isEditTextIsEmpty(): Boolean {
+        with(binding) {
+            if (ipField.text.isBlank()) {
                 ipField.error = "Please, insert a ip"
                 return true
             }
-            if(nameField.text.isBlank()){
+            if (nameField.text.isBlank()) {
                 nameField.error = "Please, insert your name"
                 return true
             }
-            if(portField.text.isBlank()){
+            if (portField.text.isBlank()) {
                 portField.error = "Please, insert port of server connection"
                 return true
             }

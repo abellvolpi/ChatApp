@@ -44,14 +44,7 @@ class ServerFactory(var context: Context, var port: Int) : CoroutineScope {
                 Log.e("OutPutMessage2", msg2)
             }
         }
-//        launch(Dispatchers.IO) {
-//            val serverSocket = ServerSocket(port)
-//            socket = serverSocket.accept()
-//            socket.tcpNoDelay = true
-//            withContext(Dispatchers.Main) {
-//                Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
-//            }
-//        }
+
     }
 
 

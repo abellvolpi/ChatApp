@@ -1,8 +1,6 @@
 package com.example.chatapp.objects
 
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
+
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*

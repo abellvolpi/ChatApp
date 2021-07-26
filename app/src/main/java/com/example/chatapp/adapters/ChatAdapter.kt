@@ -66,7 +66,7 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
             childLinearLayoutChat.background = context.getDrawable(R.drawable.received_message_shape)
             time.text = timeFormatter(actualData.date)
             name.text = actualData.name
-            name.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
+//            name.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
             message.text = actualData.message
         }
     }
@@ -84,7 +84,7 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
     }
     @SuppressLint("SimpleDateFormat")
     private fun timeFormatter(time: Long): String{
-        val dtf = SimpleDateFormat("dd/MM/yyyy HH:mm")
+        val dtf = SimpleDateFormat("HH:mm")
         return dtf.format(time)
     }
 
