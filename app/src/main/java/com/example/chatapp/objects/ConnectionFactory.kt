@@ -24,14 +24,13 @@ class ConnectionFactory(val ip: String, val porta: Int) : CoroutineScope, Serial
 
     fun readMessage(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
-            Thread.sleep(1000)
+            Thread.sleep(2500)
             while (true){
                 val reader = Scanner(socket.getInputStream().bufferedReader())
                 val line = reader.nextLine()
                 withContext(Dispatchers.Main){
                     onResult.invoke(line)
                 }
-
             }
         }
     }
@@ -39,8 +38,7 @@ class ConnectionFactory(val ip: String, val porta: Int) : CoroutineScope, Serial
     fun sendMessage(message: Message, onResult: () -> Unit) {
         launch(Dispatchers.IO) {
             val bw = DataOutputStream(socket.getOutputStream())
-            bw.writeByte(1)
-            bw.write(Utils.messageClassToJSON(message).toByteArray())
+            bw.write((Utils.messageClassToJSON(message)+"\n").toByteArray())
             bw.flush()
             withContext(Dispatchers.Main){
                 onResult.invoke()

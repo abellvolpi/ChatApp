@@ -6,8 +6,7 @@ import java.util.*
 class Message(val name: String,
               val message: String,
               var typeMesage: Int,
-              val date: Long = Calendar.getInstance().time.time,
-              val macAndress: String = Utils.getMacAndress()) {
+              val date: Long = Calendar.getInstance().time.time) {
 
     companion object{
         // type of messages
