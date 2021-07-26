@@ -19,8 +19,13 @@ import kotlin.coroutines.CoroutineContext
 object Utils: CoroutineScope {
     override val coroutineContext: CoroutineContext = Job()+Dispatchers.Main
 
-    fun getIpAndress(): String{
-        return Inet4Address.getLocalHost().hostAddress
+    fun getIpAndress(onResult: (String) -> Unit){
+        launch(Dispatchers.IO) {
+            val ip = Inet4Address.getLocalHost().hostName
+            withContext(Dispatchers.Main){
+                onResult.invoke(ip)
+            }
+        }
     }
 
     fun messageClassToJSON(dataClass: Message): String {
@@ -34,6 +39,7 @@ object Utils: CoroutineScope {
         Log.e("toClass", jsonToClass.toString())
         return jsonToClass
     }
+
     fun Activity.hideSoftKeyboard(){
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
             hideSoftInputFromWindow(currentFocus?.windowToken, 0)
@@ -54,6 +60,4 @@ object Utils: CoroutineScope {
             }
         }
     }
-
-
 }
