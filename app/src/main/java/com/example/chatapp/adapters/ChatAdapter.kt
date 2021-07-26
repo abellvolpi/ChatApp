@@ -66,7 +66,9 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
             childLinearLayoutChat.background = context.getDrawable(R.drawable.received_message_shape)
             time.text = timeFormatter(actualData.date)
             name.text = actualData.name
+            name.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
 //            name.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
+
             message.text = actualData.message
         }
     }

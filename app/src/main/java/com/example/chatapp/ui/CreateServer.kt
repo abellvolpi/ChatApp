@@ -10,6 +10,7 @@ import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.objects.ServerFactory
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
 class CreateServer : Fragment() {
  private lateinit var binding : FragmentCreateServerBinding
@@ -29,6 +30,14 @@ class CreateServer : Fragment() {
         binding = FragmentCreateServerBinding.inflate(inflater, container, false)
         initView()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.constraintLayoutCreateServer.setOnClickListener {
+            activity?.hideSoftKeyboard()
+
+        }
     }
 
     private fun initView(){

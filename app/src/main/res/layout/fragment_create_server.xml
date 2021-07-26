@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.CreateServer">
+    tools:context=".ui.CreateServer"
+    android:id="@+id/constraint_layout_create_server">
 
     <LinearLayout
         android:layout_width="300dp"

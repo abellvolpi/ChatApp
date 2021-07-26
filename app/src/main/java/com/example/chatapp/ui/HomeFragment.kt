@@ -5,12 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils.createSocket
+import com.example.chatapp.utils.Utils.hideKeyboard
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import kotlinx.coroutines.Dispatchers
 
@@ -37,12 +39,15 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.constraintLayoutHome.setOnClickListener {
+            activity?.hideSoftKeyboard()
+        }
+    }
+
     private fun initViews() {
         with(binding) {
-
-            constraintLayoutHome.setOnClickListener {
-                activity?.hideSoftKeyboard()
-            }
 
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {
@@ -75,17 +80,18 @@ class HomeFragment : Fragment() {
             return false
         }
     }
+
     private fun createMessageICameIn(): Message {
-        return Message("","My name Entrou", Message.NOTIFY_CHAT)
+        return Message("", "My name Entrou", Message.NOTIFY_CHAT)
     }
 
-    private fun connect(){
-        with(binding){
-            createSocket(ipField.text.toString(), portField.text.toString().toInt()){
+    private fun connect() {
+        with(binding) {
+            createSocket(ipField.text.toString(), portField.text.toString().toInt()) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 val connectionFactory = ConnectionFactory(it)
                 val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
-                connectionFactory.sendMessage(createMessageICameIn()){}
+                connectionFactory.sendMessage(createMessageICameIn()) {}
                 findNavController().navigate(action)
             }
         }

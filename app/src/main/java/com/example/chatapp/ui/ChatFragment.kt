@@ -15,10 +15,11 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
+import com.example.chatapp.utils.Utils.hideKeyboard
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
 
-class ChatFragment() : Fragment(), View.OnClickListener {
+class ChatFragment() : Fragment() {
     private lateinit var binding : FragmentChatBinding
     private lateinit var connectionFactory: ConnectionFactory
     private lateinit var adapter: ChatAdapter
@@ -40,12 +41,14 @@ class ChatFragment() : Fragment(), View.OnClickListener {
     ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
         initView()
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.constraintLayout.setOnClickListener {
+            activity?.hideSoftKeyboard()
+        }
     }
 
     private fun initView(){
@@ -86,10 +89,5 @@ class ChatFragment() : Fragment(), View.OnClickListener {
         }
     }
 
-    override fun onClick(v: View?) {
-            if (v != EditText(requireContext())){
-                activity?.hideSoftKeyboard()
-            }
 
-    }
 }
