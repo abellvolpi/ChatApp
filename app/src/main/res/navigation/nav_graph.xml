@@ -37,5 +37,9 @@
         android:id="@+id/createServer"
         android:name="com.example.chatapp.ui.CreateServer"
         android:label="fragment_create_server"
-        tools:layout="@layout/fragment_create_server" />
+        tools:layout="@layout/fragment_create_server" >
+        <action
+            android:id="@+id/action_createServer_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </fragment>
 </navigation>

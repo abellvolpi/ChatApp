@@ -1,17 +1,22 @@
 package com.example.chatapp.ui
 
-import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.RequiresApi
+import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCreateServerBinding
+import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.objects.ServerFactory
+import com.example.chatapp.utils.ProfileSharedProfile
 
 class CreateServer : Fragment() {
  private lateinit var binding : FragmentCreateServerBinding
+
+ private val navController by lazy {
+     findNavController()
+ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,8 +35,7 @@ class CreateServer : Fragment() {
         with(binding){
             btnCreateServer.setOnClickListener {
                if(!verifyIfEditTextisEmpy()){
-                   val serverFactory = ServerFactory(requireContext(), portField.text.toString().toInt())
-                   serverFactory.serverConnecting()
+                   createServer()
                }
             }
         }
@@ -48,9 +52,18 @@ class CreateServer : Fragment() {
                 return true
             }
             return false
-
         }
     }
 
-
+    private fun createServer(){
+        with(binding){
+            val serverFactory = ServerFactory(requireContext(), portField.text.toString().toInt())
+            serverFactory.serverConnecting{
+                ProfileSharedProfile.saveProfile(nameField.text.toString())
+                val connectionFactory = ConnectionFactory(serverFactory.getSocket())
+                val action = CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
+                navController.navigate(action)
+            }
+        }
+    }
 }

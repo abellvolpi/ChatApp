@@ -9,16 +9,13 @@ import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
-class ConnectionFactory(val ip: String, val porta: Int) : CoroutineScope, Serializable {
+class ConnectionFactory() : CoroutineScope, Serializable {
+    constructor(socket: Socket): this(){
+        this.socket = socket
+    }
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
-    fun clientConnecting() {
-        launch(Dispatchers.IO) {
-            socket = Socket(ip, porta)
-            socket.tcpNoDelay = true
-        }
-    }
 
     fun readMessage(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
@@ -43,4 +40,10 @@ class ConnectionFactory(val ip: String, val porta: Int) : CoroutineScope, Serial
             }
         }
     }
+    fun getSocket(): Socket {
+        return socket
+    }
+
+
+
 }

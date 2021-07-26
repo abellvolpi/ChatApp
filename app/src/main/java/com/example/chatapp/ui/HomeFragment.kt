@@ -6,10 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
+import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
-import com.example.chatapp.objects.ServerFactory
+import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import kotlinx.coroutines.Dispatchers
 
@@ -46,15 +47,13 @@ class HomeFragment : Fragment() {
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {
                     progressBar.alpha = 1f
-                    val connectionFactory = ConnectionFactory(ipField.text.toString(), portField.text.toString().toInt())
-                    val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
-                    findNavController().navigate(action)
+                    connect()
                 }
             }
 
             createServer.setOnClickListener {
                 val action = HomeFragmentDirections.actionHomeFragmentToCreateServer()
-                findNavController().navigate(action)
+                navController.navigate(action)
             }
         }
     }
@@ -74,6 +73,21 @@ class HomeFragment : Fragment() {
                 return true
             }
             return false
+        }
+    }
+    private fun createMessageICameIn(): Message {
+        return Message("","My name Entrou", Message.NOTIFY_CHAT)
+    }
+
+    private fun connect(){
+        with(binding){
+            createSocket(ipField.text.toString(), portField.text.toString().toInt()){
+                ProfileSharedProfile.saveProfile(nameField.text.toString())
+                val connectionFactory = ConnectionFactory(it)
+                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
+                connectionFactory.sendMessage(createMessageICameIn()){}
+                findNavController().navigate(action)
+            }
         }
     }
 }

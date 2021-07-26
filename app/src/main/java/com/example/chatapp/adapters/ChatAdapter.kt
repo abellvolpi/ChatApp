@@ -97,17 +97,9 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
 //        }
     }
 
-    private fun isMessageSent(macAndress: String): Boolean{
-        if(macAndress == Utils.getMacAndress()){
-            return true
-        }
-        return false
-    }
 
     fun addData(message: Message){
-        val oldvalue = data.size
         data.add(message)
-        val newValue = data.size
         notifyItemInserted(data.size-1)
     }
 }

@@ -11,8 +11,9 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
-import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.models.Message
+import com.example.chatapp.objects.ConnectionFactory
+import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
@@ -20,14 +21,17 @@ import com.example.chatapp.utils.Utils.hideSoftKeyboard
 class ChatFragment() : Fragment(), View.OnClickListener {
     private lateinit var binding : FragmentChatBinding
     private lateinit var connectionFactory: ConnectionFactory
-    private lateinit var adapter : ChatAdapter
+    private lateinit var adapter: ChatAdapter
     private var data = arrayListOf<Message>()
+    private lateinit var profileName: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         connectionFactory = arguments?.get("connection") as ConnectionFactory
-        connectionFactory.clientConnecting()
+        ProfileSharedProfile.getProfile {
+            profileName = it
+        }
     }
 
     override fun onCreateView(
@@ -39,32 +43,31 @@ class ChatFragment() : Fragment(), View.OnClickListener {
 
         return binding.root
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
     }
 
     private fun initView(){
         with(binding){
-
-            constraintLayout.setOnClickListener {
-                activity?.hideSoftKeyboard()
-            }
-
-            connectionFactory.readMessage{
-                val messageClass = Message("Computador", it, Message.RECEIVED_MESSAGE)
+            connectionFactory.readMessage {
+                val messageClass = Utils.JSONtoMessageClass(it)
+                messageClass.typeMesage = Message.RECEIVED_MESSAGE
                 refreshChat(messageClass)
                 Log.e("ouvindo: ", it)
             }
 
             buttonSend.setOnClickListener {
-                if(messageField.text.isNotBlank()){
-                    val message = Message("Testando", messageField.text.toString(), Message.SENT_MESSAGE)
-                    connectionFactory.sendMessage(message){
+                if (messageField.text.isNotBlank()) {
+                    val message =
+                        Message(profileName, messageField.text.toString(), Message.SENT_MESSAGE)
+                    connectionFactory.sendMessage(message) {
                         messageField.text.clear()
                         refreshChat(message)
                     }
-                }else{
-                    Toast.makeText(requireContext(), "Menssage cannot be blank", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(requireContext(), "Menssage cannot be blank", Toast.LENGTH_LONG)
+                        .show()
                 }
             }
             adapter = ChatAdapter(data)
@@ -89,6 +92,4 @@ class ChatFragment() : Fragment(), View.OnClickListener {
             }
 
     }
-
-
 }

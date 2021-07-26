@@ -10,17 +10,14 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import com.example.chatapp.models.Message
 import com.google.gson.Gson
+import kotlinx.coroutines.*
 
 import java.net.Inet4Address
+import java.net.Socket
+import kotlin.coroutines.CoroutineContext
 
-object Utils {
-
-    @SuppressLint("HardwareIds")
-    fun getMacAndress(): String {
-        val manager = MainApplication.getContextInstance().getApplicationContext().getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val info = manager.connectionInfo
-        return info.macAddress
-    }
+object Utils: CoroutineScope {
+    override val coroutineContext: CoroutineContext = Job()+Dispatchers.Main
 
     fun getIpAndress(): String{
         return Inet4Address.getLocalHost().hostAddress
@@ -32,14 +29,25 @@ object Utils {
         return json
     }
 
-    fun JSONtoMessageClass(json: String): List<Message> {
-       val arrayofClass = Gson().fromJson(json, Array<Message>::class.java).toList()
-        Log.e("toClass", arrayofClass.toString())
-        return arrayofClass
+    fun JSONtoMessageClass(json: String): Message {
+       val jsonToClass = Gson().fromJson(json, Message::class.java)
+        Log.e("toClass", jsonToClass.toString())
+        return jsonToClass
     }
     fun Activity.hideSoftKeyboard(){
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
             hideSoftInputFromWindow(currentFocus?.windowToken, 0)
         }
     }
+
+    fun createSocket(ip: String, port: Int, onResult: (Socket) -> Unit){
+        launch(Dispatchers.IO) {
+            val socket = Socket(ip, port)
+            withContext(Dispatchers.Main){
+                onResult.invoke(socket)
+            }
+        }
+    }
+
+
 }
