@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
@@ -23,6 +24,9 @@ class ChatFragment() : Fragment() {
     private lateinit var adapter: ChatAdapter
     private var data = arrayListOf<Message>()
     private lateinit var profileName: String
+    private val navController by lazy {
+        findNavController()
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,10 +57,17 @@ class ChatFragment() : Fragment() {
     private fun initView(){
         with(binding){
             connectionFactory.readMessage {
-                val messageClass = Utils.JSONtoMessageClass(it)
-                messageClass.typeMesage = Message.RECEIVED_MESSAGE
-                refreshChat(messageClass)
-                Log.e("ouvindo: ", it)
+                if(it != null){
+                    val messageClass = Utils.JSONtoMessageClass(it)
+                    if(messageClass.typeMesage != Message.NOTIFY_CHAT){
+                        messageClass.typeMesage = Message.RECEIVED_MESSAGE
+                    }
+                    refreshChat(messageClass)
+                    Log.e("ouvindo: ", it)
+                }else{
+                    val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Server disconnected")
+                    navController.navigate(action)
+                }
             }
 
             buttonSend.setOnClickListener {

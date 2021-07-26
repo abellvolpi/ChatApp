@@ -68,10 +68,11 @@ class CreateServer : Fragment() {
         with(binding){
             val serverFactory = ServerFactory(requireContext(), portField.text.toString().toInt())
             serverFactory.serverConnecting{
-                ProfileSharedProfile.saveProfile(nameField.text.toString())
-                val connectionFactory = ConnectionFactory(serverFactory.getSocket())
-                val action = CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
-                navController.navigate(action)
+                ProfileSharedProfile.saveProfile(nameField.text.toString()){
+                    val connectionFactory = ConnectionFactory(serverFactory.getSocket())
+                    val action = CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
+                    navController.navigate(action)
+                }
             }
         }
     }

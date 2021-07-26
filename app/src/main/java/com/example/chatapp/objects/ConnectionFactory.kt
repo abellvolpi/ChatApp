@@ -17,14 +17,28 @@ class ConnectionFactory() : CoroutineScope, Serializable {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
 
-    fun readMessage(onResult: (String) -> Unit) {
+    fun readMessage(onResult: (String?) -> Unit) {
         launch(Dispatchers.IO) {
             Thread.sleep(2500)
             while (true){
-                val reader = Scanner(socket.getInputStream().bufferedReader())
-                val line = reader.nextLine()
-                withContext(Dispatchers.Main){
-                    onResult.invoke(line)
+                if(socket.isConnected){
+                    val reader = Scanner(socket.getInputStream().bufferedReader())
+                    val line : String
+                    if(reader.hasNextLine()){
+                        line = reader.nextLine()
+                        withContext(Dispatchers.Main){
+                            onResult.invoke(line)
+                        }
+                    }else{
+                        withContext(Dispatchers.Main){
+                            onResult.invoke(null)
+                        }
+                        break
+                    }
+                }else{
+                    withContext(Dispatchers.Main) {
+                        onResult.invoke(null)
+                    }
                 }
             }
         }
@@ -40,10 +54,4 @@ class ConnectionFactory() : CoroutineScope, Serializable {
             }
         }
     }
-    fun getSocket(): Socket {
-        return socket
-    }
-
-
-
 }

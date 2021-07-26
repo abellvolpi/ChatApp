@@ -27,7 +27,6 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        verifyMessageType(position)
         holder.setIsRecyclable(false)
         val context = holder.itemView.context
         when (data[position].typeMesage) {
@@ -83,21 +82,12 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
             message.text = actualData.message
         }
     }
+
     @SuppressLint("SimpleDateFormat")
     private fun timeFormatter(time: Long): String{
         val dtf = SimpleDateFormat("HH:mm")
         return dtf.format(time)
     }
-
-    private fun verifyMessageType(position: Int){
-//        data[position].typeMesage = Message.NOTIFY_CHAT
-//        if(isMessageSent(data[position].macAndress)){
-//            data[position].typeMesage = Message.SENT_MESSAGE
-//        }else {
-//            data[position].typeMesage = Message.RECEIVED_MESSAGE
-//        }
-    }
-
 
     fun addData(message: Message){
         data.add(message)

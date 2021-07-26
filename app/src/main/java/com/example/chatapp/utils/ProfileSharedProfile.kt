@@ -2,10 +2,7 @@ package com.example.chatapp.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 object ProfileSharedProfile : CoroutineScope {
@@ -20,7 +17,7 @@ object ProfileSharedProfile : CoroutineScope {
         return context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     }
 
-    fun saveProfile(name: String) {
+    fun saveProfile(name: String, onResult: () -> Unit) {
         launch(Dispatchers.IO) {
             val profileSharedPreferenes = getSharedProfile()
             with(profileSharedPreferenes.edit()) {
@@ -28,13 +25,19 @@ object ProfileSharedProfile : CoroutineScope {
                 putString("value", name)
                 apply()
             }
+            withContext(Dispatchers.Main){
+                onResult.invoke()
+            }
         }
     }
 
     fun getProfile(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
             val shared = getSharedProfile()
-            onResult.invoke(shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED")
+            val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
+            withContext(Dispatchers.Main){
+                onResult.invoke(string)
+            }
         }
     }
 }

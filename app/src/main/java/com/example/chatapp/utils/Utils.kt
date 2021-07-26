@@ -13,7 +13,10 @@ import com.google.gson.Gson
 import kotlinx.coroutines.*
 
 import java.net.Inet4Address
+import java.net.InetAddress
 import java.net.Socket
+import java.util.*
+import java.util.logging.Formatter
 import kotlin.coroutines.CoroutineContext
 
 object Utils: CoroutineScope {
@@ -21,7 +24,8 @@ object Utils: CoroutineScope {
 
     fun getIpAndress(onResult: (String) -> Unit){
         launch(Dispatchers.IO) {
-            val ip = Inet4Address.getLocalHost().hostName
+            val wifiManager = MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val ip = android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
             withContext(Dispatchers.Main){
                 onResult.invoke(ip)
             }
