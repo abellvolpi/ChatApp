@@ -67,7 +67,6 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
             time.text = timeFormatter(actualData.date)
             name.text = actualData.name
             name.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
-//            name.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
 
             message.text = actualData.message
         }
