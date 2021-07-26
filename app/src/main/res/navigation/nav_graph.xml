@@ -8,9 +8,10 @@
         android:id="@+id/homeFragment"
         android:name="com.example.chatapp.ui.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home">
+        tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_homeFragment_to_chatFragment"
+            app:destination="@id/chatFragment"
             app:enterAnim="@anim/enter_from_left"
             app:exitAnim="@anim/exit_to_right"
             app:popEnterAnim="@anim/enter_from_right"
@@ -23,30 +24,27 @@
             app:enterAnim="@anim/enter_from_left"
             app:exitAnim="@anim/exit_to_right"
             app:popEnterAnim="@anim/enter_from_right"
-            app:popExitAnim="@anim/exit_to_left"
-            app:popUpTo="@id/chatFragment">
-            <argument
-                android:name="connection"
-                app:argType="com.example.chatapp.objects.ConnectionFactory" />
-        </action>
+            app:popExitAnim="@anim/exit_to_left" />
+        <argument
+            android:name="messageIfError"
+            app:nullable="true"/>
+        <action
+            android:id="@+id/action_homeFragment_to_cameraQrCodeScan"
+            app:destination="@id/cameraQrCodeScan" />
     </fragment>
     <fragment
         android:id="@+id/chatFragment"
         android:name="com.example.chatapp.ui.ChatFragment"
         android:label="fragment_chat"
         tools:layout="@layout/fragment_chat">
-        <argument
-            android:name="connection"
-            app:argType="com.example.chatapp.objects.ConnectionFactory"/>
         <action
             android:id="@+id/action_chatFragment_to_homeFragment"
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment">
-            <argument
-                android:name="messageIfError"
-                app:argType="string"
-                app:nullable="true"/>
         </action>
+        <argument
+            android:name="connection"
+            app:argType="com.example.chatapp.objects.ConnectionFactory" />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -68,4 +66,9 @@
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true"/>
     </fragment>
+    <fragment
+        android:id="@+id/cameraQrCodeScan"
+        android:name="com.example.chatapp.ui.CameraQrCodeScan"
+        android:label="fragment_camera_qr_code_scan"
+        tools:layout="@layout/fragment_camera_qr_code_scan" />
 </navigation>

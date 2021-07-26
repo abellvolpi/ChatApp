@@ -1,9 +1,9 @@
 
 package com.example.chatapp.utils
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.wifi.WifiManager
 import android.util.Log
 import android.view.View
@@ -11,12 +11,8 @@ import android.view.inputmethod.InputMethodManager
 import com.example.chatapp.models.Message
 import com.google.gson.Gson
 import kotlinx.coroutines.*
-
-import java.net.Inet4Address
-import java.net.InetAddress
+import net.glxn.qrgen.android.QRCode
 import java.net.Socket
-import java.util.*
-import java.util.logging.Formatter
 import kotlin.coroutines.CoroutineContext
 
 object Utils: CoroutineScope {
@@ -63,5 +59,10 @@ object Utils: CoroutineScope {
                 onResult.invoke(socket)
             }
         }
+    }
+
+    fun generateQRCode(string: String): Bitmap {
+        val bitmap = QRCode.from(string).bitmap()
+        return bitmap
     }
 }

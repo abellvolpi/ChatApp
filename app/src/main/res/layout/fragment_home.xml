@@ -42,11 +42,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_bar">
 
-        <EditText
-            android:id="@+id/ip_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="IP" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/ip_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/openCameraButton"
+                android:hint="IP" />
+
+            <ImageView
+                android:layout_marginTop="15dp"
+                android:id="@+id/openCameraButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00FFFFFF"
+                android:layout_alignParentEnd="true"
+                app:srcCompat="@android:drawable/ic_menu_camera"/>
+        </RelativeLayout>
+
+
 
         <EditText
             android:id="@+id/port_field"
@@ -60,6 +77,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nome" />
+
+
 
 
         <Button

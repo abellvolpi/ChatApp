@@ -26,7 +26,7 @@ private lateinit var binding: FragmentSplashBinding
         super.onViewCreated(view, savedInstanceState)
 
         Handler().postDelayed({
-            findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment())
+            findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment(null))
         },1300)
 
 

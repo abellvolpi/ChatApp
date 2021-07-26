@@ -5,11 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.findFragment
 import androidx.navigation.fragment.findNavController
+import com.example.chatapp.customDialog.InviteMemberToEntryChat
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.objects.ServerFactory
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
 class CreateServer : Fragment() {
@@ -67,6 +70,10 @@ class CreateServer : Fragment() {
     private fun createServer(){
         with(binding){
             val serverFactory = ServerFactory(requireContext(), portField.text.toString().toInt())
+            Utils.getIpAndress {
+                val df= InviteMemberToEntryChat(it, portField.text.toString().toInt())
+                df.show(childFragmentManager, "")
+            }
             serverFactory.serverConnecting{
                 ProfileSharedProfile.saveProfile(nameField.text.toString()){
                     val connectionFactory = ConnectionFactory(serverFactory.getSocket())
