@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatapp.adapters.ChatAdapter
@@ -15,7 +14,6 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
-import com.example.chatapp.utils.Utils.hideKeyboard
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
 
@@ -41,6 +39,7 @@ class ChatFragment() : Fragment() {
     ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
         initView()
+
         return binding.root
     }
 
@@ -88,6 +87,4 @@ class ChatFragment() : Fragment() {
             }
         }
     }
-
-
 }
