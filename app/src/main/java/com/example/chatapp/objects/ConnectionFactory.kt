@@ -1,48 +1,48 @@
 package com.example.chatapp.objects
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Utils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.*
 import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
-object ConnectionFactory : CoroutineScope {
+class ConnectionFactory(val ip: String, val porta: Int) : CoroutineScope, Serializable {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
-    fun clientConnecting(ip: String, porta: Int) {
+    fun clientConnecting() {
         launch(Dispatchers.IO) {
             socket = Socket(ip, porta)
-            
+            socket.tcpNoDelay = true
         }
     }
 
-    fun readMessage(onResult: (List<Message>) -> Unit) {
+    fun readMessage(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
-
-            var msg =""
-            var scanner = Scanner(socket.getInputStream())
-            while (scanner.hasNextLine()){
-                    msg = scanner.nextLine()
+            Thread.sleep(2500)
+            while (true){
+                val reader = Scanner(socket.getInputStream().bufferedReader())
+                val line = reader.nextLine()
+                withContext(Dispatchers.Main){
+                    onResult.invoke(line)
+                }
             }
-            scanner.close()
-            Log.e("OutPutMessage2", msg)
-
         }
     }
 
     fun sendMessage(message: Message, onResult: () -> Unit) {
         launch(Dispatchers.IO) {
-            val bw = socket.getOutputStream()
-            bw.write(Utils.messageClassToJSON(message).toByteArray())
+            val bw = DataOutputStream(socket.getOutputStream())
+            bw.write((Utils.messageClassToJSON(message)+"\n").toByteArray())
             bw.flush()
-            onResult.invoke()
+            withContext(Dispatchers.Main){
+                onResult.invoke()
+            }
         }
     }
 }

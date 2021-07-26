@@ -38,8 +38,8 @@ class HomeFragment : Fragment() {
         with(binding){
             connect.setOnClickListener {
                 if(!isEditTextIsEmpy()){
-                    ConnectionFactory.clientConnecting(ipField.text.toString(), portField.text.toString().toInt())
-                    val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
+                    val connectionFactory = ConnectionFactory(ipField.text.toString(), portField.text.toString().toInt())
+                    val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
                     findNavController().navigate(action)
                 }
             }
