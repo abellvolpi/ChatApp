@@ -57,8 +57,12 @@ class HomeFragment : Fragment() {
                 navController.navigate(action)
             }
             openCameraButton.setOnClickListener {
-                val action = HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan()
-                navController.navigate(action)
+                if(nameField.text.toString().isNotBlank()){
+                    val action = HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan(nameField.text.toString())
+                    navController.navigate(action)
+                }else{
+                    nameField.error =  "Please, insert your name"
+                }
             }
         }
     }

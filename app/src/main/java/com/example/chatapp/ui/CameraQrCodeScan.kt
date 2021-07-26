@@ -6,33 +6,37 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCameraQrCodeScanBinding
+import com.example.chatapp.models.Message
+import com.example.chatapp.objects.ConnectionFactory
+import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils
 import com.google.zxing.Result
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 
 class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
     private lateinit var binding : FragmentCameraQrCodeScanBinding
+    private lateinit var name: String
     companion object{
         private const val CAMERA_PERMISSION = 100
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        name = arguments?.getString("name")?: "ERROR NAME"
+
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-       binding = FragmentCameraQrCodeScanBinding.inflate(inflater, container, false)
-        initViews()
+        binding = FragmentCameraQrCodeScanBinding.inflate(inflater, container, false)
         checkPermission(android.Manifest.permission.CAMERA, CAMERA_PERMISSION)
         return binding.root
-    }
-    private fun initViews(){
     }
 
     override fun onResume() {
@@ -52,9 +56,23 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
     }
 
     override fun handleResult(p0: Result?) {
-        val ip = p0?.text?.split(':')?.first()
-        val port = p0?.text?.split(':')?.last()
+        val ip = p0!!.text!!.split(':').first()
+        val port = p0.text!!.split(':').last()
+        connect(ip, port)
+    }
 
+    private fun connect(ip: String, port: String){
+        Utils.createSocket(ip, port.toInt()) {
+            ProfileSharedProfile.saveProfile(name) {
+                val connectionFactory = ConnectionFactory(it)
+                val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(connectionFactory)
+                ProfileSharedProfile.getProfile {
+                    val message = Message("", it + " was connected", Message.NOTIFY_CHAT)
+                    connectionFactory.sendMessage(message) {}
+                    findNavController().navigate(action)
+                }
+            }
+        }
     }
 
 }

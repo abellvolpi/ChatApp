@@ -70,5 +70,15 @@
         android:id="@+id/cameraQrCodeScan"
         android:name="com.example.chatapp.ui.CameraQrCodeScan"
         android:label="fragment_camera_qr_code_scan"
-        tools:layout="@layout/fragment_camera_qr_code_scan" />
+        tools:layout="@layout/fragment_camera_qr_code_scan">
+        <argument
+            android:name="name"
+            app:argType="string"/>
+        <action
+            android:id="@+id/action_cameraQrCodeScan_to_chatFragment"
+            app:destination="@id/chatFragment"
+            app:popUpTo="@id/chatFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
 </navigation>
