@@ -11,14 +11,14 @@ import com.example.chatapp.databinding.FragmentSplashBinding
 
 class SplashFragment : Fragment() {
 
-private lateinit var binding: FragmentSplashBinding
+    private lateinit var binding: FragmentSplashBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
-        binding = FragmentSplashBinding.inflate(inflater,container,false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        binding = FragmentSplashBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -27,13 +27,11 @@ private lateinit var binding: FragmentSplashBinding
 
         Handler().postDelayed({
             findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment(null))
-        },1300)
+        }, 1300)
 
 
 
     }
-
-
 
 
 }
