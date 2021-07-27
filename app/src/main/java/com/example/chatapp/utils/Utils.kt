@@ -7,16 +7,12 @@ import android.graphics.Bitmap
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
-import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.navigation.NavDeepLinkBuilder
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
-import com.example.chatapp.ui.ChatFragmentArgs
 import com.example.chatapp.ui.MainActivity
 import com.google.gson.Gson
 import kotlinx.coroutines.*
@@ -76,31 +72,16 @@ object Utils : CoroutineScope {
         val notificationId = 101
         val CHANNEL_ID = "channel_id"
 
-        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID,tittle,importance)
-            channel.description = text
-            val notificationManager: NotificationManager = MainApplication.getContextInstance().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+            color = ContextCompat.getColor(context, R.color.blue)
+            setSmallIcon(R.drawable.ic_telegram)
+            setContentTitle(tittle)
+            setContentText(text)
+            priority = NotificationCompat.PRIORITY_DEFAULT
+            setContentIntent(PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), 0))
+            setAutoCancel(true)
         }
-
-//        val pendingIntent = NavDeepLinkBuilder(context)
-//            .setComponentName(MainActivity::class.java)
-//            .setGraph(R.navigation.nav_graph)
-//            .setDestination(R.id.chatFragment)
-//            .setArguments(connection)
-//            .createPendingIntent()
-
-        var builder = NotificationCompat.Builder(context,CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_telegram)
-            .setContentTitle(tittle)
-            .setContentText(text)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), 0))
-//            .setAutoCancel(true)
-
-        NotificationManagerCompat.from(context).notify(1, builder.build())
+        NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
 
 }

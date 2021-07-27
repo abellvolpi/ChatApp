@@ -10,13 +10,14 @@ import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
+
 class ConnectionFactory() : CoroutineScope, Serializable {
     constructor(socket: Socket): this(){
         this.socket = socket
     }
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
-    private lateinit var socket: Socket
+    @Transient private lateinit var socket: Socket
     private var externalScope = MainApplication.getCoroutineScope()
 
     fun readMessage(onResult: (String?) -> Unit) {

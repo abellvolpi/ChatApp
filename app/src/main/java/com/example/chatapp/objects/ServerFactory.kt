@@ -10,7 +10,7 @@ import kotlin.coroutines.CoroutineContext
 
 class ServerFactory(var context: Context, var port: Int) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
-    private lateinit var socket: Socket
+    @Transient private lateinit var socket: Socket
     private val externalScope = MainApplication.getCoroutineScope()
 
     fun serverConnecting(onResult: () -> Unit) {
