@@ -12,13 +12,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCameraQrCodeScanBinding
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils
 import com.google.zxing.Result
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.dm7.barcodescanner.zxing.ZXingScannerView
-import java.net.Socket
 
 class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
     private lateinit var binding: FragmentCameraQrCodeScanBinding
@@ -70,17 +66,14 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
     }
 
     private fun connect(ip: String, port: String) {
-        ProfileSharedProfile.saveProfile(name)
-        val connectionFactory = ConnectionFactory()
-        CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO) {
-            connectionFactory.setSocket(Socket(ip, port.toInt()))
-            withContext(Dispatchers.Main) {
-                val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(
-                    connectionFactory
-                )
-                findNavController().navigate(action)
-            }
+        Utils.createSocket(ip, port.toInt()) {
+            ProfileSharedProfile.saveProfile(name)
+            val connectionFactory = ConnectionFactory()
+            connectionFactory.setSocket(it)
+            val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(
+                connectionFactory
+            )
+            findNavController().navigate(action)
         }
     }
-
 }
