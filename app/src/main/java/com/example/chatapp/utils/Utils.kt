@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
@@ -74,10 +73,10 @@ object Utils : CoroutineScope {
 
         var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
+            priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle(tittle)
             setContentText(text)
-            priority = NotificationCompat.PRIORITY_DEFAULT
             setContentIntent(PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), 0))
             setAutoCancel(true)
         }
