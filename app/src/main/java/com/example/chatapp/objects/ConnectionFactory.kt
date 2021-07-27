@@ -2,6 +2,7 @@ package com.example.chatapp.objects
 
 
 import com.example.chatapp.models.Message
+import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import java.io.*
@@ -16,28 +17,31 @@ class ConnectionFactory() : CoroutineScope, Serializable {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
+    private var externalScope = MainApplication.getCoroutineScope()
 
     fun readMessage(onResult: (String?) -> Unit) {
         launch(Dispatchers.IO) {
-            Thread.sleep(2500)
-            while (true){
-                if(socket.isConnected){
-                    val reader = Scanner(socket.getInputStream().bufferedReader())
-                    val line : String
-                    if(reader.hasNextLine()){
-                        line = reader.nextLine()
-                        withContext(Dispatchers.Main){
-                            onResult.invoke(line)
+            externalScope.launch {
+                Thread.sleep(2500)
+                while (true) {
+                    if (socket.isConnected) {
+                        val reader = Scanner(socket.getInputStream().bufferedReader())
+                        val line: String
+                        if (reader.hasNextLine()) {
+                            line = reader.nextLine()
+                            withContext(Dispatchers.Main) {
+                                onResult.invoke(line)
+                            }
+                        } else {
+                            withContext(Dispatchers.Main) {
+                                onResult.invoke(null)
+                            }
+                            break
                         }
-                    }else{
-                        withContext(Dispatchers.Main){
+                    } else {
+                        withContext(Dispatchers.Main) {
                             onResult.invoke(null)
                         }
-                        break
-                    }
-                }else{
-                    withContext(Dispatchers.Main) {
-                        onResult.invoke(null)
                     }
                 }
             }
