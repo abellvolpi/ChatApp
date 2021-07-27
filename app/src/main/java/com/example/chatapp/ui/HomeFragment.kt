@@ -10,6 +10,7 @@ import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.google.android.material.snackbar.Snackbar
@@ -45,6 +46,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun initViews() {
+        Utils.createNotification("Teste","mensagem teste hjbdshkahsdakshd")
         with(binding) {
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {
