@@ -16,7 +16,7 @@ import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
-class ConnectionFactory() : CoroutineScope, Serializable, Parcelable{
+class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
@@ -27,28 +27,26 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable{
     }
 
     fun readMessage(onResult: (String?) -> Unit) {
-        launch(Dispatchers.IO) {
-            withContext(externalScope.coroutineContext) {
-                Thread.sleep(2500)
-                while (true) {
-                    if (socket.isConnected) {
-                        val reader = Scanner(socket.getInputStream().bufferedReader())
-                        val line: String
-                        if (reader.hasNextLine()) {
-                            line = reader.nextLine()
-                            withContext(Dispatchers.Main) {
-                                onResult.invoke(line)
-                            }
-                        } else {
-                            withContext(Dispatchers.Main) {
-                                onResult.invoke(null)
-                            }
-                            break
+        GlobalScope.launch(Dispatchers.IO) {
+            delay(2500)
+            while (true) {
+                if (socket.isConnected) {
+                    val reader = Scanner(socket.getInputStream().bufferedReader())
+                    val line: String
+                    if (reader.hasNextLine()) {
+                        line = reader.nextLine()
+                        withContext(Dispatchers.Main) {
+                            onResult.invoke(line)
                         }
                     } else {
                         withContext(Dispatchers.Main) {
                             onResult.invoke(null)
                         }
+                        break
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onResult.invoke(null)
                     }
                 }
             }
@@ -56,7 +54,7 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable{
     }
 
     fun sendMessage(message: Message, onResult: () -> Unit) {
-        launch(Dispatchers.IO) {
+        GlobalScope.launch(Dispatchers.IO) {
             val bw = DataOutputStream(socket.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
             bw.flush()
@@ -67,23 +65,19 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable{
     }
 
     fun serverConnecting(port: Int, context: Context, onResult: () -> Unit) {
-        launch(Dispatchers.IO) {
-            withContext(externalScope.coroutineContext) {
-                val serverSocket = ServerSocket(port)
-                while (true){
-                    socket = serverSocket.accept()
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
-                        onResult.invoke()
-                    }
-                }
+        GlobalScope.launch(Dispatchers.IO) {
+            val serverSocket = ServerSocket(port)
+            socket = serverSocket.accept()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
+                onResult.invoke()
             }
         }
     }
 
     fun setSocket(socket: Socket) {
-          this.socket = socket
-        }
+        this.socket = socket
+    }
 
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

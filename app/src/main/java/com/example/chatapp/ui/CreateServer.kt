@@ -1,27 +1,24 @@
 package com.example.chatapp.ui
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.findFragment
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.customDialog.InviteMemberToEntryChat
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.objects.ConnectionFactory
-import com.example.chatapp.objects.ServerFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
-import java.net.Socket
 
 class CreateServer : Fragment() {
- private lateinit var binding : FragmentCreateServerBinding
+    private lateinit var binding: FragmentCreateServerBinding
 
- private val navController by lazy {
-     findNavController()
- }
+    private val navController by lazy {
+        findNavController()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,23 +41,23 @@ class CreateServer : Fragment() {
         }
     }
 
-    private fun initView(){
-        with(binding){
+    private fun initView() {
+        with(binding) {
             btnCreateServer.setOnClickListener {
-               if(!verifyIfEditTextisEmpy()){
-                   createServer()
-               }
+                if (!verifyIfEditTextisEmpy()) {
+                    createServer()
+                }
             }
         }
     }
 
-    private fun verifyIfEditTextisEmpy(): Boolean{
-        with(binding){
-            if(portField.text.isBlank()){
+    private fun verifyIfEditTextisEmpy(): Boolean {
+        with(binding) {
+            if (portField.text.isBlank()) {
                 portField.error = "Please, insert a port number"
                 return true
             }
-            if(nameField.text.isBlank()){
+            if (nameField.text.isBlank()) {
                 nameField.error = "Please, insert your name"
                 return true
             }
@@ -68,19 +65,21 @@ class CreateServer : Fragment() {
         }
     }
 
-    private fun createServer(){
-        with(binding){
+    private fun createServer() {
+        with(binding) {
             Utils.getIpAndress {
-                val df= InviteMemberToEntryChat(it, portField.text.toString().toInt())
+                val df = InviteMemberToEntryChat(it, portField.text.toString().toInt())
                 df.show(childFragmentManager, "")
-                val connectionFactory = ConnectionFactory()
-                connectionFactory.setSocket(Socket())
-                connectionFactory.serverConnecting(portField.text.toString().toInt(), requireContext()){
-                    ProfileSharedProfile.saveProfile(nameField.text.toString()){
-                        val action = CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
-                        navController.navigate(action)
-                    }
-                }
+            }
+            val connectionFactory = ConnectionFactory()
+            connectionFactory.serverConnecting(
+                portField.text.toString().toInt(),
+                requireContext()
+            ) {
+                ProfileSharedProfile.saveProfile(nameField.text.toString())
+                val action =
+                    CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
+                navController.navigate(action)
             }
         }
     }

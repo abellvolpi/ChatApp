@@ -17,17 +17,12 @@ object ProfileSharedProfile : CoroutineScope {
         return context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     }
 
-    fun saveProfile(name: String, onResult: () -> Unit) {
-        launch(Dispatchers.IO) {
-            val profileSharedPreferenes = getSharedProfile()
-            with(profileSharedPreferenes.edit()) {
-                clear()
-                putString("value", name)
-                apply()
-            }
-            withContext(Dispatchers.Main){
-                onResult.invoke()
-            }
+    fun saveProfile(name: String) {
+        val profileSharedPreferenes = getSharedProfile()
+        with(profileSharedPreferenes.edit()) {
+            clear()
+            putString("value", name)
+            apply()
         }
     }
 
@@ -35,7 +30,7 @@ object ProfileSharedProfile : CoroutineScope {
         launch(Dispatchers.IO) {
             val shared = getSharedProfile()
             val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 onResult.invoke(string)
             }
         }

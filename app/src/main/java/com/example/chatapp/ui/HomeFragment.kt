@@ -1,10 +1,10 @@
 package com.example.chatapp.ui
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
@@ -45,13 +45,13 @@ class HomeFragment : Fragment() {
             activity?.hideSoftKeyboard()
         }
         val message = arguments?.getString("messageIfError")
-        if(message != null){
+        if (message != null) {
             Snackbar.make(requireContext(), requireView(), message, Snackbar.LENGTH_LONG).show()
         }
     }
 
     private fun initViews() {
-        Utils.createNotification("Teste","mensagem teste hjbdshkahsdakshd")
+        Utils.createNotification("Teste", "mensagem teste hjbdshkahsdakshd")
         with(binding) {
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {
@@ -64,11 +64,12 @@ class HomeFragment : Fragment() {
                 navController.navigate(action)
             }
             openCameraButton.setOnClickListener {
-                if(nameField.text.toString().isNotBlank()){
-                    val action = HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan(nameField.text.toString())
+                if (nameField.text.toString().isNotBlank()) {
+                    val action =
+                        HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan(nameField.text.toString())
                     navController.navigate(action)
-                }else{
-                    nameField.error =  "Please, insert your name"
+                } else {
+                    nameField.error = "Please, insert your name"
                 }
             }
         }
@@ -92,20 +93,26 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun connect(){
-        with(binding){
-            createSocket(ipField.text.toString(), portField.text.toString().toInt()){
-                ProfileSharedProfile.saveProfile(nameField.text.toString()){
-                    val connectionFactory = ConnectionFactory()
-                    CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO) {
-                        connectionFactory.setSocket(Socket(ipField.text.toString(), portField.text.toString().toInt()))
-                        launch(Dispatchers.Main) {
-                            val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
-                            ProfileSharedProfile.getProfile {
-                                val message = Message("", it+" was connected", Message.NOTIFY_CHAT)
-                                connectionFactory.sendMessage(message){}
-                                findNavController().navigate(action)
-                            }
+    private fun connect() {
+        with(binding) {
+            createSocket(ipField.text.toString(), portField.text.toString().toInt()) {
+                ProfileSharedProfile.saveProfile(nameField.text.toString())
+                val connectionFactory = ConnectionFactory()
+                CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO) {
+                    connectionFactory.setSocket(
+                        Socket(
+                            ipField.text.toString(),
+                            portField.text.toString().toInt()
+                        )
+                    )
+                    withContext(Dispatchers.Main) {
+                        val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(
+                            connectionFactory
+                        )
+                        ProfileSharedProfile.getProfile {
+                            val message = Message("", it + " was connected", Message.NOTIFY_CHAT)
+                            connectionFactory.sendMessage(message) {}
+                            findNavController().navigate(action)
                         }
                     }
                 }

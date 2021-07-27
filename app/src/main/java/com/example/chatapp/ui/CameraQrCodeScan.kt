@@ -2,31 +2,35 @@ package com.example.chatapp.ui
 
 import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCameraQrCodeScanBinding
 import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.google.zxing.Result
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 import java.net.Socket
 
 class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
-    private lateinit var binding : FragmentCameraQrCodeScanBinding
+    private lateinit var binding: FragmentCameraQrCodeScanBinding
     private lateinit var name: String
-    companion object{
+
+    companion object {
         private const val CAMERA_PERMISSION = 100
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        name = arguments?.getString("name")?: "ERROR NAME"
+        name = arguments?.getString("name") ?: "ERROR NAME"
 
     }
 
@@ -45,12 +49,16 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
         binding.qrcodeCamera.setResultHandler(this@CameraQrCodeScan)
     }
 
-    private fun startCamera(){
+    private fun startCamera() {
         binding.qrcodeCamera.startCamera()
     }
 
-    private fun checkPermission(permission: String, requestCode: Int){
-        if(ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_DENIED){
+    private fun checkPermission(permission: String, requestCode: Int) {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission
+            ) == PackageManager.PERMISSION_DENIED
+        ) {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(permission), requestCode)
         }
     }
@@ -61,12 +69,17 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
         connect(ip, port)
     }
 
-    private fun connect(ip: String, port: String){
-        ProfileSharedProfile.saveProfile(name){
-            val connectionFactory = ConnectionFactory()
+    private fun connect(ip: String, port: String) {
+        ProfileSharedProfile.saveProfile(name)
+        val connectionFactory = ConnectionFactory()
+        CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO) {
             connectionFactory.setSocket(Socket(ip, port.toInt()))
-            val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(connectionFactory)
-            findNavController().navigate(action)
+            withContext(Dispatchers.Main) {
+                val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(
+                    connectionFactory
+                )
+                findNavController().navigate(action)
+            }
         }
     }
 
