@@ -2,10 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint_layout_create_server"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.CreateServer"
-    android:id="@+id/constraint_layout_create_server">
+    tools:context=".ui.CreateServer">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="1025"
-            android:inputType="number"/>
+            android:inputType="number" />
 
         <EditText
             android:id="@+id/name_field"
@@ -56,6 +56,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="30dp"
-            android:text="Create"/>
+            android:text="Create" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
