@@ -99,12 +99,14 @@ class HomeFragment : Fragment() {
                     val connectionFactory = ConnectionFactory()
                     CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO) {
                         connectionFactory.setSocket(Socket(ipField.text.toString(), portField.text.toString().toInt()))
-                    }
-                    val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
-                    ProfileSharedProfile.getProfile {
-                        val message = Message("", it+" was connected", Message.NOTIFY_CHAT)
-                        connectionFactory.sendMessage(message){}
-                        findNavController().navigate(action)
+                        launch(Dispatchers.Main) {
+                            val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
+                            ProfileSharedProfile.getProfile {
+                                val message = Message("", it+" was connected", Message.NOTIFY_CHAT)
+                                connectionFactory.sendMessage(message){}
+                                findNavController().navigate(action)
+                            }
+                        }
                     }
                 }
             }
