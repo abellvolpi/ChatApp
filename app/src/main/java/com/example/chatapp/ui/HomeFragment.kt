@@ -14,6 +14,10 @@ import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.Socket
 
 class HomeFragment : Fragment() {
@@ -93,7 +97,9 @@ class HomeFragment : Fragment() {
             createSocket(ipField.text.toString(), portField.text.toString().toInt()){
                 ProfileSharedProfile.saveProfile(nameField.text.toString()){
                     val connectionFactory = ConnectionFactory()
-                    connectionFactory.setSocket(Socket(ipField.text.toString(), portField.text.toString().toInt()))
+                    CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO) {
+                        connectionFactory.setSocket(Socket(ipField.text.toString(), portField.text.toString().toInt()))
+                    }
                     val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
                     ProfileSharedProfile.getProfile {
                         val message = Message("", it+" was connected", Message.NOTIFY_CHAT)

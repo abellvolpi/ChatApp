@@ -81,9 +81,10 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable{
         }
     }
 
-    fun setSocket(socket: Socket){
-        this.socket = socket
-    }
+    fun setSocket(socket: Socket) {
+          this.socket = socket
+        }
+
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
 
