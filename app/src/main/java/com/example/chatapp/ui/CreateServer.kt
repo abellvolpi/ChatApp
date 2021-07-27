@@ -14,6 +14,7 @@ import com.example.chatapp.objects.ServerFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
+import java.net.Socket
 
 class CreateServer : Fragment() {
  private lateinit var binding : FragmentCreateServerBinding
@@ -69,16 +70,16 @@ class CreateServer : Fragment() {
 
     private fun createServer(){
         with(binding){
-            val serverFactory = ServerFactory(requireContext(), portField.text.toString().toInt())
             Utils.getIpAndress {
                 val df= InviteMemberToEntryChat(it, portField.text.toString().toInt())
                 df.show(childFragmentManager, "")
-            }
-            serverFactory.serverConnecting{
-                ProfileSharedProfile.saveProfile(nameField.text.toString()){
-                    val connectionFactory = ConnectionFactory(serverFactory.getSocket())
-                    val action = CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
-                    navController.navigate(action)
+                val connectionFactory = ConnectionFactory()
+                connectionFactory.setSocket(Socket())
+                connectionFactory.serverConnecting(portField.text.toString().toInt(), requireContext()){
+                    ProfileSharedProfile.saveProfile(nameField.text.toString()){
+                        val action = CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
+                        navController.navigate(action)
+                    }
                 }
             }
         }

@@ -44,7 +44,7 @@
         </action>
         <argument
             android:name="connection"
-            app:argType="com.example.chatapp.objects.ConnectionFactory" />
+            app:argType="com.example.chatapp.objects.ConnectionFactory"/>            />
     </fragment>
     <fragment
         android:id="@+id/createServer"

@@ -14,6 +14,7 @@ import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.google.android.material.snackbar.Snackbar
+import java.net.Socket
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
@@ -91,7 +92,8 @@ class HomeFragment : Fragment() {
         with(binding){
             createSocket(ipField.text.toString(), portField.text.toString().toInt()){
                 ProfileSharedProfile.saveProfile(nameField.text.toString()){
-                    val connectionFactory = ConnectionFactory(it)
+                    val connectionFactory = ConnectionFactory()
+                    connectionFactory.setSocket(Socket(ipField.text.toString(), portField.text.toString().toInt()))
                     val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(connectionFactory)
                     ProfileSharedProfile.getProfile {
                         val message = Message("", it+" was connected", Message.NOTIFY_CHAT)
