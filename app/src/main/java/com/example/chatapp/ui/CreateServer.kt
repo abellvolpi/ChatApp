@@ -73,8 +73,7 @@ class CreateServer : Fragment() {
             }
             val connectionFactory = ConnectionFactory()
             connectionFactory.serverConnecting(
-                portField.text.toString().toInt(),
-                requireContext()
+                portField.text.toString().toInt()
             ) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 val action =

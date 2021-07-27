@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
@@ -71,7 +72,19 @@ object Utils : CoroutineScope {
         val notificationId = 101
         val CHANNEL_ID = "channel_id"
 
-        var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
+                description = text
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager = MainApplication.getContextInstance().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
@@ -81,10 +94,6 @@ object Utils : CoroutineScope {
             setAutoCancel(true)
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
-    }
-
-    fun verifyIfAppIsOnBackground(){
-
     }
 
 }

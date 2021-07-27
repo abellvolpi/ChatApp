@@ -10,7 +10,6 @@ class MainApplication : Application(), LifecycleObserver{
 
     init {
     instance = this
-    applicationScope = CoroutineScope(SupervisorJob())
     }
 
     override fun onCreate() {
@@ -18,27 +17,25 @@ class MainApplication : Application(), LifecycleObserver{
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onAppBackgrounded() {
+        isBackground = true
+    }
 
-
-
-
-
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onAppForegrounded() {
+        isBackground = false
+    }
 
     companion object{
         private lateinit var instance : Context
-        private lateinit var applicationScope: CoroutineScope
+        private var isBackground: Boolean = false
+
         fun getContextInstance(): Context {
             return instance.applicationContext
         }
-        fun getCoroutineScope(): CoroutineScope{
-            return applicationScope
+        fun aplicationIsInBackground(): Boolean {
+            return isBackground
         }
-        fun aplicationIsInBackground(): Boolean{
-            return ProcessLifecycleOwner.get().lifecycle.currentState == Lifecycle.State.CREATED
-        }
-
-
     }
-
-
 }
