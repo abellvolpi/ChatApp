@@ -36,6 +36,9 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
+                            if(MainApplication.aplicationIsInBackground()){
+                                Utils.createNotification("New Message", line)
+                            }
                             onResult.invoke(line)
                         }
                     } else {

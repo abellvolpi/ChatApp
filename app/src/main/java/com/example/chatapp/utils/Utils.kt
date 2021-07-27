@@ -83,4 +83,8 @@ object Utils : CoroutineScope {
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
 
+    fun verifyIfAppIsOnBackground(){
+
+    }
+
 }
