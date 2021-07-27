@@ -43,6 +43,8 @@ android {
 dependencies {
     //navigation
     def nav_version = "2.3.5"
+    def work_version = "2.5.0"
+
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
@@ -62,4 +64,5 @@ dependencies {
     implementation('me.dm7.barcodescanner:zxing:1.9.8') {
         exclude module: 'support-v4'
     }
+    implementation("androidx.work:work-runtime-ktx:$work_version")
 }
