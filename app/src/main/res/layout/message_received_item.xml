@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="5dp"
-    android:gravity="end"
     android:orientation="horizontal">
 
     <LinearLayout
@@ -13,7 +12,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:background="@drawable/sent_message_shape"
         android:minWidth="100dp"
         android:orientation="vertical">
 
@@ -24,7 +22,6 @@
             android:layout_marginBottom="2dp"
             android:paddingStart="20dp"
             android:paddingEnd="30dp"
-            android:text="you"
             android:textColor="@color/grey"
             android:textStyle="bold"
             tools:text="Asiduasdiuhasdiuhasdiuhasiudh" />
@@ -34,7 +31,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="30dp"
-            android:text="a"
             android:textColor="@color/white" />
 
         <TextView
@@ -42,7 +38,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="30dp"
-            android:text="time"
             android:textAlignment="viewEnd"
             android:textColor="@color/grey"
             android:textStyle="italic" />

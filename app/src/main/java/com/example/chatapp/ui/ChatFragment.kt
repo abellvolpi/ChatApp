@@ -19,7 +19,7 @@ import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
 
-class ChatFragment() : Fragment() {
+class ChatFragment : Fragment() {
     private lateinit var binding : FragmentChatBinding
     private lateinit var connectionFactory: ConnectionFactory
     private lateinit var adapter: ChatAdapter
@@ -64,7 +64,7 @@ class ChatFragment() : Fragment() {
                         messageClass.typeMesage = Message.RECEIVED_MESSAGE
                     }
                     refreshChat(messageClass)
-                    Log.e("ouvindo: ", it)
+                    Log.e("Listener: ", it)
                 }else{
                     val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Server disconnected")
                     navController.navigate(action)
@@ -80,25 +80,27 @@ class ChatFragment() : Fragment() {
                         refreshChat(message)
                     }
                 } else {
-                    Toast.makeText(requireContext(), "Menssage cannot be blank", Toast.LENGTH_LONG)
+                    Toast.makeText(requireContext(), "Message cannot be blank", Toast.LENGTH_LONG)
                         .show()
                 }
             }
             adapter = ChatAdapter(data)
+            adapter.setHasStableIds(true)
             messagesRecyclerview.adapter = adapter
             messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
     private fun refreshChat(message: Message){
-        binding.messagesRecyclerview.canScrollVertically(1)
         adapter.addData(message)
-        with(binding.messagesRecyclerview){
+        if(message.typeMesage == Message.SENT_MESSAGE){
+            binding.messagesRecyclerview.scrollToPosition(data.size-1)
+            return
+        }
+        binding.messagesRecyclerview.apply{
             if(!canScrollVertically(1)){
                 scrollToPosition(data.size-1)
             }
         }
     }
-
-
 }

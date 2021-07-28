@@ -26,18 +26,22 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
         return ViewHolder(binding)
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        holder.setIsRecyclable(false)
         val context = holder.itemView.context
         when (data[position].typeMesage) {
             Message.SENT_MESSAGE -> {
-                setSentMessageParams(context, position)
+                setSentMessageParams(context, data[position])
             }
             Message.RECEIVED_MESSAGE -> {
-                setReceivedMessageParams(context, position)
+                setReceivedMessageParams(context, data[position])
             }
             Message.NOTIFY_CHAT -> {
-                setNotificationLayoutParams(context, position)
+                setNotificationLayoutParams(context, data[position])
             }
         }
     }
@@ -46,40 +50,57 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
         return data.size
     }
 
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
     @SuppressLint("UseCompatLoadingForDrawables")
-    private fun setNotificationLayoutParams(context: Context, position: Int) {
+    private fun setNotificationLayoutParams(context: Context, messageF: Message) {
         with(binding) {
-            mainLinearLayoutChat.gravity = Gravity.CENTER
-            childLinearLayoutChat.background = context.getDrawable(R.drawable.notify_shape)
-            message.text = data[position].message
-            name.visibility = View.GONE
-            time.visibility = View.GONE
+            messageF.let {
+                mainLinearLayoutChat.gravity = Gravity.CENTER
+                childLinearLayoutChat.background = context.getDrawable(R.drawable.notify_shape)
+                name.textAlignment = View.TEXT_ALIGNMENT_CENTER
+                message.text = it.message
+                name.visibility = View.GONE
+                time.visibility = View.GONE
+                name.text = ""
+                time.text = ""
+            }
         }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    private fun setReceivedMessageParams(context: Context, position: Int) {
-        val actualData = data[position]
+    private fun setReceivedMessageParams(context: Context, messageF: Message) {
         with(binding) {
-            mainLinearLayoutChat.gravity = Gravity.START
-            childLinearLayoutChat.background = context.getDrawable(R.drawable.received_message_shape)
-            time.text = timeFormatter(actualData.date)
-            name.text = actualData.name
-            name.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
-
-            message.text = actualData.message
+            messageF.let {
+                mainLinearLayoutChat.gravity = Gravity.START
+                childLinearLayoutChat.background =
+                    context.getDrawable(R.drawable.received_message_shape)
+                time.text = timeFormatter(it.date)
+                name.text = it.name
+                name.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
+                message.text = it.message
+                name.visibility = View.VISIBLE
+                time.visibility = View.VISIBLE
+            }
         }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    private fun setSentMessageParams(context: Context, position: Int) {
-        val actualData = data[position]
+    private fun setSentMessageParams(context: Context, messageF: Message) {
         with(binding) {
-            mainLinearLayoutChat.gravity = Gravity.END
-            childLinearLayoutChat.background = context.getDrawable(R.drawable.sent_message_shape)
-            time.text = timeFormatter(actualData.date)
-            name.text = "You"
-            message.text = actualData.message
+            messageF.let {
+                mainLinearLayoutChat.gravity = Gravity.END
+                childLinearLayoutChat.background =
+                    context.getDrawable(R.drawable.sent_message_shape)
+                time.text = timeFormatter(it.date)
+                name.text = "You"
+                name.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
+                message.text = it.message
+                name.visibility = View.VISIBLE
+                time.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -91,6 +112,5 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
 
     fun addData(message: Message){
         data.add(message)
-        notifyItemInserted(data.size-1)
     }
 }
