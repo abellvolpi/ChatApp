@@ -44,14 +44,14 @@ class CreateServer : Fragment() {
     private fun initView() {
         with(binding) {
             btnCreateServer.setOnClickListener {
-                if (!verifyIfEditTextisEmpy()) {
+                if (!verifyIfEditTextisEmpty()) {
                     createServer()
                 }
             }
         }
     }
 
-    private fun verifyIfEditTextisEmpy(): Boolean {
+    private fun verifyIfEditTextisEmpty(): Boolean {
         with(binding) {
             if (portField.text.isBlank()) {
                 portField.error = "Please, insert a port number"
