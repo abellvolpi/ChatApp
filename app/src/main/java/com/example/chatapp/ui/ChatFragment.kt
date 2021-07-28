@@ -13,6 +13,7 @@ import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
+import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
@@ -98,4 +99,6 @@ class ChatFragment() : Fragment() {
             }
         }
     }
+
+
 }

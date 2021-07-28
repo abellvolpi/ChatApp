@@ -6,11 +6,10 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
-class MainApplication : Application(), LifecycleObserver {
+class MainApplication : Application(), LifecycleObserver{
 
     init {
-        instance = this
-        applicationScope = CoroutineScope(SupervisorJob())
+    instance = this
     }
 
     override fun onCreate() {
@@ -18,24 +17,25 @@ class MainApplication : Application(), LifecycleObserver {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
-
-        companion object {
-            private lateinit var instance: Context
-            private lateinit var applicationScope: CoroutineScope
-            fun getContextInstance(): Context {
-                return instance.applicationContext
-            }
-
-            fun getCoroutineScope(): CoroutineScope {
-                return applicationScope
-            }
-
-            fun aplicationIsInBackground(): Boolean {
-                return ProcessLifecycleOwner.get().lifecycle.currentState == Lifecycle.State.CREATED
-            }
-
-
-        }
-
-
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onAppBackgrounded() {
+        isBackground = true
     }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onAppForegrounded() {
+        isBackground = false
+    }
+
+    companion object{
+        private lateinit var instance : Context
+        private var isBackground: Boolean = false
+
+        fun getContextInstance(): Context {
+            return instance.applicationContext
+        }
+        fun aplicationIsInBackground(): Boolean {
+            return isBackground
+        }
+    }
+}

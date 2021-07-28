@@ -11,7 +11,6 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
@@ -95,10 +94,6 @@ object Utils : CoroutineScope {
             setAutoCancel(true)
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
-    }
-
-    fun verifyIfAppIsOnBackground(){
-
     }
 
 }

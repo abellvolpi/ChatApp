@@ -20,7 +20,6 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
-    private var externalScope = MainApplication.getCoroutineScope()
 
     constructor(parcel: Parcel) : this() {
 
@@ -67,12 +66,11 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
         }
     }
 
-    fun serverConnecting(port: Int, context: Context, onResult: () -> Unit) {
+    fun serverConnecting(port: Int, onResult: () -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
             socket = serverSocket.accept()
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Conexão Estabelecida", Toast.LENGTH_SHORT).show()
                 onResult.invoke()
             }
         }
