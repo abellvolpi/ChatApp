@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.chatapp.R
 import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Message
@@ -17,6 +18,9 @@ import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
 class ChatFragment : Fragment() {
@@ -53,10 +57,19 @@ class ChatFragment : Fragment() {
         binding.constraintLayout.setOnClickListener {
             activity?.hideSoftKeyboard()
         }
+        binding.tictactoe.setOnClickListener{
+
+            findNavController().navigate(R.id.action_chatFragment_to_bottomSheetFragment)
+
+
+
+
+        }
     }
 
     private fun initView(){
         with(binding){
+
             connectionFactory.readMessage {
                 if(it != null){
                     val messageClass = Utils.JSONtoMessageClass(it)

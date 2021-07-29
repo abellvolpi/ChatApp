@@ -2,10 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.ChatFragment"
-    android:id="@+id/constraint_layout">
+    tools:context=".ui.ChatFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -17,16 +17,15 @@
         app:layout_constraintTop_toTopOf="parent">
 
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/blue_3"
-        app:title="Chat"
-        app:titleTextColor="@color/white" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/blue_3"
+            app:title="Chat"
+            app:titleTextColor="@color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
-
 
 
     <androidx.recyclerview.widget.RecyclerView
@@ -35,9 +34,9 @@
         android:layout_height="0dp"
         android:layout_marginBottom="5dp"
         app:layout_constraintBottom_toTopOf="@+id/layout"
-        app:layout_constraintTop_toBottomOf="@+id/app_bar"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_bar"
         tools:listitem="@layout/message_received_item" />
 
 
@@ -49,31 +48,31 @@
 
 
         <ImageView
+            android:id="@+id/tictactoe"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/ic_tictactoe"
-            android:id="@+id/tictac"
-            android:layout_marginStart="5dp"/>
+            android:layout_marginStart="5dp"
+            android:src="@drawable/ic_tictactoe" />
 
 
         <EditText
-            android:layout_marginHorizontal="5dp"
-            android:background="@drawable/notify_shape"
-
             android:id="@+id/message_field"
             android:layout_width="match_parent"
+
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
             android:layout_toStartOf="@+id/button_send"
-            android:layout_toEndOf="@+id/tictac"
+            android:layout_toEndOf="@+id/tictactoe"
+            android:background="@drawable/notify_shape"
             android:hint="message..." />
 
         <LinearLayout
-            android:layout_marginRight="3dp"
-            android:layout_marginBottom="5dp"
             android:id="@+id/button_send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_marginRight="3dp"
+            android:layout_marginBottom="5dp"
             android:background="@drawable/layout_button"
             android:clickable="true"
             android:focusable="true"

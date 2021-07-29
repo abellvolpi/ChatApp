@@ -44,7 +44,11 @@
         </action>
         <argument
             android:name="connection"
-            app:argType="com.example.chatapp.objects.ConnectionFactory"/>            />
+            app:argType="com.example.chatapp.objects.ConnectionFactory"/>
+        <action
+            android:id="@+id/action_chatFragment_to_bottomSheetFragment"
+            app:destination="@id/bottomSheetFragment" />
+        />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -84,5 +88,15 @@
             app:popUpTo="@id/chatFragment"
             app:popUpToInclusive="true"/>
     </fragment>
+    <dialog
+        android:id="@+id/bottomSheetFragment"
+        android:name="com.example.chatapp.ui.bottomsheets.BottomSheetFragment"
+        android:label="BottomSheetFragment"
+        tools:layout="@layout/fragment_bottom_sheet">
+
+        <action
+            android:id="@+id/action_bottomSheetFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </dialog>
 
 </navigation>
