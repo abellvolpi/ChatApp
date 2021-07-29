@@ -58,8 +58,8 @@ class ChatFragment() : Fragment() {
             activity?.hideSoftKeyboard()
         }
         binding.tictactoe.setOnClickListener{
-            var bottomSheetBehavior = BottomSheetBehavior.from(view)
-            var childLayoutParams = ViewGroup.LayoutParams.
+
+            findNavController().navigate(R.id.action_chatFragment_to_bottomSheetFragment)
 
 
 

@@ -63,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_toStartOf="@+id/button_send"
-            android:layout_toEndOf="@+id/tictac"
+            android:layout_toEndOf="@+id/tictactoe"
             android:background="@drawable/notify_shape"
             android:hint="message..." />
 
