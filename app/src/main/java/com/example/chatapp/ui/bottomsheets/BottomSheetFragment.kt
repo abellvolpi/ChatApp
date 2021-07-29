@@ -1,5 +1,6 @@
 package com.example.chatapp.ui.bottomsheets
 
+import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -19,9 +20,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     var board = Board()
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return super.onCreateDialog(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -35,8 +35,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loadBoard()
-
-    }
+   }
 
     private fun linkButtons() {
         with(binding) {

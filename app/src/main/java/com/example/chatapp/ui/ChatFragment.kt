@@ -57,14 +57,14 @@ class ChatFragment() : Fragment() {
         binding.constraintLayout.setOnClickListener {
             activity?.hideSoftKeyboard()
         }
-        binding.tictactoe.setOnClickListener{
-
-            findNavController().navigate(R.id.action_chatFragment_to_bottomSheetFragment)
-
-
-
-
-        }
+//        binding.tictactoe.setOnClickListener{
+//
+//            findNavController().navigate(R.id.action_chatFragment_to_bottomSheetFragment)
+//
+//
+//
+//
+//        }
     }
 
     private fun initView(){
