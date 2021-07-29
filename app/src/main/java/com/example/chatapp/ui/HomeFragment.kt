@@ -45,7 +45,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun initViews() {
-        Utils.createNotification("Teste", "mensagem teste hjbdshkahsdakshd")
         with(binding) {
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {

@@ -6,19 +6,20 @@
     android:layout_height="wrap_content"
     android:layout_marginVertical="5dp"
     android:orientation="horizontal"
-    android:gravity="start">
+    android:gravity="end">
 
     <LinearLayout
         android:id="@+id/childLinearLayoutChat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
         android:minWidth="100dp"
         android:orientation="vertical"
-        android:background="@drawable/received_message_shape">
+        android:background="@drawable/sent_message_shape">
 
         <TextView
             android:id="@+id/name"
+            android:textAlignment="textEnd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
@@ -26,7 +27,6 @@
             android:paddingEnd="30dp"
             android:textColor="@color/grey"
             android:textStyle="bold"
-            android:textAlignment="textEnd"
             tools:text="Asiduasdiuhasdiuhasdiuhasiudh" />
 
         <TextView
@@ -41,8 +41,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="30dp"
-            android:textAlignment="viewStart"
+            android:textAlignment="viewEnd"
             android:textColor="@color/grey"
-            android:textStyle="italic"/>
+            android:textStyle="italic" />
     </LinearLayout>
 </LinearLayout>
