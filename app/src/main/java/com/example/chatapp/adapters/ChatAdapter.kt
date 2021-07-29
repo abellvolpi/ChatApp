@@ -99,5 +99,6 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
 
     fun addData(message: Message) {
         data.add(message)
+        notifyItemInserted(data.size-1)
     }
 }
