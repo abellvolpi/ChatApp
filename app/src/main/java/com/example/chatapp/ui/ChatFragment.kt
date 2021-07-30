@@ -1,6 +1,7 @@
 package com.example.chatapp.ui
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,7 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.chatapp.R
 import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Board
@@ -20,6 +22,7 @@ import com.example.chatapp.objects.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -29,6 +32,7 @@ class ChatFragment : Fragment() {
     private lateinit var adapter: ChatAdapter
     private var data = arrayListOf<Message>()
     private lateinit var profileName: String
+    private var BACKGROUND: Boolean = false
     private val navController by lazy {
         findNavController()
     }
@@ -39,6 +43,11 @@ class ChatFragment : Fragment() {
         ProfileSharedProfile.getProfile {
             profileName = it
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        BACKGROUND = true
     }
 
     override fun onCreateView(
@@ -127,8 +136,6 @@ class ChatFragment : Fragment() {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 bottomSheetBehavior.peekHeight = 150
 //                bottomSheetBehavior.isHideable = false
-
-
 //                view.findNavController().navigate(R.id.action_chatFragment_to_bottomSheetFragment)
             })
             setNegativeButton("cancelar", DialogInterface.OnClickListener() { dialog: DialogInterface?, which: Int ->
