@@ -2,10 +2,8 @@ package com.example.chatapp.ui.bottomsheets
 
 import android.app.Dialog
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageButton
 import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentBottomSheetBinding

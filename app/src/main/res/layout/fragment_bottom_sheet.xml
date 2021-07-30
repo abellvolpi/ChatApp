@@ -4,25 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottomSheetLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     app:behavior_hideable="true"
     app:behavior_peekHeight="0dp"
+
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
 
     <TextView
+        android:id="@+id/textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
         android:gravity="start"
         android:text="^"
         android:textSize="50dp"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintBottom_toTopOf="@+id/tablelayout"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TableLayout
-        android:background="@color/white"
         android:id="@+id/tablelayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:background="@color/white"
         android:clickable="true"
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"

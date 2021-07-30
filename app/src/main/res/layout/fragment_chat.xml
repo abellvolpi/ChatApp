@@ -21,7 +21,8 @@
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/messages_recyclerview">
 
 
             <androidx.appcompat.widget.Toolbar
@@ -38,8 +39,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/messages_recyclerview"
             android:layout_width="408dp"
-            android:layout_height="548dp"
+            android:layout_height="0dp"
             android:layout_marginBottom="5dp"
+            android:paddingHorizontal="20dp"
             app:layout_constraintBottom_toTopOf="@+id/layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
