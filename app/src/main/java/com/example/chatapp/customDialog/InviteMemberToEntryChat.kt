@@ -19,11 +19,7 @@ class InviteMemberToEntryChat(val ip: String, val port: Int) : DialogFragment() 
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
         binding = InviteMemberToEntryChatBinding.inflate(inflater, container, false)
         initView()
         return binding.root

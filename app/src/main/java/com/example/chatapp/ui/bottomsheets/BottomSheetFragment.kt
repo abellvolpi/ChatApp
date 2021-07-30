@@ -1,5 +1,6 @@
 package com.example.chatapp.ui.bottomsheets
 
+import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -97,6 +98,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             }
             mapBoardToUi()
         }
+
     }
 
     private fun mapBoardToUi() {
@@ -130,17 +132,5 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun validReceivedMessage(message: Message) {
-        if (message.typeMesage == Message.RECEIVE_PLAY) {
-            Log.e("Received", "play")
-            val i = message.message.split(",")[0].toInt()
-            val j = message.message.split(",")[1].toInt()
-            val playerReceived = message.message.split(",")[2]
-            val cell = Cell(i, j)
-            board.placeMove(cell, playerReceived)
-            mapBoardToUi()
-            binding.whoPlay.text = "Sua vez de jogar. Você é ${player}"
-            canIPlay = true
-        }
-    }
+
 }

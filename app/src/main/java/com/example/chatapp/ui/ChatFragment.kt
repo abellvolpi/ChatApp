@@ -1,7 +1,5 @@
 package com.example.chatapp.ui
 
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -13,11 +11,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.chatapp.R
 import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Board
 import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
+import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard

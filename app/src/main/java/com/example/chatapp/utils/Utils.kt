@@ -96,6 +96,7 @@ object Utils : CoroutineScope {
             setContentText(text)
             setContentIntent(PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), 0))
             setAutoCancel(true)
+
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
