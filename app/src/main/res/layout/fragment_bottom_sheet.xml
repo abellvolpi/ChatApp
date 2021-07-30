@@ -25,8 +25,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text=""
-        app:layout_constraintBottom_toTopOf="@+id/tablelayout"
-        app:layout_constraintTop_toBottomOf="@id/who_won" />
+        app:layout_constraintBottom_toTopOf="@+id/tablelayout" />
 
     <TableLayout
         android:layout_marginTop="150dp"

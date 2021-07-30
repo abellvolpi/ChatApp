@@ -1,4 +1,4 @@
-package com.example.chatapp.objects
+package com.example.chatapp.viewModel
 
 
 import android.util.Log

@@ -93,14 +93,6 @@
         <action
             android:id="@+id/action_bottomSheetFragment_to_chatFragment"
             app:destination="@id/chatFragment" />
-        <argument
-            android:name="boardPlayer"
-            app:argType="string"
-            app:nullable="false"/>
-        <argument
-            android:name="canIPlay"
-            app:argType="boolean"
-            app:nullable="false"/>
     </dialog>
 
 </navigation>
