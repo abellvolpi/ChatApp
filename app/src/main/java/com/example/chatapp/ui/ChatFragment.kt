@@ -1,14 +1,20 @@
 package com.example.chatapp.ui
 
+import android.app.AlertDialog
+import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import com.example.chatapp.R
 import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
@@ -57,14 +63,9 @@ class ChatFragment() : Fragment() {
         binding.constraintLayout.setOnClickListener {
             activity?.hideSoftKeyboard()
         }
-//        binding.tictactoe.setOnClickListener{
-//
-//            findNavController().navigate(R.id.action_chatFragment_to_bottomSheetFragment)
-//
-//
-//
-//
-//        }
+        binding.tictactoe.setOnClickListener {
+            createDialog(view,requireContext())
+        }
     }
 
     private fun initView(){
@@ -111,6 +112,32 @@ class ChatFragment() : Fragment() {
                 scrollToPosition(data.size-1)
             }
         }
+    }
+    fun createDialog(view: View,context: Context) {
+
+
+
+        var builder = AlertDialog.Builder(context).apply {
+            setMessage("Deseja desafiar Fulano para uma partida de TicTacToe?")
+            setPositiveButton("ok", DialogInterface.OnClickListener { dialog, which ->
+
+                val bottomsheet = requireView().findViewById<View>(R.id.bottomSheetLayout)
+                var bottomSheetBehavior = BottomSheetBehavior.from(bottomsheet)
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                bottomSheetBehavior.peekHeight = 150
+//                bottomSheetBehavior.isHideable = false
+
+
+//                view.findNavController().navigate(R.id.action_chatFragment_to_bottomSheetFragment)
+            })
+            setNegativeButton("cancelar", DialogInterface.OnClickListener() { dialog: DialogInterface?, which: Int ->
+                dialog?.dismiss()
+            })
+
+        }
+        builder.create().show()
+
+
     }
 
 
