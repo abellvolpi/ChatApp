@@ -12,6 +12,14 @@
         android:text=""
         app:layout_constraintBottom_toTopOf="@+id/tablelayout"
         app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+        android:id="@+id/who_play"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/tablelayout"
+        app:layout_constraintTop_toBottomOf="@id/who_won" />
 
 
     <TableLayout

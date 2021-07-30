@@ -8,12 +8,14 @@ import com.example.chatapp.databinding.MessageNotifyItemBinding
 import com.example.chatapp.databinding.MessageReceivedItemBinding
 import com.example.chatapp.databinding.MessageSentItemBinding
 import com.example.chatapp.models.Message
+import com.example.chatapp.ui.ChatFragment
 import java.text.SimpleDateFormat
 
 class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private lateinit var bindingSent: MessageSentItemBinding
     private lateinit var bindingReceived: MessageReceivedItemBinding
     private lateinit var bindingNotify: MessageNotifyItemBinding
+
 
     inner class ViewHolderReceiveMessage(binding: MessageReceivedItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -69,7 +71,7 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
         when (getItemViewType(position)) {
             Message.SENT_MESSAGE -> {
                 bindingSent.message.text = data[position].message
-                bindingSent.name.text = data[position].name
+                bindingSent.name.text = "You"
                 bindingSent.time.text = timeFormatter(data[position].date)
             }
             Message.RECEIVED_MESSAGE -> {

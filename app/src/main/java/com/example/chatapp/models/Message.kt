@@ -13,5 +13,7 @@ class Message(val name: String,
         const val RECEIVED_MESSAGE = 0
         const val SENT_MESSAGE = 1
         const val NOTIFY_CHAT = 2
+        const val INVITE_TICTACTOE = 3
+        const val RECEIVE_PLAY = 4
     }
 }

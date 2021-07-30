@@ -42,13 +42,9 @@
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment">
         </action>
-        <argument
-            android:name="connection"
-            app:argType="com.example.chatapp.objects.ConnectionFactory"/>
         <action
             android:id="@+id/action_chatFragment_to_bottomSheetFragment"
             app:destination="@id/bottomSheetFragment" />
-        />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -97,6 +93,14 @@
         <action
             android:id="@+id/action_bottomSheetFragment_to_chatFragment"
             app:destination="@id/chatFragment" />
+        <argument
+            android:name="boardPlayer"
+            app:argType="string"
+            app:nullable="false"/>
+        <argument
+            android:name="canIPlay"
+            app:argType="boolean"
+            app:nullable="false"/>
     </dialog>
 
 </navigation>

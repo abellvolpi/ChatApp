@@ -4,15 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.objects.ConnectionFactory
-import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
-import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.google.android.material.snackbar.Snackbar
@@ -90,11 +89,9 @@ class HomeFragment : Fragment() {
         with(binding) {
             createSocket(ipField.text.toString(), portField.text.toString().toInt()) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
-                val connectionFactory = ConnectionFactory()
+                val connectionFactory : ConnectionFactory by activityViewModels()
                 connectionFactory.setSocket(it)
-                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(
-                    connectionFactory
-                )
+                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
                 ProfileSharedProfile.getProfile {
                     val message = Message("", it + " was connected", Message.NOTIFY_CHAT)
                     connectionFactory.sendMessage(message) {}

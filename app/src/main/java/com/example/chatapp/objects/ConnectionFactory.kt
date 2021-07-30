@@ -1,33 +1,27 @@
 package com.example.chatapp.objects
 
 
-import android.content.Context
-import android.os.Parcel
-import android.os.Parcelable
-import android.widget.Toast
+import android.util.Log
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Message
-import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
-import java.io.Serializable
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
-class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
+class ConnectionFactory : CoroutineScope, ViewModel() {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
+    val line: MutableLiveData<String> = MutableLiveData()
 
-    constructor(parcel: Parcel) : this() {
-
-    }
-
-    fun readMessage(onResult: (String?) -> Unit) {
+    private fun readMessage() {
         GlobalScope.launch(Dispatchers.IO) {
-            delay(2500)
+            delay(2000)
             while (true) {
                 if (socket.isConnected) {
                     val reader = Scanner(socket.getInputStream().bufferedReader())
@@ -35,20 +29,17 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
-                            if(MainApplication.aplicationIsInBackground()){
-                                Utils.createNotification("New Message", line)
-                            }
-                            onResult.invoke(line)
+                            this@ConnectionFactory.line.postValue(line)
                         }
                     } else {
                         withContext(Dispatchers.Main) {
-                            onResult.invoke(null)
+                            this@ConnectionFactory.line.postValue(null)
                         }
                         break
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        onResult.invoke(null)
+                        this@ConnectionFactory.line.postValue(null)
                     }
                 }
             }
@@ -61,6 +52,7 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
             bw.flush()
             withContext(Dispatchers.Main) {
+                Log.e("server", "Sent Message")
                 onResult.invoke()
             }
         }
@@ -80,22 +72,7 @@ class ConnectionFactory() : CoroutineScope, Serializable, Parcelable {
         this.socket = socket
     }
 
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<ConnectionFactory> {
-        override fun createFromParcel(parcel: Parcel): ConnectionFactory {
-            return ConnectionFactory(parcel)
-        }
-
-        override fun newArray(size: Int): Array<ConnectionFactory?> {
-            return arrayOfNulls(size)
-        }
+    fun startListenerMessages(){
+        readMessage()
     }
 }
