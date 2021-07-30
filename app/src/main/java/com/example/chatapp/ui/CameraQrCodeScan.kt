@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCameraQrCodeScanBinding
 import com.example.chatapp.objects.ConnectionFactory
@@ -68,11 +70,9 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
     private fun connect(ip: String, port: String) {
         Utils.createSocket(ip, port.toInt()) {
             ProfileSharedProfile.saveProfile(name)
-            val connectionFactory = ConnectionFactory()
+            val connectionFactory : ConnectionFactory by activityViewModels()
             connectionFactory.setSocket(it)
-            val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(
-                connectionFactory
-            )
+            val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment()
             findNavController().navigate(action)
         }
     }

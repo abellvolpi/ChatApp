@@ -1,43 +1,86 @@
 package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.chatapp.R
+import com.example.chatapp.databinding.MessageNotifyItemBinding
 import com.example.chatapp.databinding.MessageReceivedItemBinding
-import com.example.chatapp.utils.Utils
+import com.example.chatapp.databinding.MessageSentItemBinding
 import com.example.chatapp.models.Message
+import com.example.chatapp.ui.ChatFragment
 import java.text.SimpleDateFormat
 
 class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private lateinit var binding: MessageReceivedItemBinding
+    private lateinit var bindingSent: MessageSentItemBinding
+    private lateinit var bindingReceived: MessageReceivedItemBinding
+    private lateinit var bindingNotify: MessageNotifyItemBinding
 
-    inner class ViewHolder(binding: MessageReceivedItemBinding) :
+
+    inner class ViewHolderReceiveMessage(binding: MessageReceivedItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        binding =
-            MessageReceivedItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
+    inner class ViewHolderSentMessage(binding: MessageSentItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        holder.setIsRecyclable(false)
-        val context = holder.itemView.context
-        when (data[position].typeMesage) {
+    inner class ViewHolderNotifyMessage(binding: MessageNotifyItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        when (viewType) {
             Message.SENT_MESSAGE -> {
-                setSentMessageParams(context, position)
+                bindingSent = MessageSentItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                return ViewHolderSentMessage(bindingSent)
             }
+
             Message.RECEIVED_MESSAGE -> {
-                setReceivedMessageParams(context, position)
+                bindingReceived = MessageReceivedItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                return ViewHolderReceiveMessage(bindingReceived)
             }
             Message.NOTIFY_CHAT -> {
-                setNotificationLayoutParams(context, position)
+                bindingNotify = MessageNotifyItemBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
+                return ViewHolderNotifyMessage(bindingNotify)
+            }
+            else -> return ViewHolderNotifyMessage( //apenas para validar um else
+                MessageNotifyItemBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
+            )
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return data[position].typeMesage
+    }
+
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (getItemViewType(position)) {
+            Message.SENT_MESSAGE -> {
+                bindingSent.message.text = data[position].message
+                bindingSent.name.text = "You"
+                bindingSent.time.text = timeFormatter(data[position].date)
+            }
+            Message.RECEIVED_MESSAGE -> {
+                bindingReceived.message.text = data[position].message
+                bindingReceived.name.text = data[position].name
+                bindingReceived.time.text = timeFormatter(data[position].date)
+            }
+            Message.NOTIFY_CHAT -> {
+                bindingNotify.message.text = data[position].message
             }
         }
     }
@@ -46,50 +89,17 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
         return data.size
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private fun setNotificationLayoutParams(context: Context, position: Int) {
-        with(binding) {
-            mainLinearLayoutChat.gravity = Gravity.CENTER
-            childLinearLayoutChat.background = context.getDrawable(R.drawable.notify_shape)
-            message.text = data[position].message
-            name.visibility = View.GONE
-            time.visibility = View.GONE
-        }
-    }
-
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private fun setReceivedMessageParams(context: Context, position: Int) {
-        val actualData = data[position]
-        with(binding) {
-            mainLinearLayoutChat.gravity = Gravity.START
-            childLinearLayoutChat.background = context.getDrawable(R.drawable.received_message_shape)
-            time.text = timeFormatter(actualData.date)
-            name.text = actualData.name
-            name.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
-
-            message.text = actualData.message
-        }
-    }
-
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private fun setSentMessageParams(context: Context, position: Int) {
-        val actualData = data[position]
-        with(binding) {
-            mainLinearLayoutChat.gravity = Gravity.END
-            childLinearLayoutChat.background = context.getDrawable(R.drawable.sent_message_shape)
-            time.text = timeFormatter(actualData.date)
-            name.text = "You"
-            message.text = actualData.message
-        }
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
     }
 
     @SuppressLint("SimpleDateFormat")
-    private fun timeFormatter(time: Long): String{
+    private fun timeFormatter(time: Long): String {
         val dtf = SimpleDateFormat("HH:mm")
         return dtf.format(time)
     }
 
-    fun addData(message: Message){
+    fun addData(message: Message) {
         data.add(message)
         notifyItemInserted(data.size-1)
     }

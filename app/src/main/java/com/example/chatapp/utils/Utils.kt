@@ -2,15 +2,18 @@ package com.example.chatapp.utils
 
 import android.app.*
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.findNavController
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
@@ -22,6 +25,7 @@ import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+
 
     fun getIpAndress(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
@@ -96,5 +100,6 @@ object Utils : CoroutineScope {
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
+
 
 }

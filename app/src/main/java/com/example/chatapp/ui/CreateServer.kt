@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.customDialog.InviteMemberToEntryChat
 import com.example.chatapp.databinding.FragmentCreateServerBinding
@@ -71,13 +73,13 @@ class CreateServer : Fragment() {
                 val df = InviteMemberToEntryChat(it, portField.text.toString().toInt())
                 df.show(childFragmentManager, "")
             }
-            val connectionFactory = ConnectionFactory()
+            val connectionFactory : ConnectionFactory by activityViewModels()
             connectionFactory.serverConnecting(
                 portField.text.toString().toInt()
             ) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 val action =
-                    CreateServerDirections.actionCreateServerToChatFragment(connectionFactory)
+                    CreateServerDirections.actionCreateServerToChatFragment()
                 navController.navigate(action)
             }
         }
