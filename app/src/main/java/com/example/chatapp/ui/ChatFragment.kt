@@ -34,7 +34,6 @@ class ChatFragment : Fragment() {
     private var data = arrayListOf<Message>()
     private lateinit var bottomsheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
-    private var BACKGROUND: Boolean = false
     private val navController by lazy {
         findNavController()
     }
@@ -52,11 +51,6 @@ class ChatFragment : Fragment() {
         ProfileSharedProfile.getProfile {
             profileName = it
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        BACKGROUND = true
     }
 
     override fun onCreateView(
@@ -130,8 +124,6 @@ class ChatFragment : Fragment() {
             adapter.setHasStableIds(true)
             messagesRecyclerview.adapter = adapter
             messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
-
-
         }
     }
 
@@ -234,6 +226,18 @@ class ChatFragment : Fragment() {
     private fun declineInviteTicTacToe() {
         val message = Message("", "declined", Message.INVITE_TICTACTOE)
         connectionFactory.sendMessage(message) {}
+    }
+
+    override fun onStart() {
+        super.onStart()
+        connectionFactory.getBackgroundMessages().apply {
+            for (i in indices){
+                if(i != lastIndex){
+                    validReceivedMessage(get(i))
+                }
+            }
+            connectionFactory.empyBackgroundMessages()
+        }
     }
 
     //bottom sheet functions

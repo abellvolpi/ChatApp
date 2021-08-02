@@ -9,6 +9,7 @@ import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
+import java.lang.Exception
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
@@ -19,6 +20,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
     val line: MutableLiveData<String> = MutableLiveData()
+    private var backgroundMessages = arrayListOf<Message>()
 
     private fun readMessage() {
         GlobalScope.launch(Dispatchers.IO) {
@@ -30,10 +32,12 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
-                            this@ConnectionFactory.line.postValue(line)
-                            if(MainApplication.aplicationIsInBackground()){
-                                var message = Utils.JSONtoMessageClass(line)
+                            if (MainApplication.aplicationIsInBackground()) {
+                                val message = Utils.JSONtoMessageClass(line)
+                                backgroundMessages.add(message)
                                 Utils.createNotification(message.name, message.message)
+                            } else {
+                                this@ConnectionFactory.line.postValue(line)
                             }
                         }
                     } else {
@@ -65,10 +69,14 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
 
     fun serverConnecting(port: Int, onResult: () -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
-            val serverSocket = ServerSocket(port)
-            socket = serverSocket.accept()
-            withContext(Dispatchers.Main) {
-                onResult.invoke()
+            try{
+                val serverSocket = ServerSocket(port)
+                socket = serverSocket.accept()
+                withContext(Dispatchers.Main) {
+                    onResult.invoke()
+                }
+            }catch (e: Exception){
+                Log.e("Error connection", e.toString())
             }
         }
     }
@@ -77,7 +85,19 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         this.socket = socket
     }
 
-    fun startListenerMessages(){
+    fun startListenerMessages() {
         readMessage()
+    }
+
+    fun getBackgroundMessages(): ArrayList<Message> {
+        return backgroundMessages
+    }
+
+    fun empyBackgroundMessages(){
+        backgroundMessages = arrayListOf()
+    }
+
+    fun closeSocket() {
+        socket.close()
     }
 }

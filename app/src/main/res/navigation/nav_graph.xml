@@ -52,8 +52,10 @@
         android:label="fragment_create_server"
         tools:layout="@layout/fragment_create_server">
         <action
-            android:id="@+id/action_createServer_to_chatFragment"
-            app:destination="@id/chatFragment" />
+            android:id="@+id/action_createServer_to_inviteMemberToEntry"
+            app:destination="@id/inviteMemberToEntryChat"
+            app:popUpTo="@id/chatFragment"
+            app:popUpToInclusive="true"/>
     </fragment>
     <fragment
         android:id="@+id/splashFragment"
@@ -93,6 +95,28 @@
         <action
             android:id="@+id/action_bottomSheetFragment_to_chatFragment"
             app:destination="@id/chatFragment"/>
+    </dialog>
+    <dialog
+        android:id="@+id/inviteMemberToEntryChat"
+        android:name="com.example.chatapp.customDialog.InviteMemberToEntryChat"
+        android:label="InviteMemberToEntryChat" >
+        <action
+            android:id="@+id/action_inviteMemberToEntryChat_to_chatFragment"
+            app:destination="@id/chatFragment"
+            app:popUpTo="@id/chatFragment"
+            app:popUpToInclusive="true"/>
+        <argument
+            android:name="ip"
+            app:nullable="false"
+            app:argType="string"/>
+        <argument
+            android:name="port"
+            app:nullable="false"
+            app:argType="integer"/>
+        <argument
+            android:name="name"
+            app:nullable="false"
+            app:argType="string"/>
     </dialog>
 
 </navigation>

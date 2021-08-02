@@ -26,7 +26,6 @@ import kotlin.coroutines.CoroutineContext
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-
     fun getIpAndress(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
             val wifiManager = MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -55,7 +54,6 @@ object Utils : CoroutineScope {
         }
     }
 
-
     fun createSocket(ip: String, port: Int, onResult: (Socket) -> Unit) {
         launch(Dispatchers.IO) {
             val socket = Socket(ip, port)
@@ -78,7 +76,7 @@ object Utils : CoroutineScope {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
                 description = text
             }
@@ -87,19 +85,15 @@ object Utils : CoroutineScope {
             notificationManager.createNotificationChannel(channel)
         }
 
-
         var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
-            priority = NotificationCompat.PRIORITY_DEFAULT
+            priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle(tittle)
             setContentText(text)
             setContentIntent(PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), 0))
             setAutoCancel(true)
-
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
-
-
 }

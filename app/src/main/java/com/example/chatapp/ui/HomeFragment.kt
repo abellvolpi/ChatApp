@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
+    val connectionFactory : ConnectionFactory by activityViewModels()
     private val navController by lazy {
         findNavController()
     }
@@ -39,6 +40,7 @@ class HomeFragment : Fragment() {
         val message = arguments?.getString("messageIfError")
         if (message != null) {
             Snackbar.make(requireContext(), requireView(), message, Snackbar.LENGTH_LONG).show()
+            connectionFactory.closeSocket()
         }
     }
 
@@ -89,7 +91,6 @@ class HomeFragment : Fragment() {
         with(binding) {
             createSocket(ipField.text.toString(), portField.text.toString().toInt()) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
-                val connectionFactory : ConnectionFactory by activityViewModels()
                 connectionFactory.setSocket(it)
                 val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
                 ProfileSharedProfile.getProfile {

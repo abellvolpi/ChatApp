@@ -69,17 +69,8 @@ class CreateServer : Fragment() {
     private fun createServer() {
         with(binding) {
             Utils.getIpAndress {
-                val df = InviteMemberToEntryChat(it, portField.text.toString().toInt())
-                df.show(childFragmentManager, "")
-            }
-            val connectionFactory : ConnectionFactory by activityViewModels()
-            connectionFactory.serverConnecting(
-                portField.text.toString().toInt()
-            ) {
-                ProfileSharedProfile.saveProfile(nameField.text.toString())
-                val action =
-                    CreateServerDirections.actionCreateServerToChatFragment()
-                navController.navigate(action)
+                val action = CreateServerDirections.actionCreateServerToInviteMemberToEntry(it, portField.text.toString().toInt(), nameField.text.toString())
+                findNavController().navigate(action)
             }
         }
     }
