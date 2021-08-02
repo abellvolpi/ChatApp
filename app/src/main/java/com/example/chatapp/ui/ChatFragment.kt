@@ -229,14 +229,10 @@ class ChatFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        connectionFactory.getBackgroundMessages().apply {
-            for (i in indices){
-                if(i != lastIndex){
-                    validReceivedMessage(get(i))
-                }
-            }
-            connectionFactory.empyBackgroundMessages()
+        connectionFactory.getBackgroundMessages().forEach {
+                    validReceivedMessage(it)
         }
+        connectionFactory.empyBackgroundMessages()
     }
 
     //bottom sheet functions
