@@ -16,7 +16,9 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
+import com.example.chatapp.ui.HomeFragment
 import com.example.chatapp.ui.MainActivity
+import com.example.chatapp.ui.SplashFragment
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
@@ -25,7 +27,6 @@ import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
-
 
     fun getIpAndress(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
@@ -54,7 +55,6 @@ object Utils : CoroutineScope {
             hideSoftInputFromWindow(currentFocus?.windowToken, 0)
         }
     }
-
 
     fun createSocket(ip: String, port: Int, onResult: (Socket) -> Unit) {
         launch(Dispatchers.IO) {
@@ -87,7 +87,6 @@ object Utils : CoroutineScope {
             notificationManager.createNotificationChannel(channel)
         }
 
-
         var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
@@ -101,5 +100,8 @@ object Utils : CoroutineScope {
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
 
-
+/*
+passar um bundle com ip, porta, etc.. e remontar o chat na main
+ou só abrir o app caso background
+*/
 }
