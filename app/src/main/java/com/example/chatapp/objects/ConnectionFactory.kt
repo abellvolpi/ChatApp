@@ -34,6 +34,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                             if(MainApplication.aplicationIsInBackground()){
                                 var message = Utils.JSONtoMessageClass(line)
                                 Utils.createNotification(message.name, message.message)
+                                Utils.playBemTeVi()
                             }
                         }
                     } else {

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
+import android.media.MediaPlayer
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
@@ -98,6 +99,11 @@ object Utils : CoroutineScope {
 
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
+    }
+
+    fun playBemTeVi(){
+        val context = MainApplication.getContextInstance()
+        MediaPlayer.create(context,R.raw.bemteviaudio).start()
     }
 
 /*
