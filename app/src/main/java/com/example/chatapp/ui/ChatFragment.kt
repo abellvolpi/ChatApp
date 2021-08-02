@@ -79,7 +79,6 @@ class ChatFragment : Fragment() {
                     Snackbar.LENGTH_LONG
                 ).show()
             }
-
         }
         bottomsheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
