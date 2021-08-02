@@ -10,25 +10,28 @@
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
 
+<!--    <TextView-->
+<!--        android:id="@+id/textview"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:gravity="start"-->
+<!--        android:text=" ^"-->
+<!--        android:visibility="invisible"-->
+<!--        android:textSize="50dp"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
     <TextView
-        android:id="@+id/textview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="start"
-        android:text=" ^"
-        android:visibility="invisible"
-        android:textSize="50dp"
-        app:layout_constraintTop_toTopOf="parent" />
-    <TextView
+        android:background="@color/white"
+        android:layout_marginBottom="20dp"
         android:id="@+id/who_play"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text=""
-        app:layout_constraintBottom_toTopOf="@+id/tablelayout" />
+        app:layout_constraintBottom_toTopOf="@+id/tablelayout"
+         />
 
     <TableLayout
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="220dp"
         android:layout_marginBottom="70dp"
         android:id="@+id/tablelayout"
         android:layout_width="wrap_content"

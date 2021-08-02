@@ -36,27 +36,27 @@
         </com.google.android.material.appbar.AppBarLayout>
 
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/messages_recyclerview"
-            android:layout_width="408dp"
-            android:layout_height="0dp"
-            android:layout_marginBottom="5dp"
-            android:paddingHorizontal="20dp"
-            app:layout_constraintBottom_toTopOf="@+id/layout"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/app_bar"
-            tools:listitem="@layout/message_received_item" />
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/messages_recyclerview"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:layout_marginBottom="5dp"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/layout"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/app_bar"-->
-<!--        tools:listitem="@layout/message_received_item" />-->
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/messages_recyclerview"-->
+<!--            android:layout_width="408dp"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:layout_marginBottom="5dp"-->
+<!--            android:paddingHorizontal="20dp"-->
+<!--            app:layout_constraintBottom_toTopOf="@+id/layout"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/app_bar"-->
+<!--            tools:listitem="@layout/message_received_item" />-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/messages_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_bar"
+        tools:listitem="@layout/message_received_item" />
 
 
     <RelativeLayout
@@ -91,13 +91,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_marginRight="3dp"
+                android:layout_marginHorizontal="3dp"
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/layout_button"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:padding="10dp"
+                android:padding="9dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/message_field">
