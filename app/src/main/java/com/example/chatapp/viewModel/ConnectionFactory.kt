@@ -37,13 +37,13 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                 backgroundMessages.add(message)
                                 Utils.createNotification(message.name, message.message)
                                 Utils.playBemTeVi()
-                            }
-                            }
-                            else {
+                            } else {
                                 this@ConnectionFactory.line.postValue(line)
 
+                            }
                         }
-                    } else {
+                    }
+                    else {
                         withContext(Dispatchers.Main) {
                             this@ConnectionFactory.line.postValue(null)
                         }
@@ -72,13 +72,13 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
 
     fun serverConnecting(port: Int, onResult: () -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
-            try{
+            try {
                 val serverSocket = ServerSocket(port)
                 socket = serverSocket.accept()
                 withContext(Dispatchers.Main) {
                     onResult.invoke()
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Log.e("Error connection", e.toString())
             }
         }
@@ -96,7 +96,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         return backgroundMessages
     }
 
-    fun empyBackgroundMessages(){
+    fun empyBackgroundMessages() {
         backgroundMessages = arrayListOf()
     }
 

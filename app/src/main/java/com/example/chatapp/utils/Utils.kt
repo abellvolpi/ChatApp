@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.wifi.WifiManager
 import android.os.Build
