@@ -6,11 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.customDialog.InviteMemberToEntryChat
 import com.example.chatapp.databinding.FragmentCreateServerBinding
-import com.example.chatapp.objects.ConnectionFactory
+import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
@@ -70,17 +69,8 @@ class CreateServer : Fragment() {
     private fun createServer() {
         with(binding) {
             Utils.getIpAndress {
-                val df = InviteMemberToEntryChat(it, portField.text.toString().toInt())
-                df.show(childFragmentManager, "")
-            }
-            val connectionFactory : ConnectionFactory by activityViewModels()
-            connectionFactory.serverConnecting(
-                portField.text.toString().toInt()
-            ) {
-                ProfileSharedProfile.saveProfile(nameField.text.toString())
-                val action =
-                    CreateServerDirections.actionCreateServerToChatFragment()
-                navController.navigate(action)
+                val action = CreateServerDirections.actionCreateServerToInviteMemberToEntry(it, portField.text.toString().toInt(), nameField.text.toString())
+                findNavController().navigate(action)
             }
         }
     }
