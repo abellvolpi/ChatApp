@@ -1,14 +1,18 @@
 package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
+import android.icu.text.Transliterator
 import android.view.LayoutInflater
+import android.view.TextureView
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.databinding.MessageNotifyItemBinding
 import com.example.chatapp.databinding.MessageReceivedItemBinding
 import com.example.chatapp.databinding.MessageSentItemBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.ChatFragment
+import org.w3c.dom.Text
 import java.text.SimpleDateFormat
 
 class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -75,6 +79,7 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
                 bindingSent.time.text = timeFormatter(data[position].date)
             }
             Message.RECEIVED_MESSAGE -> {
+                bindingReceived.name.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
                 bindingReceived.message.text = data[position].message
                 bindingReceived.name.text = data[position].name
                 bindingReceived.time.text = timeFormatter(data[position].date)
