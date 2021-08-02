@@ -28,5 +28,6 @@ class SplashFragment : Fragment() {
         Handler().postDelayed({
             findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment(null))
         }, 1300)
+
     }
 }

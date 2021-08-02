@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
@@ -16,7 +18,9 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
+import com.example.chatapp.ui.HomeFragment
 import com.example.chatapp.ui.MainActivity
+import com.example.chatapp.ui.SplashFragment
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
@@ -96,4 +100,14 @@ object Utils : CoroutineScope {
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
+
+    fun playBemTeVi(){
+        val context = MainApplication.getContextInstance()
+        MediaPlayer.create(context,R.raw.bemteviaudio).start()
+    }
+
+/*
+passar um bundle com ip, porta, etc.. e remontar o chat na main
+ou só abrir o app caso background
+*/
 }
