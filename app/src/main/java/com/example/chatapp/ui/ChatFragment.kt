@@ -1,5 +1,7 @@
 package com.example.chatapp.ui
 
+import android.app.AlertDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
@@ -24,6 +26,7 @@ import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 
 class ChatFragment : Fragment() {
@@ -33,6 +36,7 @@ class ChatFragment : Fragment() {
     private var data = arrayListOf<Message>()
     private lateinit var bottomsheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
+    private var BACKGROUND: Boolean = false
     private val navController by lazy {
         findNavController()
     }
@@ -52,12 +56,18 @@ class ChatFragment : Fragment() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        BACKGROUND = true
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
         initView()
+
         return binding.root
     }
 
@@ -67,6 +77,7 @@ class ChatFragment : Fragment() {
             activity?.hideSoftKeyboard()
         }
         binding.tictactoe.setOnClickListener {
+            sendInviteTicTacToe()
             if (!isTicTacToePlayRunning) {
                 sendInviteTicTacToe()
             } else {

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Message
+import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
@@ -30,6 +31,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
                             this@ConnectionFactory.line.postValue(line)
+                            if(MainApplication.aplicationIsInBackground()){
+                                var message = Utils.JSONtoMessageClass(line)
+                                Utils.createNotification(message.name, message.message)
+                            }
                         }
                     } else {
                         withContext(Dispatchers.Main) {
