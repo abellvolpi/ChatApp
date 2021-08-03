@@ -57,7 +57,6 @@ class InviteMemberToEntryChat : DialogFragment() {
     }
 
     private fun waitConnection(){
-
         val connectionFactory : ConnectionFactory by activityViewModels()
         connectionFactory.serverConnecting(
             port

@@ -79,38 +79,59 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="5dp"
-                android:layout_marginStart="50dp"
-                android:layout_toStartOf="@+id/button_send"
+                android:layout_toEndOf="@id/tictactoe"
+                android:layout_toStartOf="@id/layoutButtons"
                 android:background="@drawable/notify_shape"
                 android:hint="message..." />
 
-
+        <FrameLayout
+            android:id="@+id/layoutButtons"
+            android:layout_alignParentEnd="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:layout_marginBottom="5dp">
 
             <LinearLayout
                 android:id="@+id/button_send"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_marginHorizontal="3dp"
-                android:layout_marginBottom="5dp"
                 android:background="@drawable/layout_button"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:padding="9dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/message_field">
-
+                android:padding="9dp">
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_send_icon" />
-
             </LinearLayout>
-        </RelativeLayout>
+        <LinearLayout
+            android:id="@+id/button_voice_message_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/layout_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="9dp">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="#00FFFFFF"
+                android:src="@drawable/ic__5822901291574330930"/>
+        </LinearLayout>
+            <ProgressBar
+                android:padding="5dp"
+                android:id="@+id/progress_bar_send_message"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:visibility="gone"
+                android:background="@drawable/layout_button">
+            </ProgressBar>
+        </FrameLayout>
+    </RelativeLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
     <include layout="@layout/fragment_bottom_sheet"
         android:id="@+id/bottom_sheet" />
 

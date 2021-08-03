@@ -91,7 +91,6 @@
         android:name="com.example.chatapp.ui.bottomsheets.BottomSheetFragment"
         android:label="BottomSheetFragment"
         tools:layout="@layout/fragment_bottom_sheet">
-
         <action
             android:id="@+id/action_bottomSheetFragment_to_chatFragment"
             app:destination="@id/chatFragment"/>
@@ -118,5 +117,4 @@
             app:nullable="false"
             app:argType="string"/>
     </dialog>
-
 </navigation>

@@ -1,24 +1,33 @@
 package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
-import android.icu.text.Transliterator
+import android.media.MediaPlayer
+import android.net.Uri
 import android.view.LayoutInflater
-import android.view.TextureView
+import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.chatapp.databinding.MessageNotifyItemBinding
-import com.example.chatapp.databinding.MessageReceivedItemBinding
-import com.example.chatapp.databinding.MessageSentItemBinding
+import com.example.chatapp.databinding.*
 import com.example.chatapp.models.Message
-import com.example.chatapp.ui.ChatFragment
-import org.w3c.dom.Text
+import com.example.chatapp.utils.MainApplication
+import com.example.chatapp.utils.Utils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.text.Format
 import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private lateinit var bindingSent: MessageSentItemBinding
     private lateinit var bindingReceived: MessageReceivedItemBinding
     private lateinit var bindingNotify: MessageNotifyItemBinding
+    private lateinit var bindingSentAudio: MessageSentAudioBinding
+    private lateinit var bindingReceivedAudio: MessageReceivedAudioBinding
+    private var mediaPlayer = MediaPlayer()
 
 
     inner class ViewHolderReceiveMessage(binding: MessageReceivedItemBinding) :
@@ -32,6 +41,14 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
     inner class ViewHolderNotifyMessage(binding: MessageNotifyItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
     }
+    inner class ViewHolderReceiveAudioMessage(binding: MessageReceivedAudioBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+    }
+    inner class ViewHolderSentAudioMessage(binding: MessageSentAudioBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+    }
+
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         when (viewType) {
@@ -58,6 +75,16 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
                 )
                 return ViewHolderNotifyMessage(bindingNotify)
             }
+
+            Message.SENT_MESSAGE_VOICE ->{
+                bindingSentAudio = MessageSentAudioBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                return ViewHolderSentAudioMessage(bindingSentAudio)
+            }
+
+            Message.RECEIVED_MESSAGE_VOICE -> {
+                bindingReceivedAudio = MessageReceivedAudioBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                return ViewHolderReceiveAudioMessage(bindingReceivedAudio)
+            }
             else -> return ViewHolderNotifyMessage( //apenas para validar um else
                 MessageNotifyItemBinding.inflate(
                     LayoutInflater.from(parent.context), parent, false
@@ -79,13 +106,72 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
                 bindingSent.time.text = timeFormatter(data[position].date)
             }
             Message.RECEIVED_MESSAGE -> {
-                bindingReceived.name.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
                 bindingReceived.message.text = data[position].message
                 bindingReceived.name.text = data[position].name
                 bindingReceived.time.text = timeFormatter(data[position].date)
             }
             Message.NOTIFY_CHAT -> {
                 bindingNotify.message.text = data[position].message
+            }
+            Message.SENT_MESSAGE_VOICE ->{
+                bindingSentAudio.name.text = data[position].name
+                bindingSentAudio.startAudio.visibility = View.VISIBLE
+                bindingSentAudio.stopAudio.visibility = View.GONE
+                bindingSentAudio.name.text = "You"
+                bindingSentAudio.message.text = "Audio"
+                bindingSentAudio.time.text = timeFormatter(data[position].date)
+                bindingSentAudio.startAudio.setOnClickListener {
+                    startAudio(data[position].message)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        while(true){
+                            if(mediaPlayer.isPlaying){
+                                withContext(Dispatchers.Main){
+                                    bindingSentAudio.startAudio.visibility = View.GONE
+                                    bindingSentAudio.stopAudio.visibility = View.VISIBLE
+                                }
+                            }else{
+                                withContext(Dispatchers.Main){
+                                    bindingSentAudio.startAudio.visibility = View.VISIBLE
+                                    bindingSentAudio.stopAudio.visibility = View.GONE
+                                }
+                                break
+                            }
+                        }
+                    }
+                }
+                bindingSentAudio.stopAudio.setOnClickListener {
+                    stopAudio()
+                }
+            }
+            Message.RECEIVED_MESSAGE_VOICE ->{
+                bindingReceivedAudio.name.text = data[position].name
+                bindingReceivedAudio.startAudio.visibility = View.VISIBLE
+                bindingReceivedAudio.stopAudio.visibility = View.GONE
+                bindingReceivedAudio.name.text = data[position].name
+                bindingReceivedAudio.message.text = "Audio"
+                bindingReceivedAudio.time.text = timeFormatter(data[position].date)
+                bindingReceivedAudio.startAudio.setOnClickListener {
+                    startAudio(data[position].message)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        while(true){
+                            if(mediaPlayer.isPlaying){
+                                withContext(Dispatchers.Main){
+                                    bindingReceivedAudio.startAudio.visibility = View.GONE
+                                    bindingReceivedAudio.stopAudio.visibility = View.VISIBLE
+                                }
+                            }else{
+                                withContext(Dispatchers.Main){
+                                    bindingReceivedAudio.startAudio.visibility = View.VISIBLE
+                                    bindingReceivedAudio.stopAudio.visibility = View.GONE
+                                }
+                                break
+                            }
+                        }
+                    }
+                }
+                bindingReceivedAudio.stopAudio.setOnClickListener {
+                    stopAudio()
+                }
             }
         }
     }
@@ -107,5 +193,17 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
     fun addData(message: Message) {
         data.add(message)
         notifyItemInserted(data.size-1)
+    }
+    private fun startAudio(message: String) {
+        Utils.parseBytoToAudio(message){
+            stopAudio()
+            mediaPlayer = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+            mediaPlayer.start()
+        }
+    }
+    private fun stopAudio(){
+        if(mediaPlayer.isPlaying){
+            mediaPlayer.stop()
+        }
     }
 }
