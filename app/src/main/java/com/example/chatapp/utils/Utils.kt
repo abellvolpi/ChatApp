@@ -1,8 +1,9 @@
 package com.example.chatapp.utils
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
-import android.content.DialogInterface
+import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioManager
@@ -15,12 +16,15 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.HomeFragment
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.ui.SplashFragment
+import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
@@ -46,7 +50,7 @@ object Utils : CoroutineScope {
         return json
     }
 
-    fun JSONtoMessageClass(json: String): Message {
+     fun JSONtoMessageClass(json: String): Message {
         val jsonToClass = Gson().fromJson(json, Message::class.java)
         Log.e("toClass", jsonToClass.toString())
         return jsonToClass
@@ -88,14 +92,21 @@ object Utils : CoroutineScope {
             val notificationManager: NotificationManager = MainApplication.getContextInstance().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
-
+        val intent = Intent(context, MainActivity::class.java).apply {
+//            putExtra("PORTA","testeporta")
+//            putExtra("IP","testeip")
+        }
         var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle(tittle)
             setContentText(text)
-            setContentIntent(PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), 0))
+            setExtras(bundleOf(
+//                Pair("PORTA",port)
+//                Pair("IP",ip)
+            ))
+            setContentIntent(PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
             setAutoCancel(true)
         }
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
@@ -103,8 +114,16 @@ object Utils : CoroutineScope {
 
     fun playBemTeVi(){
         val context = MainApplication.getContextInstance()
+        val audioManager: AudioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),0)
         MediaPlayer.create(context,R.raw.bemteviaudio).start()
+
     }
+
+    fun pickFromGallery(){
+
+    }
+
 
 /*
 passar um bundle com ip, porta, etc.. e remontar o chat na main

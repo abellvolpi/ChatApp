@@ -25,13 +25,18 @@
             app:layout_constraintBottom_toTopOf="@+id/messages_recyclerview">
 
 
+
+
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/blue_3"
                 app:title="Chat"
-                app:titleTextColor="@color/white" />
+                app:titleTextColor="@color/white"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                android:theme="@style/Theme.ChatApp"/>
+                />
 
         </com.google.android.material.appbar.AppBarLayout>
 

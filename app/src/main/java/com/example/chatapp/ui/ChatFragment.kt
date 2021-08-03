@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -48,6 +46,7 @@ class ChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
         ProfileSharedProfile.getProfile {
             profileName = it
         }
@@ -57,13 +56,18 @@ class ChatFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        
+        setHasOptionsMenu(true)
         binding = FragmentChatBinding.inflate(inflater, container, false)
         initView()
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        binding.toolbar.inflateMenu(R.menu.chat_menu)
+
+
         super.onViewCreated(view, savedInstanceState)
         binding.constraintLayout.setOnClickListener {
             activity?.hideSoftKeyboard()
@@ -179,7 +183,7 @@ class ChatFragment : Fragment() {
         if (message.typeMesage != Message.NOTIFY_CHAT) {
             message.typeMesage = Message.RECEIVED_MESSAGE
             refreshUIChat(message)
-        }else{
+        } else {
             refreshUIChat(message)
         }
     }
@@ -230,7 +234,7 @@ class ChatFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         connectionFactory.getBackgroundMessages().forEach {
-                    validReceivedMessage(it)
+            validReceivedMessage(it)
         }
         connectionFactory.empyBackgroundMessages()
     }
@@ -349,4 +353,19 @@ class ChatFragment : Fragment() {
             }
         }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.chat_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.perfil -> {
+                findNavController().navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                return true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
 }

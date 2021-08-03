@@ -45,6 +45,9 @@
         <action
             android:id="@+id/action_chatFragment_to_bottomSheetFragment"
             app:destination="@id/bottomSheetFragment" />
+        <action
+            android:id="@+id/action_chatFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -118,5 +121,10 @@
             app:nullable="false"
             app:argType="string"/>
     </dialog>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.chatapp.ui.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" />
 
 </navigation>
