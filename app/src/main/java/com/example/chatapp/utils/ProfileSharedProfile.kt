@@ -3,7 +3,6 @@ package com.example.chatapp.utils
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
-import android.net.Uri
 import androidx.core.net.toUri
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext

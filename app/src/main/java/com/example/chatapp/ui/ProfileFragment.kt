@@ -32,9 +32,9 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        ProfileSharedProfile.getProfile {
-            binding.username.text = it
-        }
+
+            binding.username.text =  ProfileSharedProfile.getProfile()
+
 
 
         ProfileSharedProfile.getProfilePhoto { uri ->
