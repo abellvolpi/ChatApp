@@ -36,21 +36,26 @@ class ProfileFragment : Fragment() {
             binding.username.text = it
         }
 
-        binding.floatingEditButton.setOnClickListener{
-            val intent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+
+        ProfileSharedProfile.getProfilePhoto { uri ->
+                binding.teste.setImageURI(uri)
+        }
+        binding.floatingEditButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(intent, PICK_IMAGE)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode==RESULT_OK&&requestCode== PICK_IMAGE){
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
             val imageUri = data?.data
-            binding.profileImage.setImageURI(imageUri)
-
-
+//            binding.profileImage.setImageURI(imageUri)
+            binding.teste.setImageURI(imageUri)
+            imageUri?.let { ProfileSharedProfile.saveProfilePhoto(it) }
         }
     }
+
     companion object {
         const val PICK_IMAGE = 1
 
