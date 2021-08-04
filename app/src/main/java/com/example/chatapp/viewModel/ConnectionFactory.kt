@@ -40,19 +40,18 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                 Utils.playBemTeVi()
                             } else {
                                 this@ConnectionFactory.line.postValue(line)
-
                             }
                         }
                     }
                     else {
                         withContext(Dispatchers.Main) {
-                            this@ConnectionFactory.line.postValue(null)
+                            this@ConnectionFactory.line.postValue("error")
                         }
                         break
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        this@ConnectionFactory.line.postValue(null)
+                        this@ConnectionFactory.line.postValue("error")
                     }
                 }
             }
@@ -104,4 +103,5 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     fun closeSocket() {
         socket.close()
     }
+
 }

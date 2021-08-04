@@ -26,13 +26,9 @@ object ProfileSharedProfile : CoroutineScope {
         }
     }
 
-    fun getProfile(onResult: (String) -> Unit) {
-        launch(Dispatchers.IO) {
-            val shared = getSharedProfile()
-            val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
-            withContext(Dispatchers.Main) {
-                onResult.invoke(string)
-            }
-        }
+    fun getProfile(): String {
+        val shared = getSharedProfile()
+        val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
+        return string
     }
 }

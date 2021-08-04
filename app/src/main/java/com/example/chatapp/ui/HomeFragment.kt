@@ -9,15 +9,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
-import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
+import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.android.material.snackbar.Snackbar
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
-    val connectionFactory : ConnectionFactory by activityViewModels()
+    val connectionFactory: ConnectionFactory by activityViewModels()
     private val navController by lazy {
         findNavController()
     }
@@ -26,7 +26,11 @@ class HomeFragment : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         initViews()
         return binding.root
@@ -40,12 +44,11 @@ class HomeFragment : Fragment() {
         val message = arguments?.getString("messageIfError")
         if (message != null) {
             Snackbar.make(requireContext(), requireView(), message, Snackbar.LENGTH_LONG).show()
-            connectionFactory.closeSocket()
+//            connectionFactory.closeSocket()
         }
     }
 
     private fun initViews() {
-//        Utils.createNotification("Teste", "mensagem teste hjbdshkahsdakshd")
         with(binding) {
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {
@@ -93,11 +96,13 @@ class HomeFragment : Fragment() {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
                 val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
-                ProfileSharedProfile.getProfile {
-                    val message = Message("", it + " was connected", Message.NOTIFY_CHAT)
-                    connectionFactory.sendMessage(message) {}
-                    findNavController().navigate(action)
-                }
+                val message = Message(
+                    "",
+                    ProfileSharedProfile.getProfile() + " was connected",
+                    Message.NOTIFY_CHAT
+                )
+                connectionFactory.sendMessage(message) {}
+                findNavController().navigate(action)
             }
         }
     }

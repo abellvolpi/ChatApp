@@ -46,7 +46,7 @@ class ChatFragment : Fragment() {
     private val data = arrayListOf<Message>()
     private lateinit var bottomsheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
-    private val utilsViewModel : UtilsViewModel by activityViewModels()
+    private val utilsViewModel: UtilsViewModel by activityViewModels()
     private val navController by lazy {
         findNavController()
     }
@@ -61,9 +61,7 @@ class ChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ProfileSharedProfile.getProfile {
-            profileName = it
-        }
+        profileName = ProfileSharedProfile.getProfile()
     }
 
     override fun onCreateView(
@@ -89,11 +87,11 @@ class ChatFragment : Fragment() {
         with(binding) {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
-                if (it != null) {
+                try {
                     val messageClass = Utils.JSONtoMessageClass(it)
                     validReceivedMessage(messageClass)
                     Log.e("Listener: ", it)
-                } else {
+                } catch (e: java.lang.Exception) {
                     val action =
                         com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
                             "Server disconnected"
@@ -125,7 +123,12 @@ class ChatFragment : Fragment() {
                 ) {
                 }
 
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int
+                ) {
                     if (s != null && s.isEmpty()) {
                         buttonSend.visibility = View.GONE
                         buttonVoiceMessageRecord.visibility = View.VISIBLE
@@ -251,16 +254,14 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendInviteTicTacToe() {
-        ProfileSharedProfile.getProfile {
-            val message = Message(it, "", Message.INVITE_TICTACTOE)
-            connectionFactory.sendMessage(message) {
-                snackbar = Snackbar.make(
-                    requireView(),
-                    "Aguardando oponente aceitar a partida",
-                    Snackbar.LENGTH_LONG
-                )
-                snackbar.show()
-            }
+        val message = Message(profileName, "", Message.INVITE_TICTACTOE)
+        connectionFactory.sendMessage(message) {
+            snackbar = Snackbar.make(
+                requireView(),
+                "Aguardando oponente aceitar a partida",
+                Snackbar.LENGTH_LONG
+            )
+            snackbar.show()
         }
     }
 
@@ -320,7 +321,8 @@ class ChatFragment : Fragment() {
         }
     }
 
-    inner class CellClickListener(private val i: Int, private val j: Int) : View.OnClickListener {
+    inner class CellClickListener(private val i: Int, private val j: Int) :
+        View.OnClickListener {
         override fun onClick(v: View?) {
             if (!board.gameOver() && canIPlay) {
                 val cell = Cell(i, j)
@@ -376,11 +378,9 @@ class ChatFragment : Fragment() {
                     whoPlay.text = "Player O wins!"
                     rematchButton.visibility = View.VISIBLE
                     if (player == Board.O) {
-                        ProfileSharedProfile.getProfile {
-                            val message =
-                                Message("", "${it} winner TicTacToe!", Message.NOTIFY_CHAT)
-                            connectionFactory.sendMessage(message) {}
-                        }
+                        val message =
+                            Message("", "$profileName winner TicTacToe!", Message.NOTIFY_CHAT)
+                        connectionFactory.sendMessage(message) {}
                     }
                     return
                 }
@@ -388,11 +388,9 @@ class ChatFragment : Fragment() {
                     whoPlay.text = "Player X wins!"
                     rematchButton.visibility = View.VISIBLE
                     if (player == Board.X) {
-                        ProfileSharedProfile.getProfile {
-                            val message =
-                                Message("", "${it} winner TicTacToe!", Message.NOTIFY_CHAT)
-                            connectionFactory.sendMessage(message) {}
-                        }
+                        val message =
+                            Message("", "$profileName winner TicTacToe!", Message.NOTIFY_CHAT)
+                        connectionFactory.sendMessage(message) {}
                     }
                     return
                 }
@@ -409,14 +407,19 @@ class ChatFragment : Fragment() {
                 permission
             ) == PackageManager.PERMISSION_DENIED
         ) {
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(permission), requestCode)
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(permission),
+                requestCode
+            )
         }
     }
 
     private fun startRecording() {
         try {
             mediaRecorder = MediaRecorder()
-            output = MainApplication.getContextInstance().cacheDir.absolutePath + "/recordVoice.mp3"
+            output =
+                MainApplication.getContextInstance().cacheDir.absolutePath + "/recordVoice.mp3"
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)

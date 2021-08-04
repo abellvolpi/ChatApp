@@ -95,7 +95,7 @@ class ChatAdapter(
                 startAudio.visibility = View.VISIBLE
                 stopAudio.visibility = View.GONE
                 name.text = msg.name
-                getTimeAudio(msg){
+                getTimeAudio(msg) {
                     message.text = "Audio (${it})"
                 }
                 time.text = timeFormatter(msg.date)
@@ -104,10 +104,8 @@ class ChatAdapter(
                         liveDataToObserve.changeAudioRunning(true, layoutPosition)
                         positionMessageAudioRunning = layoutPosition
                         mediaPlayer.setOnCompletionListener {
-                            if (msg.isRunningAudio) {
-                                liveDataToObserve.changeAudioRunning(false, layoutPosition)
-                                positionMessageAudioRunning = -1
-                            }
+                            liveDataToObserve.changeAudioRunning(false, layoutPosition)
+                            positionMessageAudioRunning = -1
                         }
                     }
                     stopAudio.setOnClickListener {
@@ -151,7 +149,7 @@ class ChatAdapter(
 
                 name.text = msg.name
                 name.text = "You"
-                getTimeAudio(msg){
+                getTimeAudio(msg) {
                     message.text = "Audio (${it})"
                 }
                 time.text = timeFormatter(msg.date)
@@ -160,10 +158,8 @@ class ChatAdapter(
                         liveDataToObserve.changeAudioRunning(true, layoutPosition)
                         positionMessageAudioRunning = layoutPosition
                         mediaPlayer.setOnCompletionListener {
-                            if (msg.isRunningAudio) {
-                                liveDataToObserve.changeAudioRunning(false, layoutPosition)
-                                positionMessageAudioRunning = -1
-                            }
+                            liveDataToObserve.changeAudioRunning(false, layoutPosition)
+                            positionMessageAudioRunning = -1
                         }
                     }
                 }
@@ -268,7 +264,6 @@ class ChatAdapter(
                 MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
             mediaPlayer.start()
             positionMessageAudioRunning = position
-            data[position].isRunningAudio = true
             onResult.invoke()
         }
     }
@@ -281,10 +276,13 @@ class ChatAdapter(
         }
     }
 
-    private fun getTimeAudio(msg: Message, onResult: (String) -> Unit){
+    private fun getTimeAudio(msg: Message, onResult: (String) -> Unit) {
         var an: Long
         Utils.parseBytoToAudio(msg.message) {
-            an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it)).duration.toLong()
+            an = MediaPlayer.create(
+                MainApplication.getContextInstance(),
+                Uri.fromFile(it)
+            ).duration.toLong()
             onResult.invoke(SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(an)))
         }
     }
