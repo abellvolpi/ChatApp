@@ -95,7 +95,9 @@ class ChatAdapter(
                 startAudio.visibility = View.VISIBLE
                 stopAudio.visibility = View.GONE
                 name.text = msg.name
-                message.text = "Audio"
+                getTimeAudio(msg){
+                    message.text = "Audio (${it})"
+                }
                 time.text = timeFormatter(msg.date)
                 startAudio.setOnClickListener {
                     startAudio(msg.message, layoutPosition) {
@@ -149,7 +151,9 @@ class ChatAdapter(
 
                 name.text = msg.name
                 name.text = "You"
-                message.text = "Audio"
+                getTimeAudio(msg){
+                    message.text = "Audio (${it})"
+                }
                 time.text = timeFormatter(msg.date)
                 startAudio.setOnClickListener {
                     startAudio(msg.message, layoutPosition) {
@@ -272,16 +276,16 @@ class ChatAdapter(
     private fun stopAudio() {
         if (mediaPlayer.isPlaying) {
             liveDataToObserve.changeAudioRunning(false, positionMessageAudioRunning)
-//            data[positionMessageAudioRunning].isRunningAudio = false
             positionMessageAudioRunning = -1
             mediaPlayer.stop()
         }
     }
-    private fun getTimeAudio(msg: Message): Int{
-        val an = Utils.parseBytoToAudio(msg.message){
 
+    private fun getTimeAudio(msg: Message, onResult: (String) -> Unit){
+        var an: Long
+        Utils.parseBytoToAudio(msg.message) {
+            an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it)).duration.toLong()
+            onResult.invoke(SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(an)))
         }
-        MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(file)).duration
-
     }
 }
