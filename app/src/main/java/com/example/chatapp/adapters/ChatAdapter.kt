@@ -277,17 +277,11 @@ class ChatAdapter(
             mediaPlayer.stop()
         }
     }
-//    private fun getTimeAudio(msg: Message): Int{
-//        var file : File
-//        var int: Int
-//        int.run {
-//
-//        }
-//        Utils.parseBytoToAudio(msg.message){
-//            file = it
-//        }
-//        MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(file)).duration
-//        return int
-//
-//    }
+    private fun getTimeAudio(msg: Message): Int{
+        val an = Utils.parseBytoToAudio(msg.message){
+
+        }
+        MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(file)).duration
+
+    }
 }
