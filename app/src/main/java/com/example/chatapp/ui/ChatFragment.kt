@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -46,17 +47,19 @@ class ChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        (activity as AppCompatActivity?)?.supportActionBar?.show()
         setHasOptionsMenu(true)
         ProfileSharedProfile.getProfile {
             profileName = it
         }
     }
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        
+        activity?.actionBar?.hide()
         setHasOptionsMenu(true)
         binding = FragmentChatBinding.inflate(inflater, container, false)
         initView()
@@ -64,11 +67,8 @@ class ChatFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        binding.toolbar.inflateMenu(R.menu.chat_menu)
-
-
         super.onViewCreated(view, savedInstanceState)
+
         binding.constraintLayout.setOnClickListener {
             activity?.hideSoftKeyboard()
         }
@@ -356,6 +356,8 @@ class ChatFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.chat_menu, menu)
+        super.onCreateOptionsMenu(menu, menuInflater)
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

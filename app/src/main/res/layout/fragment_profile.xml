@@ -6,13 +6,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.ProfileFragment">
 
-    <TextView
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_blank_fragment"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
+        <TextView
+            android:layout_marginBottom="30dp"
+            android:textSize="20dp"
+            android:id="@+id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username"
+             />
+
+
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/ic_profile"
+            android:layout_marginBottom="20dp"
+            />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_gravity="end"
+            android:id="@+id/floating_edit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_edit"
+             />
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
