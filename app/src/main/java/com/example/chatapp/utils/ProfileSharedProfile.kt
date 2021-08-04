@@ -2,6 +2,9 @@ package com.example.chatapp.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
+import android.net.Uri
+import androidx.core.net.toUri
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -31,4 +34,20 @@ object ProfileSharedProfile : CoroutineScope {
         val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
         return string
     }
+
+    fun saveProfilePhoto(imageUri: Uri) {
+        val profileSharedPreferences = getSharedProfile()
+        profileSharedPreferences.edit().apply {
+            clear()
+            putString("image", imageUri.toString())
+            apply()
+        }
+    }
+
+    fun getProfilePhoto(onResult:(Uri) -> Unit) {
+        val sharedPreferences = getSharedProfile()
+        val uri = sharedPreferences.getString("image","NO IMAGE SAVED")
+        uri?.let { onResult.invoke(it.toUri()) }
+    }
+
 }
