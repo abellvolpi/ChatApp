@@ -87,11 +87,13 @@ class ChatFragment : Fragment() {
         with(binding) {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
-                try {
-                    val messageClass = Utils.JSONtoMessageClass(it)
-                    validReceivedMessage(messageClass)
-                    Log.e("Listener: ", it)
-                } catch (e: java.lang.Exception) {
+                if(it !=null){
+                    if(it != ""){
+                        val messageClass = Utils.JSONtoMessageClass(it)
+                        validReceivedMessage(messageClass)
+                        Log.e("Listener: ", it)
+                    }
+                } else {
                     val action =
                         com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
                             "Server disconnected"

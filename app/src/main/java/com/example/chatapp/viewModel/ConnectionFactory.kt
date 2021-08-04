@@ -20,7 +20,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
-    val line: MutableLiveData<String> = MutableLiveData()
+    var line: MutableLiveData<String> = MutableLiveData()
     private var backgroundMessages = arrayListOf<Message>()
 
     private fun readMessage() {
@@ -46,12 +46,14 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     else {
                         withContext(Dispatchers.Main) {
                             this@ConnectionFactory.line.postValue("error")
+                            this@ConnectionFactory.line = MutableLiveData()
                         }
                         break
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         this@ConnectionFactory.line.postValue("error")
+                        this@ConnectionFactory.line = MutableLiveData()
                     }
                 }
             }
