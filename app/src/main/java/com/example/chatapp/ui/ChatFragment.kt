@@ -30,6 +30,7 @@ import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
+import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
@@ -42,9 +43,10 @@ class ChatFragment : Fragment() {
     private lateinit var binding: FragmentChatBinding
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var adapter: ChatAdapter
-    private var data = arrayListOf<Message>()
+    private val data = arrayListOf<Message>()
     private lateinit var bottomsheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
+    private val utilsViewModel : UtilsViewModel by activityViewModels()
     private val navController by lazy {
         findNavController()
     }
@@ -163,8 +165,7 @@ class ChatFragment : Fragment() {
                         .show()
                 }
             }
-            adapter = ChatAdapter(data)
-            adapter.setHasStableIds(true)
+            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
             messagesRecyclerview.adapter = adapter
             messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
         }

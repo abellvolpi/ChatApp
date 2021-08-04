@@ -8,6 +8,7 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
+import java.io.BufferedOutputStream
 import java.io.DataOutputStream
 import java.lang.Exception
 import java.net.ServerSocket

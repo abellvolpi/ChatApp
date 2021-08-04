@@ -1,13 +1,12 @@
 package com.example.chatapp.models
 
-import com.example.chatapp.utils.Utils
 import java.util.*
 
 class Message(val name: String,
               val message: String,
               var typeMesage: Int,
               val date: Long = Calendar.getInstance().time.time,
-              val arquiveBytes : Array<ByteArray>? = null) {
+              var isRunningAudio : Boolean = false) {
 
     companion object{
         // type of messages
@@ -18,7 +17,5 @@ class Message(val name: String,
         const val RECEIVE_PLAY = 4
         const val RECEIVED_MESSAGE_VOICE = 5
         const val SENT_MESSAGE_VOICE = 6
-
-
     }
 }
