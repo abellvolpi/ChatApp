@@ -90,7 +90,7 @@ class ChatFragment : Fragment() {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
                 if(it !=null){
-                    if(it != ""){
+                    if(it != "error"){
                         val messageClass = Utils.JSONtoMessageClass(it)
                         validReceivedMessage(messageClass)
                         Log.e("Listener: ", it)
