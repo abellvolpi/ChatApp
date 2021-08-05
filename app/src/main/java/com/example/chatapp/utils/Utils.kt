@@ -8,8 +8,11 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.util.Base64
+import android.util.Base64InputStream
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -28,7 +31,9 @@ import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
+import java.io.*
 import java.net.Socket
+import java.nio.file.Files
 import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
@@ -50,7 +55,7 @@ object Utils : CoroutineScope {
         return json
     }
 
-     fun JSONtoMessageClass(json: String): Message {
+    fun JSONtoMessageClass(json: String): Message {
         val jsonToClass = Gson().fromJson(json, Message::class.java)
         Log.e("toClass", jsonToClass.toString())
         return jsonToClass
@@ -120,10 +125,30 @@ object Utils : CoroutineScope {
 
     }
 
-    fun pickFromGallery(){
-
+    fun parseAnythingToByteString(file: File, onResult: (String) -> Unit){
+        var enconded : String
+        launch(Dispatchers.IO){
+            enconded = Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
+            withContext(Dispatchers.Main){
+                onResult.invoke(enconded)
+            }
+        }
     }
 
+    fun parseBytoToAudio(bytes : String, onResult: (File) -> Unit){
+        val context = MainApplication.getContextInstance()
+        val output = context.cacheDir.absolutePath+"/recentAudio.mp3"
+        val decoded = Base64.decode(bytes, Base64.NO_WRAP)
+        launch(Dispatchers.IO) {
+            val fos = FileOutputStream(output)
+            fos.write(decoded)
+            fos.flush()
+            fos.close()
+            withContext(Dispatchers.Main){
+                onResult.invoke(File(output))
+            }
+        }
+    }
 
 /*
 passar um bundle com ip, porta, etc.. e remontar o chat na main

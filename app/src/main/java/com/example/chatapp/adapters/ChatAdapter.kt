@@ -1,58 +1,223 @@
 package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
+import android.media.MediaPlayer
+import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
-import com.example.chatapp.databinding.MessageNotifyItemBinding
-import com.example.chatapp.databinding.MessageReceivedItemBinding
-import com.example.chatapp.databinding.MessageSentItemBinding
+import com.example.chatapp.databinding.*
 import com.example.chatapp.models.Message
-import com.example.chatapp.ui.ChatFragment
+import com.example.chatapp.utils.MainApplication
+import com.example.chatapp.utils.Utils
+import com.example.chatapp.viewModel.UtilsViewModel
 import java.text.SimpleDateFormat
+import java.util.*
 
-class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private lateinit var bindingSent: MessageSentItemBinding
-    private lateinit var bindingReceived: MessageReceivedItemBinding
-    private lateinit var bindingNotify: MessageNotifyItemBinding
+class ChatAdapter(
+    private val data: ArrayList<Message>,
+    val liveDataToObserve: UtilsViewModel,
+    val lifecycleOwner: LifecycleOwner
+) :
+    RecyclerView.Adapter<ChatAdapter.BaseViewHolder>() {
+    private lateinit var mediaPlayer: MediaPlayer
+    private var positionMessageAudioRunning: Int = -1
 
-
-    inner class ViewHolderReceiveMessage(binding: MessageReceivedItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    abstract class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        abstract fun bind(msg: Message)
     }
 
-    inner class ViewHolderSentMessage(binding: MessageSentItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolderReceiveMessage(private val binding: MessageReceivedItemBinding) :
+        BaseViewHolder(binding.root) {
+        override fun bind(msg: Message) {
+            with(binding) {
+                message.text = msg.message
+                name.text = msg.name
+                time.text = timeFormatter(msg.date)
+            }
+        }
     }
 
-    inner class ViewHolderNotifyMessage(binding: MessageNotifyItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolderSentMessage(private val binding: MessageSentItemBinding) :
+        BaseViewHolder(binding.root) {
+        override fun bind(msg: Message) {
+            with(binding) {
+                message.text = msg.message
+                name.text = msg.name
+                time.text = timeFormatter(msg.date)
+            }
+        }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    inner class ViewHolderNotifyMessage(private val binding: MessageNotifyItemBinding) :
+        BaseViewHolder(binding.root) {
+        override fun bind(msg: Message) {
+            with(binding) {
+                message.text = msg.message
+            }
+        }
+    }
+
+    inner class ViewHolderReceiveAudioMessage(private val binding: MessageReceivedAudioBinding) :
+        BaseViewHolder(binding.root) {
+        override fun bind(msg: Message) {
+            with(binding) {
+                if (positionMessageAudioRunning != -1) {
+                    if (msg == data[positionMessageAudioRunning]) {
+                        startAudio.visibility = View.GONE
+                        stopAudio.visibility = View.VISIBLE
+                    } else {
+                        startAudio.visibility = View.VISIBLE
+                        stopAudio.visibility = View.GONE
+                    }
+                } else {
+                    startAudio.visibility = View.VISIBLE
+                    stopAudio.visibility = View.GONE
+                }
+                liveDataToObserve.getHasAudioRunning().observe(lifecycleOwner, Observer {
+                    if (msg == data[it.first]) {
+                        if (it.second) {
+                            startAudio.visibility = View.GONE
+                            stopAudio.visibility = View.VISIBLE
+                        } else {
+                            startAudio.visibility = View.VISIBLE
+                            stopAudio.visibility = View.GONE
+                        }
+                    } else {
+                        startAudio.visibility = View.VISIBLE
+                        stopAudio.visibility = View.GONE
+                    }
+                })
+                name.text = msg.name
+                startAudio.visibility = View.VISIBLE
+                stopAudio.visibility = View.GONE
+                name.text = msg.name
+                getTimeAudio(msg) {
+                    message.text = "Audio (${it})"
+                }
+                time.text = timeFormatter(msg.date)
+                startAudio.setOnClickListener {
+                    startAudio(msg.message, layoutPosition) {
+                        liveDataToObserve.changeAudioRunning(true, layoutPosition)
+                        positionMessageAudioRunning = layoutPosition
+                        mediaPlayer.setOnCompletionListener {
+                            liveDataToObserve.changeAudioRunning(false, layoutPosition)
+                            positionMessageAudioRunning = -1
+                        }
+                    }
+                    stopAudio.setOnClickListener {
+                        liveDataToObserve.changeAudioRunning(false, layoutPosition)
+                    }
+                }
+            }
+        }
+    }
+
+    inner class ViewHolderSentAudioMessage(private val binding: MessageSentAudioBinding) :
+        BaseViewHolder(binding.root) {
+        override fun bind(msg: Message) {
+            with(binding) {
+                if (positionMessageAudioRunning != -1) {
+                    if (msg == data[positionMessageAudioRunning]) {
+                        startAudio.visibility = View.GONE
+                        stopAudio.visibility = View.VISIBLE
+                    } else {
+                        startAudio.visibility = View.VISIBLE
+                        stopAudio.visibility = View.GONE
+                    }
+                } else {
+                    startAudio.visibility = View.VISIBLE
+                    stopAudio.visibility = View.GONE
+                }
+                liveDataToObserve.getHasAudioRunning().observe(lifecycleOwner, Observer {
+                    if (msg == data[it.first]) {
+                        if (it.second) {
+                            startAudio.visibility = View.GONE
+                            stopAudio.visibility = View.VISIBLE
+                        } else {
+                            startAudio.visibility = View.VISIBLE
+                            stopAudio.visibility = View.GONE
+                        }
+                    } else {
+                        startAudio.visibility = View.VISIBLE
+                        stopAudio.visibility = View.GONE
+                    }
+                })
+
+                name.text = msg.name
+                name.text = "You"
+                getTimeAudio(msg) {
+                    message.text = "Audio (${it})"
+                }
+                time.text = timeFormatter(msg.date)
+                startAudio.setOnClickListener {
+                    startAudio(msg.message, layoutPosition) {
+                        liveDataToObserve.changeAudioRunning(true, layoutPosition)
+                        positionMessageAudioRunning = layoutPosition
+                        mediaPlayer.setOnCompletionListener {
+                            liveDataToObserve.changeAudioRunning(false, layoutPosition)
+                            positionMessageAudioRunning = -1
+                        }
+                    }
+                }
+                stopAudio.setOnClickListener {
+                    stopAudio()
+                    liveDataToObserve.changeAudioRunning(false, layoutPosition)
+                }
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         when (viewType) {
             Message.SENT_MESSAGE -> {
-                bindingSent = MessageSentItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
+                return ViewHolderSentMessage(
+                    MessageSentItemBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
                 )
-                return ViewHolderSentMessage(bindingSent)
             }
 
             Message.RECEIVED_MESSAGE -> {
-                bindingReceived = MessageReceivedItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
+                return ViewHolderReceiveMessage(
+                    MessageReceivedItemBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
                 )
-                return ViewHolderReceiveMessage(bindingReceived)
             }
             Message.NOTIFY_CHAT -> {
-                bindingNotify = MessageNotifyItemBinding.inflate(
-                    LayoutInflater.from(parent.context), parent, false
+                return ViewHolderNotifyMessage(
+                    MessageNotifyItemBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
                 )
-                return ViewHolderNotifyMessage(bindingNotify)
+            }
+
+            Message.SENT_MESSAGE_VOICE -> {
+                return ViewHolderSentAudioMessage(
+                    MessageSentAudioBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
+                )
+            }
+
+            Message.RECEIVED_MESSAGE_VOICE -> {
+                return ViewHolderReceiveAudioMessage(
+                    MessageReceivedAudioBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
+                )
             }
             else -> return ViewHolderNotifyMessage( //apenas para validar um else
                 MessageNotifyItemBinding.inflate(
@@ -66,23 +231,9 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
         return data[position].typeMesage
     }
 
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (getItemViewType(position)) {
-            Message.SENT_MESSAGE -> {
-                bindingSent.message.text = data[position].message
-                bindingSent.name.text = "You"
-                bindingSent.time.text = timeFormatter(data[position].date)
-            }
-            Message.RECEIVED_MESSAGE -> {
-                bindingReceived.message.text = data[position].message
-                bindingReceived.name.text = data[position].name
-                bindingReceived.time.text = timeFormatter(data[position].date)
-            }
-            Message.NOTIFY_CHAT -> {
-                bindingNotify.message.text = data[position].message
-            }
-        }
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+        val msg = data[position]
+        holder.bind(msg)
     }
 
     override fun getItemCount(): Int {
@@ -101,6 +252,38 @@ class ChatAdapter(var data: ArrayList<Message>) : RecyclerView.Adapter<RecyclerV
 
     fun addData(message: Message) {
         data.add(message)
-        notifyItemInserted(data.size-1)
+        notifyItemInserted(data.size - 1)
+    }
+
+    private fun startAudio(message: String, position: Int, onResult: () -> Unit) {
+        Utils.parseBytoToAudio(message) {
+            if (positionMessageAudioRunning != -1) {
+                stopAudio()
+            }
+            mediaPlayer =
+                MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+            mediaPlayer.start()
+            positionMessageAudioRunning = position
+            onResult.invoke()
+        }
+    }
+
+    private fun stopAudio() {
+        if (mediaPlayer.isPlaying) {
+            liveDataToObserve.changeAudioRunning(false, positionMessageAudioRunning)
+            positionMessageAudioRunning = -1
+            mediaPlayer.stop()
+        }
+    }
+
+    private fun getTimeAudio(msg: Message, onResult: (String) -> Unit) {
+        var an: Long
+        Utils.parseBytoToAudio(msg.message) {
+            an = MediaPlayer.create(
+                MainApplication.getContextInstance(),
+                Uri.fromFile(it)
+            ).duration.toLong()
+            onResult.invoke(SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(an)))
+        }
     }
 }

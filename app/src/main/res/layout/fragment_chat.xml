@@ -14,42 +14,6 @@
         android:layout_height="match_parent"
         tools:context=".ui.ChatFragment">
 
-<!--        <com.google.android.material.appbar.AppBarLayout-->
-<!--            android:id="@+id/app_bar"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"-->
-<!--            app:layout_constraintEnd_toEndOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toTopOf="parent"-->
-<!--            app:layout_constraintBottom_toTopOf="@+id/messages_recyclerview">-->
-
-
-<!--            <androidx.appcompat.widget.Toolbar-->
-<!--                android:id="@+id/toolbar"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:background="@color/blue_3"-->
-<!--                app:title="Chat"-->
-<!--                app:titleTextColor="@color/white"-->
-<!--                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
-<!--                android:theme="@style/Theme.ChatApp"/>-->
-
-
-<!--        </com.google.android.material.appbar.AppBarLayout>-->
-
-
-<!--        <androidx.recyclerview.widget.RecyclerView-->
-<!--            android:id="@+id/messages_recyclerview"-->
-<!--            android:layout_width="408dp"-->
-<!--            android:layout_height="0dp"-->
-<!--            android:layout_marginBottom="5dp"-->
-<!--            android:paddingHorizontal="20dp"-->
-<!--            app:layout_constraintBottom_toTopOf="@+id/layout"-->
-<!--            app:layout_constraintEnd_toEndOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toBottomOf="@+id/app_bar"-->
-<!--            tools:listitem="@layout/message_received_item" />-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/messages_recyclerview"
@@ -62,60 +26,93 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/message_received_item" />
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
-    <RelativeLayout
-        android:id="@+id/layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-
-        <ImageView
-            android:id="@+id/tictactoe"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="5dp"
-            android:src="@drawable/ic_tictactoe" />
-
+            <ImageView
+                android:id="@+id/tictactoe"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/ic_tictactoe"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/message_field"
+                app:layout_constraintStart_toStartOf="parent" />
 
             <EditText
                 android:id="@+id/message_field"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="5dp"
-                android:layout_marginStart="50dp"
-                android:layout_toStartOf="@+id/button_send"
                 android:background="@drawable/notify_shape"
-                android:hint="message..." />
+                android:hint="message..."
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/layoutButtons"
+                app:layout_constraintStart_toEndOf="@id/tictactoe"
+                app:layout_constraintTop_toTopOf="parent" />
 
-
-
-            <LinearLayout
-                android:id="@+id/button_send"
+            <FrameLayout
+                android:id="@+id/layoutButtons"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
                 android:layout_marginHorizontal="3dp"
                 android:layout_marginBottom="5dp"
-                android:background="@drawable/layout_button"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:padding="9dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/message_field">
+                app:layout_constraintStart_toEndOf="@id/message_field"
+                app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_send_icon" />
+                <LinearLayout
+                    android:id="@+id/button_send"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/layout_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:padding="9dp">
 
-            </LinearLayout>
-        </RelativeLayout>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_send_icon" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/button_voice_message_record"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/layout_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:padding="9dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="#00FFFFFF"
+                        android:src="@drawable/ic__5822901291574330930" />
+                </LinearLayout>
+
+                <ProgressBar
+                    android:id="@+id/progress_bar_send_message"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/layout_button"
+                    android:padding="5dp"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <include layout="@layout/fragment_bottom_sheet"
-        android:id="@+id/bottom_sheet" />
+    <include
+        android:id="@+id/bottom_sheet"
+        layout="@layout/fragment_bottom_sheet" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

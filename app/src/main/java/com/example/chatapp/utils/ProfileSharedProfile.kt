@@ -20,18 +20,18 @@ object ProfileSharedProfile : CoroutineScope {
     }
 
     fun saveProfile(name: String) {
-        val profileSharedPreferences = getSharedProfile()
-        with(profileSharedPreferences.edit()) {
+        val profileSharedPreferenes = getSharedProfile()
+        with(profileSharedPreferenes.edit()) {
             clear()
             putString("value", name)
             apply()
         }
     }
 
-    fun getProfile(onResult: (String) -> Unit) {
+    fun getProfile(): String {
         val shared = getSharedProfile()
         val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
-        onResult.invoke(string)
+        return string
     }
 
     fun saveProfilePhoto(imageUri: Uri) {

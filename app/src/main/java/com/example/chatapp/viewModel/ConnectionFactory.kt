@@ -8,6 +8,7 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
+import java.io.BufferedOutputStream
 import java.io.DataOutputStream
 import java.lang.Exception
 import java.net.ServerSocket
@@ -19,7 +20,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
-    val line: MutableLiveData<String> = MutableLiveData()
+    var line: MutableLiveData<String> = MutableLiveData()
     private var backgroundMessages = arrayListOf<Message>()
 
     private fun readMessage() {
@@ -39,19 +40,20 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                 Utils.playBemTeVi()
                             } else {
                                 this@ConnectionFactory.line.postValue(line)
-
                             }
                         }
                     }
                     else {
                         withContext(Dispatchers.Main) {
-                            this@ConnectionFactory.line.postValue(null)
+                            this@ConnectionFactory.line.postValue("error")
+                            this@ConnectionFactory.line = MutableLiveData()
                         }
                         break
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        this@ConnectionFactory.line.postValue(null)
+                        this@ConnectionFactory.line.postValue("error")
+                        this@ConnectionFactory.line = MutableLiveData()
                     }
                 }
             }
@@ -103,4 +105,5 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     fun closeSocket() {
         socket.close()
     }
+
 }
