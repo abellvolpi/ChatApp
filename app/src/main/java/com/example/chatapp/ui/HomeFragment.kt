@@ -1,6 +1,12 @@
 package com.example.chatapp.ui
 
+import android.app.Activity.RESULT_OK
+import android.content.ContentResolver
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,13 +14,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
+import com.example.chatapp.ui.ProfileFragment.Companion.PICK_IMAGE
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.android.material.snackbar.Snackbar
+import java.io.File
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
@@ -48,7 +58,7 @@ class HomeFragment : Fragment() {
         val message = arguments?.getString("messageIfError")
         if (message != null) {
             Snackbar.make(requireContext(), requireView(), message, Snackbar.LENGTH_LONG).show()
-//            connectionFactory.closeSocket()
+//          connectionFactory.closeSocket()
         }
     }
 
@@ -72,6 +82,10 @@ class HomeFragment : Fragment() {
                 } else {
                     nameField.error = "Please, insert your name"
                 }
+            }
+            floatingEditButton.setOnClickListener {
+                val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+                startActivityForResult(intent,PICK_IMAGE)
             }
         }
     }
@@ -100,8 +114,16 @@ class HomeFragment : Fragment() {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
                 val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
+
+
+//                ProfileSharedProfile.UriToByteArrayToString(ProfileSharedProfile.getProfilePhoto())
+                var image: String =  ProfileSharedProfile.UriToByteArrayToString(ProfileSharedProfile.getProfilePhoto())
+//                image = file.toString()
+//                Utils.parseAnythingToByteString(file){
+//                     image = it
+//                }
                 val message = Message(
-                    "",
+                    image,
                     ProfileSharedProfile.getProfile() + " was connected",
                     Message.NOTIFY_CHAT
                 )
@@ -110,4 +132,20 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE){
+            val imageUri = data?.data
+            binding.photo.setImageURI(imageUri)
+            imageUri?.let { ProfileSharedProfile.saveProfilePhoto(it)}
+        }
+
+    }
+
+//    fun UritoBitMap(uri: Uri):Bitmap{
+//
+//
+//    }
+
 }

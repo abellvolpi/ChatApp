@@ -135,7 +135,7 @@ object Utils : CoroutineScope {
         }
     }
 
-    fun parseBytoToAudio(bytes : String, onResult: (File) -> Unit){
+    fun parseByteToAudio(bytes : String, onResult: (File) -> Unit){
         val context = MainApplication.getContextInstance()
         val output = context.cacheDir.absolutePath+"/recentAudio.mp3"
         val decoded = Base64.decode(bytes, Base64.NO_WRAP)

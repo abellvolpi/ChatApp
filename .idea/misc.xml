@@ -3,8 +3,16 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic_profile.xml" value="0.22592592592592592" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_chat.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_create_server.xml" value="0.20462962962962963" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_home.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_profile.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_splash.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_notify_item.xml" value="0.20092592592592592" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_received_audio.xml" value="0.20092592592592592" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_received_item.xml" value="0.20462962962962963" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_sent_audio.xml" value="0.20092592592592592" />
       </map>
     </option>
   </component>

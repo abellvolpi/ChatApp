@@ -256,7 +256,7 @@ class ChatAdapter(
     }
 
     private fun startAudio(message: String, position: Int, onResult: () -> Unit) {
-        Utils.parseBytoToAudio(message) {
+        Utils.parseByteToAudio(message) {
             if (positionMessageAudioRunning != -1) {
                 stopAudio()
             }
@@ -278,7 +278,7 @@ class ChatAdapter(
 
     private fun getTimeAudio(msg: Message, onResult: (String) -> Unit) {
         var an: Long
-        Utils.parseBytoToAudio(msg.message) {
+        Utils.parseByteToAudio(msg.message) {
             an = MediaPlayer.create(
                 MainApplication.getContextInstance(),
                 Uri.fromFile(it)
