@@ -1,20 +1,15 @@
 package com.example.chatapp.utils
 
-import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
-import androidx.core.net.toUri
-import com.example.chatapp.R
-import kotlinx.coroutines.*
+import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.InputStream
-import kotlin.coroutines.CoroutineContext
 
-object ProfileSharedProfile : CoroutineScope {
-    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+object ProfileSharedProfile {
 
     private const val NAME = "profile"
     private val context by lazy {
@@ -39,22 +34,26 @@ object ProfileSharedProfile : CoroutineScope {
         return string
     }
 
-    fun saveProfilePhoto(imageUri: Uri) {
+    fun saveProfilePhoto(imageBitmap: Bitmap) {
         val profileSharedPreferences = getSharedProfile()
+        val baos = ByteArrayOutputStream()
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 10, baos)
+        val b = baos.toByteArray()
+        val result = Base64.encodeToString(b, Base64.NO_WRAP)
         profileSharedPreferences.edit().apply {
-            putString("image", imageUri.toString())
+            clear()
+            putString("image", result)
             apply()
         }
     }
 
-    fun getProfilePhoto(): Uri {
+    fun getProfilePhoto(): Bitmap? {
         val sharedPreferences = getSharedProfile()
-        val uri = sharedPreferences.getString("image", "NO IMAGE SAVED")
-        if (uri == "NO IMAGE SAVED") {
-            return Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.resources.getResourcePackageName(R.drawable.ic_profile) + "/drawable/ic_profile")
+        val bitmap = sharedPreferences.getString("image", "NO IMAGE SAVED")
+        if (bitmap == "NO IMAGE SAVED") {
+            return null
         }
-        return uri?.toUri()
-            ?: Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.resources.getResourcePackageName(R.drawable.ic_profile) + "/drawable/ic_profile")
+        return BitmapFactory.decodeByteArray(Base64.decode(bitmap,0),0,Base64.decode(bitmap,0).size)
     }
 
 
@@ -66,8 +65,6 @@ object ProfileSharedProfile : CoroutineScope {
 //        val byteArray = context.contentResolver.openInputStream(uri)?.buffered()?.use {
 //            it.readBytes()
 //        }
-
-
 //        val bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray!!.size)
 //        val bitmapEdited = Bitmap.createScaledBitmap(bitmap,100,100,false)
 //        val stream = ByteArrayOutputStream()
@@ -75,8 +72,25 @@ object ProfileSharedProfile : CoroutineScope {
 //        val image = stream.toByteArray()
 //        return Base64.encodeToString(image,Base64.NO_WRAP)
 
-
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
+    }
+
+    fun BitmapToByteArrayToString(bitmap: Bitmap):String{
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap,50,50,false)
+        val baos = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
+        scaledBitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
+
+        val b = baos.toByteArray()
+        return Base64.encodeToString(b, Base64.NO_WRAP)
+    }
+
+
+    fun clearSharedPreferences(){
+        getSharedProfile().edit().apply{
+            clear()
+            apply()
+        }
     }
 
 }

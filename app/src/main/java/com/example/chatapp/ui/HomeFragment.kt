@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_OK
 import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -24,10 +25,17 @@ import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.coroutines.CoroutineContext
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), CoroutineScope {
     private lateinit var binding: FragmentHomeBinding
+    override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
+
     val connectionFactory: ConnectionFactory by activityViewModels()
     private val navController by lazy {
         findNavController()
@@ -36,6 +44,7 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as AppCompatActivity?)?.supportActionBar?.show()
+        ProfileSharedProfile.clearSharedPreferences()
         setHasOptionsMenu(true)
     }
 
@@ -85,7 +94,7 @@ class HomeFragment : Fragment() {
             }
             floatingEditButton.setOnClickListener {
                 val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-                startActivityForResult(intent,PICK_IMAGE)
+                startActivityForResult(intent, PICK_IMAGE)
             }
         }
     }
@@ -114,14 +123,13 @@ class HomeFragment : Fragment() {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
                 val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
+                var image = ""
+                val bitmap = ProfileSharedProfile.getProfilePhoto()
+                if (bitmap != null) {
+                    image = ProfileSharedProfile.BitmapToByteArrayToString(bitmap)
+                }
 
 
-//                ProfileSharedProfile.UriToByteArrayToString(ProfileSharedProfile.getProfilePhoto())
-                var image: String =  ProfileSharedProfile.UriToByteArrayToString(ProfileSharedProfile.getProfilePhoto())
-//                image = file.toString()
-//                Utils.parseAnythingToByteString(file){
-//                     image = it
-//                }
                 val message = Message(
                     image,
                     ProfileSharedProfile.getProfile() + " was connected",
@@ -135,17 +143,16 @@ class HomeFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE){
-            val imageUri = data?.data
-            binding.photo.setImageURI(imageUri)
-            imageUri?.let { ProfileSharedProfile.saveProfilePhoto(it)}
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
+            launch(Dispatchers.Default) {
+                val imageUri = data?.data
+                val imageBitmap = MediaStore.Images.Media.getBitmap(context?.contentResolver, imageUri)
+                launch(Dispatchers.Main) {
+                    binding.photo.setImageBitmap(imageBitmap)
+                }
+                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+            }
         }
-
     }
-
-//    fun UritoBitMap(uri: Uri):Bitmap{
-//
-//
-//    }
 
 }

@@ -40,6 +40,7 @@
                 android:layout_height="40dp"
                 android:layout_marginStart="5dp"
                 android:src="@drawable/ic_tictactoe"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/message_field"
                 app:layout_constraintStart_toStartOf="parent" />

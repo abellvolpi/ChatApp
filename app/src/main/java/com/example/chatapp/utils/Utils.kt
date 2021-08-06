@@ -1,6 +1,5 @@
 package com.example.chatapp.utils
 
-import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
@@ -8,38 +7,29 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
-import android.util.Base64InputStream
 import android.util.Log
-import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.os.bundleOf
-import androidx.navigation.findNavController
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
-import com.example.chatapp.ui.HomeFragment
 import com.example.chatapp.ui.MainActivity
-import com.example.chatapp.ui.SplashFragment
-import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
 import java.io.*
 import java.net.Socket
-import java.nio.file.Files
 import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-    fun getIpAndress(onResult: (String) -> Unit) {
+    fun getIpAdress(onResult: (String) -> Unit) {
         launch(Dispatchers.IO) {
             val wifiManager = MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             val ip = android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)

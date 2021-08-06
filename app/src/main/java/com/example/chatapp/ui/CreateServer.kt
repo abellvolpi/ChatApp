@@ -68,7 +68,7 @@ class CreateServer : Fragment() {
 
     private fun createServer() {
         with(binding) {
-            Utils.getIpAndress {
+            Utils.getIpAdress {
                 val action = CreateServerDirections.actionCreateServerToInviteMemberToEntry(it, portField.text.toString().toInt(), nameField.text.toString())
                 findNavController().navigate(action)
             }
