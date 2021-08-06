@@ -45,6 +45,17 @@
         <action
             android:id="@+id/action_chatFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_chatFragment_to_inviteMemberToEntryChat"
+            app:destination="@id/inviteMemberToEntryChat" />
+        <argument
+            android:name="ip"
+            app:nullable="false"
+            app:argType="string"/>
+        <argument
+            android:name="port"
+            app:nullable="false"
+            app:argType="integer"/>
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -52,10 +63,8 @@
         android:label="fragment_create_server"
         tools:layout="@layout/fragment_create_server">
         <action
-            android:id="@+id/action_createServer_to_inviteMemberToEntry"
-            app:destination="@id/inviteMemberToEntryChat"
-            app:popUpTo="@id/chatFragment"
-            app:popUpToInclusive="true"/>
+            android:id="@+id/action_createServer_to_chatFragment"
+            app:destination="@id/chatFragment" />
     </fragment>
     <fragment
         android:id="@+id/splashFragment"
@@ -89,12 +98,7 @@
     <dialog
         android:id="@+id/inviteMemberToEntryChat"
         android:name="com.example.chatapp.customDialog.InviteMemberToEntryChat"
-        android:label="InviteMemberToEntryChat" >
-        <action
-            android:id="@+id/action_inviteMemberToEntryChat_to_chatFragment"
-            app:destination="@id/chatFragment"
-            app:popUpTo="@id/chatFragment"
-            app:popUpToInclusive="true"/>
+        android:label="InviteMemberToEntryChat">
         <argument
             android:name="ip"
             app:nullable="false"
@@ -103,10 +107,6 @@
             android:name="port"
             app:nullable="false"
             app:argType="integer"/>
-        <argument
-            android:name="name"
-            app:nullable="false"
-            app:argType="string"/>
     </dialog>
     <fragment
         android:id="@+id/profileFragment"

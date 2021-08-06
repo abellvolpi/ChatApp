@@ -3,10 +3,8 @@ package com.example.chatapp.utils
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 
-class MainApplication : Application(), LifecycleObserver{
+class MainApplication : Application(), LifecycleObserver {
 
     init {
     instance = this

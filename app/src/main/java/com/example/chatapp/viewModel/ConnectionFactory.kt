@@ -1,22 +1,18 @@
 package com.example.chatapp.viewModel
 
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
-import java.io.BufferedOutputStream
-import java.io.DataOutputStream
-import java.lang.Exception
-import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class ConnectionFactory : CoroutineScope, ViewModel() {
+
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
@@ -42,8 +38,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                 this@ConnectionFactory.line.postValue(line)
                             }
                         }
-                    }
-                    else {
+                    } else {
                         withContext(Dispatchers.Main) {
                             this@ConnectionFactory.line.postValue("error")
                             this@ConnectionFactory.line = MutableLiveData()
@@ -56,32 +51,6 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                         this@ConnectionFactory.line = MutableLiveData()
                     }
                 }
-            }
-        }
-    }
-
-    fun sendMessage(message: Message, onResult: () -> Unit) {
-        GlobalScope.launch(Dispatchers.IO) {
-            val bw = DataOutputStream(socket.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
-            bw.flush()
-            withContext(Dispatchers.Main) {
-                Log.e("server", "Sent Message")
-                onResult.invoke()
-            }
-        }
-    }
-
-    fun serverConnecting(port: Int, onResult: () -> Unit) {
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val serverSocket = ServerSocket(port)
-                socket = serverSocket.accept()
-                withContext(Dispatchers.Main) {
-                    onResult.invoke()
-                }
-            } catch (e: Exception) {
-                Log.e("Error connection", e.toString())
             }
         }
     }

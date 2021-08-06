@@ -1,5 +1,6 @@
 package com.example.chatapp.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -99,13 +100,15 @@ class HomeFragment : Fragment() {
             createSocket(ipField.text.toString(), portField.text.toString().toInt()) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
-                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment()
+                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(ipField.text.toString(), portField.text.toString().toInt())
                 val message = Message(
                     "",
                     ProfileSharedProfile.getProfile() + " was connected",
                     Message.NOTIFY_CHAT
                 )
-                connectionFactory.sendMessage(message) {}
+                val intent = Intent()
+                intent.action = "com.example.message"
+                intent.putExtra("message", message)
                 findNavController().navigate(action)
             }
         }

@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
 
     <application
         android:name=".utils.MainApplication"
@@ -16,12 +18,32 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ChatApp">
+        <service android:name=".utils.ServerBackgroundService"
+            android:foregroundServiceType="dataSync"
+            android:enabled="true"
+            android:exported="true">
+        </service>
         <activity android:name=".ui.MainActivity"
             android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="com.example.startserver"/>
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter android:label="connectSharedLink">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="app"
+                    android:host="connect.to.chat"/>
+            </intent-filter>
         </activity>
+        <receiver android:name=".utils.ReceverMessageBroadCast" android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.chatapp.recent.message"/>
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

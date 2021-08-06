@@ -7,8 +7,7 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
-object ProfileSharedProfile : CoroutineScope {
-    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+object ProfileSharedProfile  {
 
     private const val NAME = "profile"
     private val context by lazy {

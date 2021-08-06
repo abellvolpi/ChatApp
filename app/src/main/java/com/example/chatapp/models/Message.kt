@@ -1,11 +1,14 @@
 package com.example.chatapp.models
 
+import com.example.chatapp.utils.Utils
+import java.io.Serializable
 import java.util.*
 
 class Message(val name: String,
               val message: String,
               var typeMesage: Int,
-              val date: Long = Calendar.getInstance().time.time) {
+              val date: Long = Calendar.getInstance().time.time,
+              val ipAndress: String = Utils.getIpAndress()): Serializable {
 
     companion object{
         // type of messages

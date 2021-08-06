@@ -71,7 +71,7 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
             ProfileSharedProfile.saveProfile(name)
             val connectionFactory : ConnectionFactory by activityViewModels()
             connectionFactory.setSocket(it)
-            val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment()
+            val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(ip, port.toInt())
             findNavController().navigate(action)
         }
     }
