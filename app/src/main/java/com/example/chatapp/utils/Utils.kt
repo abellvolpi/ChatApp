@@ -34,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-    fun getIpAndress(): String {
+    fun getipAddress(): String {
             val wifiManager =
                 MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             return  android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)?: ""

@@ -271,7 +271,7 @@ class ChatAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return data[position].typeMesage
+        return data[position].typeMessage
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {

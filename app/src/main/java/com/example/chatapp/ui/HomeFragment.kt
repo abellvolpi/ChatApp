@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.ProfileFragment.Companion.PICK_IMAGE
@@ -60,7 +61,7 @@ class HomeFragment : Fragment(), CoroutineScope {
         }
         val message = arguments?.getString("messageIfError")
         if (message != null) {
-            Snackbar.make(requireContext(), requireView(), message, Snackbar.LENGTH_LONG).show()
+            Snackbar.make(requireContext(), requireView(), R.string.server_disconnected.toString(), Snackbar.LENGTH_LONG).show()
 //          connectionFactory.closeSocket()
         }
     }
@@ -83,7 +84,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                         HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan(nameField.text.toString())
                     navController.navigate(action)
                 } else {
-                    nameField.error = "Please, insert your name"
+                    nameField.error = getString(R.string.name_error)
                 }
             }
             floatingEditButton.setOnClickListener {
@@ -96,15 +97,15 @@ class HomeFragment : Fragment(), CoroutineScope {
     private fun isEditTextIsEmpty(): Boolean {
         with(binding) {
             if (ipField.text.isBlank()) {
-                ipField.error = "Please, insert a ip"
+                ipField.error = getString(R.string.ip_error)
                 return true
             }
             if (nameField.text.isBlank()) {
-                nameField.error = "Please, insert your name"
+                nameField.error = getString(R.string.name_error)
                 return true
             }
             if (portField.text.isBlank()) {
-                portField.error = "Please, insert port of server connection"
+                portField.error = getString(R.string.port_error)
                 return true
             }
             return false
@@ -126,7 +127,7 @@ class HomeFragment : Fragment(), CoroutineScope {
 
                 val message = Message(
                     image,
-                    ProfileSharedProfile.getProfile() + " was connected",
+                    getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
                     Message.NOTIFY_CHAT
                 )
                 val intent = Intent()
@@ -150,5 +151,4 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
         }
     }
-
 }

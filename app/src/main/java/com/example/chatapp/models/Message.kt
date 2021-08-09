@@ -6,9 +6,9 @@ import java.util.*
 
 class Message(val name: String,
               val message: String,
-              var typeMesage: Int,
+              var typeMessage: Int,
               val date: Long = Calendar.getInstance().time.time,
-              val ipAndress: String = Utils.getIpAndress()): Serializable {
+              val ipAddress: String = Utils.getipAddress()): Serializable {
 
     companion object{
         // type of messages
@@ -19,5 +19,6 @@ class Message(val name: String,
         const val RECEIVE_PLAY = 4
         const val RECEIVED_MESSAGE_VOICE = 5
         const val SENT_MESSAGE_VOICE = 6
+        const val ACTION_DISCONNECTED = "ACTION_DISCONNECTED"
     }
 }

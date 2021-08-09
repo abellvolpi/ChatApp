@@ -23,11 +23,8 @@ class InviteMemberToEntryChat : DialogFragment() {
     private lateinit var binding : InviteMemberToEntryChatBinding
     private var port : Int = 0
     private lateinit var ip: String
-    private val connectionFactory: ConnectionFactory by activityViewModels()
+//    private val connectionFactory: ConnectionFactory by activityViewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
         binding = InviteMemberToEntryChatBinding.inflate(inflater, container, false)
@@ -43,16 +40,16 @@ class InviteMemberToEntryChat : DialogFragment() {
         super.onStart()
 
     }
-    private fun generateQRcode(){
+    private fun generateQRCode(){
         this.qrCode = Utils.generateQRCode("${ip}:${port}")
     }
 
     @SuppressLint("SetTextI18n")
     private fun initView(){
-        generateQRcode()
+        generateQRCode()
         with(binding){
             qrcodeImage.setImageBitmap(qrCode)
-            ipAndress.text = "${ip}:${port}"
+            ipAddress.text = "${ip}:${port}"
         }
     }
 }

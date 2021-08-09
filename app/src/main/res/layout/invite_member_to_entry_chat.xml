@@ -22,7 +22,7 @@
     </ImageView>
     <TextView
         tools:text="192.168.13.206:1025"
-        android:id="@+id/ipAndress"
+        android:id="@+id/ipAddress"
         android:textSize="25dp"
         android:textAlignment="center"
         android:layout_width="match_parent"

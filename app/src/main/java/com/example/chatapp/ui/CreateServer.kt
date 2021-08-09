@@ -10,6 +10,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.chatapp.R
 import com.example.chatapp.customDialog.InviteMemberToEntryChat
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.utils.MainApplication
@@ -54,21 +55,21 @@ class CreateServer : Fragment() {
     private fun initView() {
         with(binding) {
             btnCreateServer.setOnClickListener {
-                if (!verifyIfEditTextisEmpty()) {
+                if (!verifyIfEditTextIsEmpty()) {
                     createServer()
                 }
             }
         }
     }
 
-    private fun verifyIfEditTextisEmpty(): Boolean {
+    private fun verifyIfEditTextIsEmpty(): Boolean {
         with(binding) {
             if (portField.text.isBlank()) {
-                portField.error = "Please, insert a port number"
+                portField.error = getString(R.string.port_error)
                 return true
             }
             if (nameField.text.isBlank()) {
-                nameField.error = "Please, insert your name"
+                nameField.error = getString(R.string.name_error)
                 return true
             }
             return false
@@ -77,14 +78,14 @@ class CreateServer : Fragment() {
 
     private fun createServer() {
         with(binding) {
-            val ipAndress = Utils.getIpAndress()
+            val ipAddress = Utils.getipAddress()
             ProfileSharedProfile.saveProfile(nameField.text.toString())
-                val action = CreateServerDirections.actionCreateServerToChatFragment(ipAndress, portField.text.toString().toInt())
+                val action = CreateServerDirections.actionCreateServerToChatFragment(ipAddress, portField.text.toString().toInt())
                 val intent = Intent(requireContext(), ServerBackgroundService::class.java)
                 intent.putExtra("socketConfigs", portField.text.toString().toInt())
                 intent.action = "com.example.startserver"
                 requireContext().startService(intent)
-                createSocket(ipAndress, portField.text.toString().toInt()){
+                createSocket(ipAddress, portField.text.toString().toInt()){
                     connectionFactory.setSocket(it)
                 findNavController().navigate(action)
             }
