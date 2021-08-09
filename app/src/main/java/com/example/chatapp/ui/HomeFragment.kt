@@ -1,6 +1,5 @@
 package com.example.chatapp.ui
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -106,9 +105,7 @@ class HomeFragment : Fragment() {
                     ProfileSharedProfile.getProfile() + " was connected",
                     Message.NOTIFY_CHAT
                 )
-                val intent = Intent()
-                intent.action = "com.example.message"
-                intent.putExtra("message", message)
+                connectionFactory.sendMessageToSocket(message){}
                 findNavController().navigate(action)
             }
         }
