@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentCameraQrCodeScanBinding
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -27,8 +28,7 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        name = arguments?.getString("name") ?: "ERROR NAME"
-
+        name = arguments?.getString("name") ?: R.string.error_name.toString()
     }
 
     override fun onCreateView(

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
 
+
     <application
         android:name=".utils.MainApplication"
         android:allowBackup="true"
@@ -40,9 +41,9 @@
                     android:host="connect.to.chat"/>
             </intent-filter>
         </activity>
-        <receiver android:name=".utils.ReceverMessageBroadCast" android:exported="false">
+        <receiver android:name=".utils.ReceiverMessageBroadCast" android:exported="false">
             <intent-filter>
-                <action android:name="com.example.chatapp.recent.message"/>
+                <action android:name="com.example.chatapp.STOPSERVICE"/>
             </intent-filter>
         </receiver>
     </application>

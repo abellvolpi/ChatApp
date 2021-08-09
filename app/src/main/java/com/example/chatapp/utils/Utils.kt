@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
@@ -33,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-    fun getIpAndress(): String {
+    fun getipAddress(): String {
             val wifiManager =
                 MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             return  android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)?: ""
@@ -140,7 +141,7 @@ object Utils : CoroutineScope {
         }
     }
 
-    fun parseBytoToAudio(bytes: String, onResult: (File) -> Unit) {
+    fun parseByteToAudio(bytes: String, onResult: (File) -> Unit) {
         val context = MainApplication.getContextInstance()
         val output = context.cacheDir.absolutePath + "/recentAudio.mp3"
         val decoded = Base64.decode(bytes, Base64.NO_WRAP)

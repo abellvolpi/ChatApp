@@ -1,6 +1,10 @@
 package com.example.chatapp.ui
 
+import android.content.Intent
+import android.app.Activity.RESULT_OK
+
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,16 +12,25 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
+import com.example.chatapp.ui.ProfileFragment.Companion.PICK_IMAGE
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
+    override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
+
     val connectionFactory: ConnectionFactory by activityViewModels()
     private val navController by lazy {
         findNavController()
@@ -26,6 +39,7 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as AppCompatActivity?)?.supportActionBar?.show()
+        ProfileSharedProfile.clearSharedPreferences()
         setHasOptionsMenu(true)
     }
 
@@ -47,8 +61,8 @@ class HomeFragment : Fragment() {
         }
         val message = arguments?.getString("messageIfError")
         if (message != null) {
-            Snackbar.make(requireContext(), requireView(), message, Snackbar.LENGTH_LONG).show()
-//            connectionFactory.closeSocket()
+            Snackbar.make(requireContext(), requireView(), R.string.server_disconnected.toString(), Snackbar.LENGTH_LONG).show()
+//          connectionFactory.closeSocket()
         }
     }
 
@@ -73,21 +87,25 @@ class HomeFragment : Fragment() {
                     nameField.error = "Please, insert your name"
                 }
             }
+            floatingEditButton.setOnClickListener {
+                val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+                startActivityForResult(intent, PICK_IMAGE)
+            }
         }
     }
 
     private fun isEditTextIsEmpty(): Boolean {
         with(binding) {
             if (ipField.text.isBlank()) {
-                ipField.error = "Please, insert a ip"
+                ipField.error = getString(R.string.ip_error)
                 return true
             }
             if (nameField.text.isBlank()) {
-                nameField.error = "Please, insert your name"
+                nameField.error = getString(R.string.name_error)
                 return true
             }
             if (portField.text.isBlank()) {
-                portField.error = "Please, insert port of server connection"
+                portField.error = getString(R.string.port_error)
                 return true
             }
             return false
@@ -100,13 +118,34 @@ class HomeFragment : Fragment() {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
                 val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(ipField.text.toString(), portField.text.toString().toInt())
+                var image = ""
+                val bitmap = ProfileSharedProfile.getProfilePhoto()
+                if (bitmap != null) {
+                    image = ProfileSharedProfile.BitmapToByteArrayToString(bitmap)
+                }
+
+
                 val message = Message(
-                    "",
-                    ProfileSharedProfile.getProfile() + " was connected",
+                    image,
+                    getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
                     Message.NOTIFY_CHAT
                 )
                 connectionFactory.sendMessageToSocket(message){}
                 findNavController().navigate(action)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
+            launch(Dispatchers.Default) {
+                val imageUri = data?.data
+                val imageBitmap = MediaStore.Images.Media.getBitmap(context?.contentResolver, imageUri)
+                launch(Dispatchers.Main) {
+                    binding.photo.setImageBitmap(imageBitmap)
+                }
+                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
             }
         }
     }

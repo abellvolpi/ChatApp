@@ -26,6 +26,7 @@ import java.util.*
 class ServerBackgroundService : Service() {
     private var port: Int = 0
     private val startserver = "com.example.startserver"
+    private val stopserver = "com.example.stopserver"
     private var socket: ArrayList<Socket> = arrayListOf()
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -38,6 +39,10 @@ class ServerBackgroundService : Service() {
             port = arguments ?: 0
             start()
             return START_STICKY
+        }
+        if(intent?.action.equals(stopserver)){
+            stopForeground(true)
+
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -58,6 +63,11 @@ class ServerBackgroundService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
         val intent = Intent(context, MainActivity::class.java)
+        val broadCastIntent = Intent(context,ReceiverMessageBroadCast::class.java).apply{
+            putExtra("finishConnection",true)
+        }
+        val actionIntent = PendingIntent.getBroadcast(context,0,broadCastIntent,PendingIntent.FLAG_UPDATE_CURRENT)
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
@@ -73,6 +83,7 @@ class ServerBackgroundService : Service() {
                 )
             )
             setAutoCancel(true)
+            addAction(R.mipmap.ic_launcher,"Stop",actionIntent)
         }
         startForeground(
             notificationId, builder.build()

@@ -1,5 +1,6 @@
 package com.example.chatapp.ui
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.pm.PackageManager
@@ -60,6 +61,7 @@ class ChatFragment : Fragment() {
     private var player = ""
     private var isTicTacToePlayRunning = false
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as AppCompatActivity?)?.supportActionBar?.show()
@@ -71,8 +73,7 @@ class ChatFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        activity?.actionBar?.hide()
-        setHasOptionsMenu(true)
+
         binding = FragmentChatBinding.inflate(inflater, container, false)
         port = arguments?.getInt("port") ?: 0
         ip = arguments?.getString("ip") ?: ""
@@ -88,19 +89,20 @@ class ChatFragment : Fragment() {
     }
 
     private fun initView() {
+
         with(binding) {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
                 if (it != null) {
                     if (it != "error") {
                         val messageClass = Utils.JSONtoMessageClass(it)
-                            validReceivedMessage(messageClass)
-                            Log.e("Listener: ", it)
+                        validReceivedMessage(messageClass)
+                        Log.e("Listener: ", it)
                     }
                 } else {
                     val action =
                         com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
-                            "Server disconnected"
+                            Message.ACTION_DISCONNECTED
                         )
                     navController.navigate(action)
                 }
@@ -115,7 +117,7 @@ class ChatFragment : Fragment() {
                 } else {
                     Snackbar.make(
                         requireView(),
-                        "The game has been started. To return, swipe up",
+                        R.string.game_started,
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
@@ -166,7 +168,7 @@ class ChatFragment : Fragment() {
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        "Message cannot be blank",
+                        R.string.message_blank,
                         Toast.LENGTH_LONG
                     )
                         .show()
@@ -184,7 +186,7 @@ class ChatFragment : Fragment() {
 
     private fun refreshUIChat(message: Message) {
         adapter.addData(message)
-        if (message.typeMesage == Message.SENT_MESSAGE) {
+        if (message.typeMessage == Message.SENT_MESSAGE) {
             binding.messagesRecyclerview.scrollToPosition(data.size - 1)
             return
         }
@@ -196,13 +198,13 @@ class ChatFragment : Fragment() {
     }
 
     private fun validReceivedMessage(message: Message) {
-        if(message.ipAndress == Utils.getIpAndress()) return
-        if (message.typeMesage == Message.SENT_MESSAGE_VOICE) {
-            message.typeMesage = Message.RECEIVED_MESSAGE_VOICE
+        if (message.ipAddress == Utils.getipAddress()) return
+        if (message.typeMessage == Message.SENT_MESSAGE_VOICE) {
+            message.typeMessage = Message.RECEIVED_MESSAGE_VOICE
             refreshUIChat(message)
             return
         }
-        if (message.typeMesage == Message.RECEIVE_PLAY) {
+        if (message.typeMessage == Message.RECEIVE_PLAY) {
             Log.e("Received", "play")
             val i = message.message.split(",")[0].toInt()
             val j = message.message.split(",")[1].toInt()
@@ -210,12 +212,12 @@ class ChatFragment : Fragment() {
             val cell = Cell(i, j)
             board.placeMove(cell, playerReceived)
             mapBoardToUi()
-            binding.bottomSheet.whoPlay.text = "Sua vez de jogar. Você é ${player}"
+            binding.bottomSheet.whoPlay.text = getString(R.string.your_move,player)
             canIPlay = true
             verifyIfHasWinner()
             return
         }
-        if (message.typeMesage == Message.INVITE_TICTACTOE) {
+        if (message.typeMessage == Message.INVITE_TICTACTOE) {
             if (message.message == "accepted") {
                 refreshBoard()
                 snackbar.dismiss()
@@ -231,30 +233,30 @@ class ChatFragment : Fragment() {
                     requireActivity().window.decorView.findViewById<View>(android.R.id.content)
                 snackbar = Snackbar.make(
                     requireView(),
-                    "Jogador recusou seu convite",
+                    R.string.invite_rejected.toString(),
                     Snackbar.LENGTH_LONG
                 )
                 snackbar.show()
                 return
             }
-            receiveConviteTicTacToe(message.name)
+            receiveInviteTicTacToe(message.name)
             return
         }
-        if (message.typeMesage != Message.NOTIFY_CHAT) {
-            message.typeMesage = Message.RECEIVED_MESSAGE
+        if (message.typeMessage != Message.NOTIFY_CHAT) {
+            message.typeMessage = Message.RECEIVED_MESSAGE
             refreshUIChat(message)
             return
         }
         refreshUIChat(message)
     }
 
-    private fun receiveConviteTicTacToe(name: String) {
+    private fun receiveInviteTicTacToe(name: String) {
         val builder = AlertDialog.Builder(requireContext()).apply {
-            setMessage("Aceitar uma partida de TicTacToe com $name?")
+            setMessage(getString(R.string.invite_received,name))
             setPositiveButton("ok") { dialog, which ->
                 acceptInviteTicTacToe()
             }
-            setNegativeButton("cancelar") { dialog: DialogInterface?, which: Int ->
+            setNegativeButton(R.string.cancel) { dialog: DialogInterface?, which: Int ->
                 dialog?.dismiss()
                 declineInviteTicTacToe()
             }
@@ -267,7 +269,7 @@ class ChatFragment : Fragment() {
         sendMessageSocket(message)
         snackbar = Snackbar.make(
             requireView(),
-            "Aguardando oponente aceitar a partida",
+            getString(R.string.waiting_accept),
             Snackbar.LENGTH_LONG
         )
         snackbar.show()
@@ -310,9 +312,9 @@ class ChatFragment : Fragment() {
             boardCells[2][1] = btn8
             boardCells[2][2] = btn9
             if (canIPlay) {
-                whoPlay.text = "Sua vez de jogar. Você é $player!"
+                whoPlay.text = getString(R.string.your_move,player)
             } else {
-                whoPlay.text = "Esperando o oponente jogar..."
+                whoPlay.text = getString(R.string.waiting_move)
             }
             rematchButton.setOnClickListener {
                 sendInviteTicTacToe()
@@ -343,9 +345,9 @@ class ChatFragment : Fragment() {
     }
 
     private fun mapBoardToUi() {
-        for (i in board.boardplaces.indices) {
-            for (j in board.boardplaces.indices) {
-                when (board.boardplaces[i][j]) {
+        for (i in board.boardPlaces.indices) {
+            for (j in board.boardPlaces.indices) {
+                when (board.boardPlaces[i][j]) {
                     Board.O -> {
                         boardCells[i][j]?.setImageResource(R.drawable.ic_circle)
                         boardCells[i][j]?.isEnabled = false
@@ -367,7 +369,7 @@ class ChatFragment : Fragment() {
     private fun sendPlay(i: Int, j: Int) {
         val messagePlay = Message("", "${i},${j},${player}", Message.RECEIVE_PLAY)
         sendMessageSocket(messagePlay)
-        binding.bottomSheet.whoPlay.text = "Esperando o oponente jogar..."
+        binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)
         canIPlay = false
         Log.e("Sent", "play")
         verifyIfHasWinner()
@@ -382,26 +384,26 @@ class ChatFragment : Fragment() {
         with(binding.bottomSheet) {
             if (board.gameOver()) {
                 if (board.playerWon()) { //player O
-                    whoPlay.text = "Player O wins!"
+                    whoPlay.text = getString(R.string.player_o_wins)
                     rematchButton.visibility = View.VISIBLE
                     if (player == Board.O) {
                         val message =
-                            Message("", "$profileName winner TicTacToe!", Message.NOTIFY_CHAT)
+                            Message("", getString(R.string.winner,profileName), Message.NOTIFY_CHAT)
                         sendMessageSocket(message)
                     }
                     return
                 }
                 if (board.opponentWon()) {
-                    whoPlay.text = "Player X wins!"
+                    whoPlay.text = getString(R.string.player_x_wins)
                     rematchButton.visibility = View.VISIBLE
                     if (player == Board.X) {
                         val message =
-                            Message("", "$profileName winner TicTacToe!", Message.NOTIFY_CHAT)
+                            Message("", getString(R.string.winner,profileName), Message.NOTIFY_CHAT)
                         sendMessageSocket(message)
                     }
                     return
                 }
-                whoPlay.text = "The game is DRAW!"
+                whoPlay.text = getString(R.string.draw)
                 rematchButton.visibility = View.VISIBLE
                 return
             }
@@ -436,7 +438,7 @@ class ChatFragment : Fragment() {
             state = true
             binding.buttonVoiceMessageRecord.background =
                 ContextCompat.getDrawable(requireContext(), R.drawable.layout_button_red)
-            Toast.makeText(requireContext(), "Recording started!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.recording_audio), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             checkPermission(android.Manifest.permission.RECORD_AUDIO, RECORD_PERMISSION)
         } catch (e: IOException) {
@@ -452,7 +454,7 @@ class ChatFragment : Fragment() {
         binding.buttonVoiceMessageRecord.background =
             ContextCompat.getDrawable(requireContext(), R.drawable.layout_button)
         Utils.parseAnythingToByteString(File(output)) {
-            val message = Message("", it, typeMesage = Message.SENT_MESSAGE_VOICE)
+            val message = Message("", it, typeMessage = Message.SENT_MESSAGE_VOICE)
             sendMessageSocket(message)
             binding.progressBarSendMessage.visibility = View.GONE
             refreshUIChat(message)

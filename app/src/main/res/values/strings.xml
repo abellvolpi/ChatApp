@@ -1,6 +1,47 @@
 <resources>
     <string name="app_name">ChatApp</string>
-    <!-- TODO: Remove or change this placeholder text -->
+
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="test">test</string>
+
+    <!--    Adapters Strings-->
+
+    <string name="audio">Audio (%d)</string>
+    <string name="you">You</string>
+
+    <!--   Warnings-->
+
+    <string name="port_error">Please, insert a port number</string>
+    <string name="name_error">Please, insert your name</string>
+    <string name="ip_error">Please, insert a ip</string>
+
+    <!--    QRCode Fragment-->
+
+    <string name="error_name">ERROR NAME</string>
+
+    <!--    Chat Fragment-->
+
+    <string name="server_disconnected">Server disconnected</string>
+    <string name="game_started">O jogo já começou. Para retornar arraste para cima</string>
+    <string name="message_blank">Mensagem não pode ser vazia</string>
+    <string name="your_move">Sua vez de jogar. você é %s</string>
+    <string name="invite_rejected">Jogador recusou seu convite</string>
+    <string name="invite_received">Aceitar uma partida de TicTacToe com %s?</string>
+    <string name="cancel">cancelar</string>
+    <string name="waiting_accept">Aguardando oponente aceitar a partida</string>
+    <string name="waiting_move">Esperando o oponente jogar...</string>
+    <string name="player_x_wins">Player X ganhou!</string>
+    <string name="player_o_wins">Player O ganhou!</string>
+    <string name="winner">%s ganhou o TicTacToe</string>
+    <string name="draw">O jogo empatou!</string>
+    <string name="recording_audio">Gravando</string>
+
+    <!--    Home Fragment-->
+
+    <string name="player_connected">%s se conectou</string>
+
+    <!--    Profile Fragment-->
+
 
 </resources>
