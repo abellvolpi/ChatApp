@@ -1,21 +1,30 @@
 package com.example.chatapp.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.customDialog.InviteMemberToEntryChat
 import com.example.chatapp.databinding.FragmentCreateServerBinding
+import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.ServerBackgroundService
 import com.example.chatapp.utils.Utils
+import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
+import kotlinx.coroutines.delay
+import java.net.Socket
 
 class CreateServer : Fragment() {
     private lateinit var binding: FragmentCreateServerBinding
+    private val connectionFactory: ConnectionFactory by activityViewModels()
 
     private val navController by lazy {
         findNavController()
@@ -68,8 +77,15 @@ class CreateServer : Fragment() {
 
     private fun createServer() {
         with(binding) {
-            Utils.getIpAdress {
-                val action = CreateServerDirections.actionCreateServerToInviteMemberToEntry(it, portField.text.toString().toInt(), nameField.text.toString())
+            val ipAndress = Utils.getIpAndress()
+            ProfileSharedProfile.saveProfile(nameField.text.toString())
+                val action = CreateServerDirections.actionCreateServerToChatFragment(ipAndress, portField.text.toString().toInt())
+                val intent = Intent(requireContext(), ServerBackgroundService::class.java)
+                intent.putExtra("socketConfigs", portField.text.toString().toInt())
+                intent.action = "com.example.startserver"
+                requireContext().startService(intent)
+                createSocket(ipAndress, portField.text.toString().toInt()){
+                    connectionFactory.setSocket(it)
                 findNavController().navigate(action)
             }
         }

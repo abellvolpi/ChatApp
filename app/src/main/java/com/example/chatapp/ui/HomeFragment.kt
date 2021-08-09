@@ -1,5 +1,6 @@
 package com.example.chatapp.ui
 
+import android.content.Intent
 import android.app.Activity.RESULT_OK
 import android.content.ContentResolver
 import android.content.Intent
@@ -135,7 +136,9 @@ class HomeFragment : Fragment(), CoroutineScope {
                     ProfileSharedProfile.getProfile() + " was connected",
                     Message.NOTIFY_CHAT
                 )
-                connectionFactory.sendMessage(message) {}
+                val intent = Intent()
+                intent.action = "com.example.message"
+                intent.putExtra("message", message)
                 findNavController().navigate(action)
             }
         }

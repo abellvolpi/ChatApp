@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.InviteMemberToEntryChatBinding
 import com.example.chatapp.ui.CreateServerDirections
@@ -22,7 +23,7 @@ class InviteMemberToEntryChat : DialogFragment() {
     private lateinit var binding : InviteMemberToEntryChatBinding
     private var port : Int = 0
     private lateinit var ip: String
-    private lateinit var nameField : String
+    private val connectionFactory: ConnectionFactory by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,10 +33,9 @@ class InviteMemberToEntryChat : DialogFragment() {
         binding = InviteMemberToEntryChatBinding.inflate(inflater, container, false)
         port = arguments?.getInt("port") ?: 0
         ip = arguments?.getString("ip")?: ""
-        nameField = arguments?.getString("name")?:""
         initView()
-        waitConnection()
         return binding.root
+
     }
 
     override fun onStart() {
@@ -53,18 +53,6 @@ class InviteMemberToEntryChat : DialogFragment() {
         with(binding){
             qrcodeImage.setImageBitmap(qrCode)
             ipAndress.text = "${ip}:${port}"
-        }
-    }
-
-    private fun waitConnection(){
-        val connectionFactory : ConnectionFactory by activityViewModels()
-        connectionFactory.serverConnecting(
-            port
-        ) {
-            ProfileSharedProfile.saveProfile(nameField)
-            val action =
-                InviteMemberToEntryChatDirections.actionInviteMemberToEntryChatToChatFragment()
-            findNavController().navigate(action)
         }
     }
 }

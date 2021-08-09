@@ -6,6 +6,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +15,8 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.viewModel.UtilsViewModel
+import kotlinx.coroutines.*
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -92,25 +95,45 @@ class ChatAdapter(
                     }
                 })
                 name.text = msg.name
-                startAudio.visibility = View.VISIBLE
-                stopAudio.visibility = View.GONE
-                name.text = msg.name
-                getTimeAudio(msg) {
-                    message.text = "Audio (${it})"
+                name.text = "You"
+                getAudio(msg.message) {
+                    message.text = "Audio (${getTimeAudioInString(it.duration.toLong())})"
+                    seekBarAudio.max = it.duration
                 }
                 time.text = timeFormatter(msg.date)
                 startAudio.setOnClickListener {
-                    startAudio(msg.message, layoutPosition) {
-                        liveDataToObserve.changeAudioRunning(true, layoutPosition)
-                        positionMessageAudioRunning = layoutPosition
+                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) {long: Long ->
+                        if(msg == data[positionMessageAudioRunning]){
+                            positionMessageAudioRunning = layoutPosition
+                            reproduceTimeAudio.text = getTimeAudioInString(long)
+                            seekBarAudio.progress = long.toInt()
+                        }
                         mediaPlayer.setOnCompletionListener {
                             liveDataToObserve.changeAudioRunning(false, layoutPosition)
                             positionMessageAudioRunning = -1
+                            reproduceTimeAudio.text = getTimeAudioInString(0)
+                            seekBarAudio.progress = 0
                         }
+                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                            override fun onProgressChanged(
+                                seekBar: SeekBar?,
+                                progress: Int,
+                                fromUser: Boolean
+                            ) {
+                                if(mediaPlayer.isPlaying && fromUser && msg == data[positionMessageAudioRunning]){
+                                    mediaPlayer.seekTo(progress)
+                                }
+                            }
+                            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+                            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+                        })
                     }
-                    stopAudio.setOnClickListener {
-                        liveDataToObserve.changeAudioRunning(false, layoutPosition)
-                    }
+                }
+
+                stopAudio.setOnClickListener {
+                    stopAudio()
+                    liveDataToObserve.changeAudioRunning(false, layoutPosition)
                 }
             }
         }
@@ -146,23 +169,43 @@ class ChatAdapter(
                         stopAudio.visibility = View.GONE
                     }
                 })
-
                 name.text = msg.name
                 name.text = "You"
-                getTimeAudio(msg) {
-                    message.text = "Audio (${it})"
+                getAudio(msg.message) {
+                    message.text = "Audio (${getTimeAudioInString(it.duration.toLong())})"
+                    seekBarAudio.max = it.duration
                 }
                 time.text = timeFormatter(msg.date)
                 startAudio.setOnClickListener {
-                    startAudio(msg.message, layoutPosition) {
-                        liveDataToObserve.changeAudioRunning(true, layoutPosition)
-                        positionMessageAudioRunning = layoutPosition
+                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) {long: Long ->
+                        if(msg == data[positionMessageAudioRunning]){
+                            positionMessageAudioRunning = layoutPosition
+                            reproduceTimeAudio.text = getTimeAudioInString(long)
+                            seekBarAudio.progress = long.toInt()
+                        }
                         mediaPlayer.setOnCompletionListener {
                             liveDataToObserve.changeAudioRunning(false, layoutPosition)
                             positionMessageAudioRunning = -1
+                            reproduceTimeAudio.text = getTimeAudioInString(0)
+                            seekBarAudio.progress = 0
                         }
+                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                            override fun onProgressChanged(
+                                seekBar: SeekBar?,
+                                progress: Int,
+                                fromUser: Boolean
+                            ) {
+                                if(mediaPlayer.isPlaying && fromUser && msg == data[positionMessageAudioRunning]){
+                                    mediaPlayer.seekTo(progress)
+                                }
+                            }
+                            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+                            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+                        })
                     }
                 }
+
                 stopAudio.setOnClickListener {
                     stopAudio()
                     liveDataToObserve.changeAudioRunning(false, layoutPosition)
@@ -255,16 +298,29 @@ class ChatAdapter(
         notifyItemInserted(data.size - 1)
     }
 
-    private fun startAudio(message: String, position: Int, onResult: () -> Unit) {
-        Utils.parseByteToAudio(message) {
+    private fun startAudio(message: String, position: Int, progressSeekBar: Int, onResult: (Long) -> Unit) {
+        Utils.parseBytoToAudio(message) {
             if (positionMessageAudioRunning != -1) {
                 stopAudio()
             }
             mediaPlayer =
                 MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+            mediaPlayer.seekTo(progressSeekBar)
             mediaPlayer.start()
             positionMessageAudioRunning = position
-            onResult.invoke()
+            liveDataToObserve.changeAudioRunning(true, position)
+            CoroutineScope(Dispatchers.IO).launch {
+                while (true) {
+                    if(mediaPlayer.isPlaying) {
+                        withContext(Dispatchers.Main) {
+                            onResult.invoke(mediaPlayer.currentPosition.toLong())
+                        }
+                    }else{
+                        break
+                    }
+                    delay(250)
+                }
+            }
         }
     }
 
@@ -276,14 +332,15 @@ class ChatAdapter(
         }
     }
 
-    private fun getTimeAudio(msg: Message, onResult: (String) -> Unit) {
-        var an: Long
-        Utils.parseByteToAudio(msg.message) {
-            an = MediaPlayer.create(
-                MainApplication.getContextInstance(),
-                Uri.fromFile(it)
-            ).duration.toLong()
-            onResult.invoke(SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(an)))
+    private fun getTimeAudioInString(long: Long): String {
+        return SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(long))
+    }
+
+    private fun getAudio(msg: String, onResult: (MediaPlayer) -> Unit) {
+        var an: MediaPlayer
+        Utils.parseBytoToAudio(msg) {
+            an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+            onResult.invoke(an)
         }
     }
 }

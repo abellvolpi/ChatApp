@@ -2,6 +2,7 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -11,9 +12,9 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -26,6 +27,7 @@ import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.ServerBackgroundService
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
@@ -50,6 +52,8 @@ class ChatFragment : Fragment() {
         findNavController()
     }
     private lateinit var snackbar: Snackbar
+    private lateinit var ip: String
+    private var port: Int = 0
 
     //bottomsheet
     private val boardCells = Array(3) { arrayOfNulls<ImageButton>(3) } // Array de image button
@@ -72,6 +76,8 @@ class ChatFragment : Fragment() {
         activity?.actionBar?.hide()
         setHasOptionsMenu(true)
         binding = FragmentChatBinding.inflate(inflater, container, false)
+        port = arguments?.getInt("port") ?: 0
+        ip = arguments?.getString("ip") ?: ""
         initView()
         return binding.root
     }
@@ -81,19 +87,17 @@ class ChatFragment : Fragment() {
         bottomsheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomsheetForConfig.peekHeight = 150
-
     }
-
 
     private fun initView() {
         with(binding) {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
-                if(it !=null){
-                    if(it != ""){
+                if (it != null) {
+                    if (it != "error") {
                         val messageClass = Utils.JSONtoMessageClass(it)
-                        validReceivedMessage(messageClass)
-                        Log.e("Listener: ", it)
+                            validReceivedMessage(messageClass)
+                            Log.e("Listener: ", it)
                     }
                 } else {
                     val action =
@@ -159,10 +163,9 @@ class ChatFragment : Fragment() {
                 if (messageField.text.isNotBlank()) {
                     val message =
                         Message(profileName, messageField.text.toString(), Message.SENT_MESSAGE)
-                    connectionFactory.sendMessage(message) {
-                        messageField.text.clear()
-                        refreshUIChat(message)
-                    }
+                    sendMessageSocket(message)
+                    messageField.text.clear()
+                    refreshUIChat(message)
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -176,6 +179,13 @@ class ChatFragment : Fragment() {
             messagesRecyclerview.adapter = adapter
             messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
         }
+    }
+
+    private fun sendMessageSocket(message: Message) {
+        val intent = Intent(requireContext(), ServerBackgroundService::class.java)
+        intent.action = "com.example.message"
+        intent.putExtra("message", message)
+        requireContext().startService(intent)
     }
 
     private fun refreshUIChat(message: Message) {
@@ -192,6 +202,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun validReceivedMessage(message: Message) {
+        if(message.ipAndress == Utils.getIpAndress()) return
         if (message.typeMesage == Message.SENT_MESSAGE_VOICE) {
             message.typeMesage = Message.RECEIVED_MESSAGE_VOICE
             refreshUIChat(message)
@@ -259,14 +270,13 @@ class ChatFragment : Fragment() {
 
     private fun sendInviteTicTacToe() {
         val message = Message(profileName, "", Message.INVITE_TICTACTOE)
-        connectionFactory.sendMessage(message) {
-            snackbar = Snackbar.make(
-                requireView(),
-                "Aguardando oponente aceitar a partida",
-                Snackbar.LENGTH_LONG
-            )
-            snackbar.show()
-        }
+        sendMessageSocket(message)
+        snackbar = Snackbar.make(
+            requireView(),
+            "Aguardando oponente aceitar a partida",
+            Snackbar.LENGTH_LONG
+        )
+        snackbar.show()
     }
 
     private fun acceptInviteTicTacToe() {
@@ -276,12 +286,12 @@ class ChatFragment : Fragment() {
         initViewTicTacToe()
         bottomsheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         val message = Message("", "accepted", Message.INVITE_TICTACTOE)
-        connectionFactory.sendMessage(message) {}
+        sendMessageSocket(message)
     }
 
     private fun declineInviteTicTacToe() {
         val message = Message("", "declined", Message.INVITE_TICTACTOE)
-        connectionFactory.sendMessage(message) {}
+        sendMessageSocket(message)
     }
 
     override fun onStart() {
@@ -362,12 +372,11 @@ class ChatFragment : Fragment() {
 
     private fun sendPlay(i: Int, j: Int) {
         val messagePlay = Message("", "${i},${j},${player}", Message.RECEIVE_PLAY)
-        connectionFactory.sendMessage(messagePlay) {
-            binding.bottomSheet.whoPlay.text = "Esperando o oponente jogar..."
-            canIPlay = false
-            Log.e("Sent", "play")
-            verifyIfHasWinner()
-        }
+        sendMessageSocket(messagePlay)
+        binding.bottomSheet.whoPlay.text = "Esperando o oponente jogar..."
+        canIPlay = false
+        Log.e("Sent", "play")
+        verifyIfHasWinner()
     }
 
     private fun refreshBoard() {
@@ -384,7 +393,7 @@ class ChatFragment : Fragment() {
                     if (player == Board.O) {
                         val message =
                             Message("", "$profileName winner TicTacToe!", Message.NOTIFY_CHAT)
-                        connectionFactory.sendMessage(message) {}
+                        sendMessageSocket(message)
                     }
                     return
                 }
@@ -394,7 +403,7 @@ class ChatFragment : Fragment() {
                     if (player == Board.X) {
                         val message =
                             Message("", "$profileName winner TicTacToe!", Message.NOTIFY_CHAT)
-                        connectionFactory.sendMessage(message) {}
+                        sendMessageSocket(message)
                     }
                     return
                 }
@@ -450,10 +459,9 @@ class ChatFragment : Fragment() {
             ContextCompat.getDrawable(requireContext(), R.drawable.layout_button)
         Utils.parseAnythingToByteString(File(output)) {
             val message = Message("", it, typeMesage = Message.SENT_MESSAGE_VOICE)
-            connectionFactory.sendMessage(message) {
-                binding.progressBarSendMessage.visibility = View.GONE
-                refreshUIChat(message)
-            }
+            sendMessageSocket(message)
+            binding.progressBarSendMessage.visibility = View.GONE
+            refreshUIChat(message)
         }
     }
 
@@ -476,6 +484,4 @@ class ChatFragment : Fragment() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-
 }
