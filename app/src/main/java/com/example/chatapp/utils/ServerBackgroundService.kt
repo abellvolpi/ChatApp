@@ -73,7 +73,7 @@ class ServerBackgroundService : Service() {
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle("Server open")
-            setContentText("Server was opened ip: ${Utils.getIpAndress()}:$port")
+            setContentText("Server was opened ip: ${Utils.getipAddress()}:$port")
             setContentIntent(
                 PendingIntent.getActivity(
                     context,
@@ -145,7 +145,7 @@ class ServerBackgroundService : Service() {
                         val message = Message(
                             "",
                             "${it.localSocketAddress}:was disconnected",
-                            typeMesage = Message.NOTIFY_CHAT
+                            typeMessage = Message.NOTIFY_CHAT
                         )
                         sendMessage(message)
                     }

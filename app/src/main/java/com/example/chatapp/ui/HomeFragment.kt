@@ -27,9 +27,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), CoroutineScope {
     private lateinit var binding: FragmentHomeBinding
-    override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
+    override val coroutineContext: CoroutineContext = Job()+ Dispatchers.Main
 
     val connectionFactory: ConnectionFactory by activityViewModels()
     private val navController by lazy {
