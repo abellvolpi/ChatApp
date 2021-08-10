@@ -2,7 +2,6 @@ package com.example.chatapp.ui
 
 import android.app.Activity.RESULT_OK
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.fragment.app.Fragment
@@ -10,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentProfileBinding
 import com.example.chatapp.utils.ProfileSharedProfile
 import kotlinx.coroutines.*

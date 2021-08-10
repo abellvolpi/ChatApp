@@ -17,6 +17,7 @@ import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
+
 class CreateServer : Fragment() {
     private lateinit var binding: FragmentCreateServerBinding
     private val connectionFactory: ConnectionFactory by activityViewModels()
@@ -49,14 +50,14 @@ class CreateServer : Fragment() {
     private fun initView() {
         with(binding) {
             btnCreateServer.setOnClickListener {
-                if (!verifyIfEditTextisEmpty()) {
+                if (!verifyIfEditTextIsEmpty()) {
                     createServer()
                 }
             }
         }
     }
 
-    private fun verifyIfEditTextisEmpty(): Boolean {
+    private fun verifyIfEditTextIsEmpty(): Boolean {
         with(binding) {
             if (portField.text.isBlank()) {
                 portField.error = getString(R.string.port_error)
@@ -72,7 +73,7 @@ class CreateServer : Fragment() {
 
     private fun createServer() {
         with(binding) {
-            val ipAndress = Utils.getipAddress()
+            val ipAddress = Utils.getipAddress()
             ProfileSharedProfile.saveProfile(nameField.text.toString())
                 val action = CreateServerDirections.actionCreateServerToHomeFragment(null)
                 val intent = Intent(requireContext(), ServerBackgroundService::class.java)
