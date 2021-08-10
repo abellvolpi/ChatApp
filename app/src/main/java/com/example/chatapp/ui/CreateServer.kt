@@ -79,10 +79,10 @@ class CreateServer : Fragment() {
                 intent.putExtra("socketConfigs", portField.text.toString().toInt())
                 intent.action = "com.example.startserver"
                 requireContext().startService(intent)
-                createSocket(ipAndress, portField.text.toString().toInt()){
-                    connectionFactory.setSocket(it)
-                findNavController().navigate(action)
-            }
+//                createSocket(ipAndress, portField.text.toString().toInt()){
+//                    connectionFactory.setSocket(it)
+//            }
+            findNavController().navigate(action)
         }
     }
 }

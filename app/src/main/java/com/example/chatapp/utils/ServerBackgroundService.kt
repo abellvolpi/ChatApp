@@ -14,20 +14,22 @@ import androidx.core.content.ContextCompat
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.DataOutputStream
+import java.lang.Exception
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
-class ServerBackgroundService : Service() {
+class ServerBackgroundService : Service(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private var port: Int = 0
     private val startserver = "com.example.startserver"
     private val stopserver = "com.example.stopserver"
-    private var socket: ArrayList<Socket> = arrayListOf()
+
+    @Volatile
+    private var sockets: ArrayList<Socket> = arrayListOf()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -40,9 +42,8 @@ class ServerBackgroundService : Service() {
             start()
             return START_STICKY
         }
-        if(intent?.action.equals(stopserver)){
+        if (intent?.action.equals(stopserver)) {
             stopForeground(true)
-
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -63,10 +64,15 @@ class ServerBackgroundService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
         val intent = Intent(context, MainActivity::class.java)
-        val broadCastIntent = Intent(context,ReceiverMessageBroadCast::class.java).apply{
-            putExtra("finishConnection",true)
+        val broadCastIntent = Intent(context, ReceiverMessageBroadCast::class.java).apply {
+            putExtra("finishConnection", true)
         }
-        val actionIntent = PendingIntent.getBroadcast(context,0,broadCastIntent,PendingIntent.FLAG_UPDATE_CURRENT)
+        val actionIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            broadCastIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
@@ -83,12 +89,12 @@ class ServerBackgroundService : Service() {
                 )
             )
             setAutoCancel(true)
-            addAction(R.mipmap.ic_launcher,"Stop",actionIntent)
+            addAction(R.mipmap.ic_launcher, "Stop", actionIntent)
         }
         startForeground(
             notificationId, builder.build()
         )
-        readMessageAndSendToAllSockets()
+//        readMessageAndSendToAllSockets()
         serverConnecting(port)
     }
 
@@ -96,7 +102,10 @@ class ServerBackgroundService : Service() {
         GlobalScope.launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
             while (true) {
-                socket.add(serverSocket.accept())
+                val sock = serverSocket.accept()
+                sock.soTimeout = 2000
+                readMessageAndSendToAllSockets(sock)
+                sockets.add(sock)
                 Log.e("service", "accepted new user")
             }
         }
@@ -104,7 +113,7 @@ class ServerBackgroundService : Service() {
 
     @Synchronized
     private fun sendMessage(message: Message) {
-        socket.forEach {
+        sockets.forEach {
             val bw = DataOutputStream(it.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
             bw.flush()
@@ -112,32 +121,35 @@ class ServerBackgroundService : Service() {
         }
     }
 
-    private fun readMessageAndSendToAllSockets() {
+    private fun readMessageAndSendToAllSockets(socket: Socket) {
         GlobalScope.launch(Dispatchers.IO) {
             while (true) {
-                socket.forEach {
+                try{
                     Log.e("service", "readingMessage")
-                    val reader = Scanner(it.getInputStream().bufferedReader())
+                    val reader = Scanner(socket.getInputStream().bufferedReader())
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
                         val message = Utils.JSONtoMessageClass(line)
                         sendMessage(message)
                     }
+                }catch (e: Exception){
+                    sockets.remove(socket)
                 }
+
             }
         }
     }
 
     private fun verifyIfMemberLeaves() {
         var oldSocket = arrayListOf<Socket>()
-        oldSocket.addAll(socket)
+        oldSocket.addAll(sockets)
         GlobalScope.launch(Dispatchers.Default) {
             while (true) {
-                if (oldSocket != socket) {
+                if (oldSocket != sockets) {
                     val membersLeaves = arrayListOf<Socket>()
                     oldSocket.forEach {
-                        if (!socket.contains(it)) { //verifica membros diferentes do antigo array de socket guardado em memória
+                        if (!sockets.contains(it)) { //verifica membros diferentes do antigo array de socket guardado em memória
                             membersLeaves.add(it)
                         }
                     }
@@ -150,7 +162,7 @@ class ServerBackgroundService : Service() {
                         sendMessage(message)
                     }
                     oldSocket = arrayListOf()
-                    oldSocket.addAll(socket)
+                    oldSocket.addAll(sockets)
                 }
                 delay(250)
             }
