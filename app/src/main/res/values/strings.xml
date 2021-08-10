@@ -11,8 +11,8 @@
 
     <!--    Notifications-->
 
-    <string name="server_open">Server open</string>
-    <string name="server_configs">Server was opened ip: %s : %d"</string>
+    <string name="server_openned">Servidor aberto</string>
+    <string name="server_configs">No endereço ip: %s : %d"</string>
     <string name="stop">Stop</string>
 
     <!--   Warnings-->

@@ -14,7 +14,6 @@ import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.ServerBackgroundService
 import com.example.chatapp.utils.Utils
-import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 
 
@@ -24,10 +23,6 @@ class CreateServer : Fragment() {
 
     private val navController by lazy {
         findNavController()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -78,12 +73,12 @@ class CreateServer : Fragment() {
                 val action = CreateServerDirections.actionCreateServerToHomeFragment(null)
                 val intent = Intent(requireContext(), ServerBackgroundService::class.java)
                 intent.putExtra("socketConfigs", portField.text.toString().toInt())
-                intent.action = "com.example.startserver"
+                intent.action = ServerBackgroundService.START_SERVER
                 requireContext().startService(intent)
 //                createSocket(ipAndress, portField.text.toString().toInt()){
 //                    connectionFactory.setSocket(it)
 //            }
-            findNavController().navigate(action)
+            navController.navigate(action)
         }
     }
 }

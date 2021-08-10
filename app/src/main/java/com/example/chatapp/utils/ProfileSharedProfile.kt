@@ -30,16 +30,15 @@ object ProfileSharedProfile {
 
     fun getProfile(): String {
         val shared = getSharedProfile()
-        val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
-        return string
+        return shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
     }
 
     fun saveProfilePhoto(imageBitmap: Bitmap) {
         val profileSharedPreferences = getSharedProfile()
-        val baos = ByteArrayOutputStream()
-        imageBitmap.compress(Bitmap.CompressFormat.PNG, 10, baos)
-        val b = baos.toByteArray()
-        val result = Base64.encodeToString(b, Base64.NO_WRAP)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 10, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        val result = Base64.encodeToString(byteArray, Base64.NO_WRAP)
         profileSharedPreferences.edit().apply {
             clear()
             putString("image", result)
@@ -53,41 +52,22 @@ object ProfileSharedProfile {
         if (bitmap == "NO IMAGE SAVED") {
             return null
         }
-        return BitmapFactory.decodeByteArray(Base64.decode(bitmap,0),0,Base64.decode(bitmap,0).size)
+        return BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
     }
 
 
-    fun UriToByteArrayToString(uri: Uri): String {
-        val file = File(context.cacheDir, "resize.png")
-        val byteArray = file.inputStream().buffered().use {
-            it.readBytes()
-        }
-//        val byteArray = context.contentResolver.openInputStream(uri)?.buffered()?.use {
-//            it.readBytes()
-//        }
-//        val bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray!!.size)
-//        val bitmapEdited = Bitmap.createScaledBitmap(bitmap,100,100,false)
-//        val stream = ByteArrayOutputStream()
-//        bitmapEdited.compress(Bitmap.CompressFormat.PNG,50,stream)
-//        val image = stream.toByteArray()
-//        return Base64.encodeToString(image,Base64.NO_WRAP)
-
+    fun bitmapToByteArrayToString(bitmap: Bitmap): String {
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
+        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 10, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 
-    fun BitmapToByteArrayToString(bitmap: Bitmap):String{
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap,50,50,false)
-        val baos = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
-        scaledBitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
 
-        val b = baos.toByteArray()
-        return Base64.encodeToString(b, Base64.NO_WRAP)
-    }
-
-
-    fun clearSharedPreferences(){
-        getSharedProfile().edit().apply{
+    fun clearSharedPreferences() {
+        getSharedProfile().edit().apply {
             clear()
             apply()
         }

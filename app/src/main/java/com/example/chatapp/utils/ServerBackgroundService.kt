@@ -26,8 +26,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
-    private val startServer = "com.example.startserver"
-    private val stopServer = "com.example.stopserver"
+
 
     @Volatile
     private var sockets: ArrayList<Socket> = arrayListOf()
@@ -37,14 +36,14 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action.equals(startServer)) {
+        if (intent?.action.equals(START_SERVER)) {
             val arguments = intent?.getIntExtra("socketConfigs", 0)
             port = arguments ?: 0
             start()
             return START_NOT_STICKY
         }
 
-        if (intent?.action.equals(stopServer)) {
+        if (intent?.action.equals(STOP_SERVER)) {
             stopForeground(true)
             stopSelf()
             return START_NOT_STICKY
@@ -56,7 +55,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun start() {
         val context = MainApplication.getContextInstance()
         val notificationId = 1005
-        val CHANNEL_ID = "server_connection_channel_id"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, "Server open", importance).apply {
@@ -79,20 +77,20 @@ class ServerBackgroundService : Service(), CoroutineScope {
         )
 
         val intent = Intent(context, MainActivity::class.java)
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+        val builder = NotificationCompat.Builder(context, Companion.CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
-            setContentTitle(getString(R.string.server_open))
+            setContentTitle(getString(R.string.server_openned))
             setContentText(getString(R.string.server_configs, Utils.getipAddress(), port))
-                setContentIntent(
-                    PendingIntent.getActivity(
-                        context,
-                        0,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                    )
+            setContentIntent(
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
                 )
+            )
             setAutoCancel(true)
             addAction(R.mipmap.ic_launcher, getString(R.string.stop), actionIntent)
         }
@@ -181,13 +179,18 @@ class ServerBackgroundService : Service(), CoroutineScope {
         super.onDestroy()
         job.cancel("teste")
         stopSelf()
-        sockets.forEach{
+        sockets.forEach {
             it.close()
         }
     }
 
-//    override fun stopService(name: Intent?): Boolean {
+    //    override fun stopService(name: Intent?): Boolean {
 //        job.cancel()
 //        return super.stopService(name)
 //    }
+    companion object {
+        const val START_SERVER = "com.example.START_SERVER"
+        const val STOP_SERVER = "com.example.STOP_SERVER"
+        private const val CHANNEL_ID = "server_connection_channel_id"
+    }
 }

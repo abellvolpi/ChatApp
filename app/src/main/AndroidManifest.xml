@@ -29,7 +29,7 @@
             android:launchMode="singleTask">
 
             <intent-filter>
-                <action android:name="com.example.startserver" />
+                <action android:name="com.example.START_SERVER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
