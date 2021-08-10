@@ -2,7 +2,6 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -27,7 +26,6 @@ import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
-import com.example.chatapp.utils.ServerBackgroundService
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
@@ -159,7 +157,6 @@ class ChatFragment : Fragment() {
                 }
             }
 
-
             buttonSend.setOnClickListener {
                 if (messageField.text.isNotBlank()) {
                     val message =
@@ -183,10 +180,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendMessageSocket(message: Message) {
-        val intent = Intent(requireContext(), ServerBackgroundService::class.java)
-        intent.action = "com.example.message"
-        intent.putExtra("message", message)
-        requireContext().startService(intent)
+            connectionFactory.sendMessageToSocket(message){}
     }
 
     private fun refreshUIChat(message: Message) {

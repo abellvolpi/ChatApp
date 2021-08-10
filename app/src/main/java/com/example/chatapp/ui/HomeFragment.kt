@@ -29,7 +29,7 @@ import kotlin.coroutines.CoroutineContext
 
 class HomeFragment : Fragment(), CoroutineScope {
     private lateinit var binding: FragmentHomeBinding
-    override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
+    override val coroutineContext: CoroutineContext = Job()+ Dispatchers.Main
 
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private val navController by lazy {
@@ -84,7 +84,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                         HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan(nameField.text.toString())
                     navController.navigate(action)
                 } else {
-                    nameField.error = getString(R.string.name_error)
+                    nameField.error = "Please, insert your name"
                 }
             }
             floatingEditButton.setOnClickListener {
@@ -130,9 +130,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
                     Message.NOTIFY_CHAT
                 )
-                val intent = Intent()
-                intent.action = "com.example.message"
-                intent.putExtra("message", message)
+                connectionFactory.sendMessageToSocket(message){}
                 findNavController().navigate(action)
             }
         }

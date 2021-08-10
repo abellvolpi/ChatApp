@@ -75,15 +75,15 @@ class CreateServer : Fragment() {
         with(binding) {
             val ipAddress = Utils.getipAddress()
             ProfileSharedProfile.saveProfile(nameField.text.toString())
-                val action = CreateServerDirections.actionCreateServerToChatFragment(ipAddress, portField.text.toString().toInt())
+                val action = CreateServerDirections.actionCreateServerToHomeFragment(null)
                 val intent = Intent(requireContext(), ServerBackgroundService::class.java)
                 intent.putExtra("socketConfigs", portField.text.toString().toInt())
                 intent.action = "com.example.startserver"
                 requireContext().startService(intent)
-                createSocket(ipAddress, portField.text.toString().toInt()){
-                    connectionFactory.setSocket(it)
-                navController.navigate(action)
-            }
+//                createSocket(ipAndress, portField.text.toString().toInt()){
+//                    connectionFactory.setSocket(it)
+//            }
+            findNavController().navigate(action)
         }
     }
 }

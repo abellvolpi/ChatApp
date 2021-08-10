@@ -11,28 +11,26 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.DataOutputStream
+import java.lang.Exception
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
-import kotlin.collections.ArrayList
+import kotlin.coroutines.CoroutineContext
 
-class ServerBackgroundService : Service() {
+class ServerBackgroundService : Service(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private var port: Int = 0
     private val startServer = "com.example.startserver"
     private val stopServer = "com.example.stopserver"
-    private val recentMessage = "com.example.message"
-    private var socket: ArrayList<Socket> = arrayListOf()
-    private var isAnybodyOnline = false
-    private val localBroadCastManager = LocalBroadcastManager.getInstance(MainApplication.getContextInstance())
+
+    @Volatile
+    private var sockets: ArrayList<Socket> = arrayListOf()
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -48,10 +46,6 @@ class ServerBackgroundService : Service() {
             stopForeground(true)
             stopSelf()
 
-        }
-        if (intent?.action.equals(recentMessage)) {
-            val message = intent?.getSerializableExtra("message") as Message
-            sendMessage(message) {}
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -75,14 +69,19 @@ class ServerBackgroundService : Service() {
         val broadCastIntent = Intent(context,ReceiverMessageBroadCast::class.java).apply{
             putExtra("finishConnection",true)
         }
-        val actionIntent = PendingIntent.getBroadcast(context,0,broadCastIntent,PendingIntent.FLAG_UPDATE_CURRENT)
+        val actionIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            broadCastIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle("Server open")
-            setContentText("Server was opened")
+            setContentText("Server was opened ip: ${Utils.getipAddress()}:$port")
             setContentIntent(
                 PendingIntent.getActivity(
                     context,
@@ -92,48 +91,83 @@ class ServerBackgroundService : Service() {
                 )
             )
             setAutoCancel(true)
-            addAction(R.mipmap.ic_launcher,"Stop",actionIntent)
+            addAction(R.mipmap.ic_launcher, "Stop", actionIntent)
         }
         startForeground(
             notificationId, builder.build()
         )
-        serverConnecting(port) {}
+//        readMessageAndSendToAllSockets()
+        serverConnecting(port)
     }
 
-    private fun serverConnecting(port: Int, onResult: () -> Unit) {
+    private fun serverConnecting(port: Int) {
         GlobalScope.launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
-//            try {
-            socket.add(serverSocket.accept())
-            Log.e("connection", "accepted new user")
-            withContext(Dispatchers.Main) {
-                if (!isAnybodyOnline) {
-                    isAnybodyOnline = true
-                }
-                onResult.invoke()
+            while (true) {
+                val sock = serverSocket.accept()
+                sock.soTimeout = 2000
+                readMessageAndSendToAllSockets(sock)
+                sockets.add(sock)
+                Log.e("service", "accepted new user")
             }
-//            } catch (e: Exception) {
-//                Log.e("Error connection", e.toString())
-//            }
         }
     }
 
     @Synchronized
-    private fun sendMessage(message: Message, onResult: () -> Unit) {
+    private fun sendMessage(message: Message) {
+        sockets.forEach {
+            val bw = DataOutputStream(it.getOutputStream())
+            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+            bw.flush()
+            Log.e("service", "Sent Message")
+        }
+    }
+
+    private fun readMessageAndSendToAllSockets(socket: Socket) {
         GlobalScope.launch(Dispatchers.IO) {
-            socket.forEach {
-                val bw = DataOutputStream(it.getOutputStream())
-                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
-                bw.flush()
-                withContext(Dispatchers.Main) {
-                    Log.e("server", "Sent Message")
-                    onResult.invoke()
+            while (true) {
+                try{
+                    Log.e("service", "readingMessage")
+                    val reader = Scanner(socket.getInputStream().bufferedReader())
+                    val line: String
+                    if (reader.hasNextLine()) {
+                        line = reader.nextLine()
+                        val message = Utils.JSONtoMessageClass(line)
+                        sendMessage(message)
+                    }
+                }catch (e: Exception){
+                    sockets.remove(socket)
                 }
+
             }
         }
     }
 
-
-
-
+    private fun verifyIfMemberLeaves() {
+        var oldSocket = arrayListOf<Socket>()
+        oldSocket.addAll(sockets)
+        GlobalScope.launch(Dispatchers.Default) {
+            while (true) {
+                if (oldSocket != sockets) {
+                    val membersLeaves = arrayListOf<Socket>()
+                    oldSocket.forEach {
+                        if (!sockets.contains(it)) { //verifica membros diferentes do antigo array de socket guardado em memória
+                            membersLeaves.add(it)
+                        }
+                    }
+                    membersLeaves.forEach {
+                        val message = Message(
+                            "",
+                            "${it.localSocketAddress}:was disconnected",
+                            typeMessage = Message.NOTIFY_CHAT
+                        )
+                        sendMessage(message)
+                    }
+                    oldSocket = arrayListOf()
+                    oldSocket.addAll(sockets)
+                }
+                delay(250)
+            }
+        }
+    }
 }
