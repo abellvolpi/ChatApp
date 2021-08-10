@@ -27,8 +27,8 @@ import kotlin.collections.ArrayList
 
 class ServerBackgroundService : Service() {
     private var port: Int = 0
-    private val startserver = "com.example.startserver"
-    private val stopserver = "com.example.stopserver"
+    private val startServer = "com.example.startserver"
+    private val stopServer = "com.example.stopserver"
     private val recentMessage = "com.example.message"
     private var socket: ArrayList<Socket> = arrayListOf()
     private var isAnybodyOnline = false
@@ -38,14 +38,15 @@ class ServerBackgroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action.equals(startserver)) {
+        if (intent?.action.equals(startServer)) {
             val arguments = intent?.getIntExtra("socketConfigs", 0)
             port = arguments ?: 0
             start()
             return START_STICKY
         }
-        if(intent?.action.equals(stopserver)){
+        if(intent?.action.equals(stopServer)){
             stopForeground(true)
+            stopSelf()
 
         }
         if (intent?.action.equals(recentMessage)) {

@@ -9,7 +9,7 @@ class ReceiverMessageBroadCast : BroadcastReceiver() {
         if (intent?.getBooleanExtra("finishConnection",false) == true) {
             val intent = Intent(context, ServerBackgroundService::class.java)
             intent.action = "com.example.stopserver"
-            MainApplication.getContextInstance().startService(intent)
+            MainApplication.getContextInstance().stopService(intent)
         }
     }
 }
