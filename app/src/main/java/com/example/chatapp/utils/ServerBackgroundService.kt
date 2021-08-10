@@ -17,7 +17,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
-import java.lang.Exception
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
@@ -48,7 +47,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
         if (intent?.action.equals(stopServer)) {
             stopForeground(true)
-            stopSelf()
             stopSelf()
             return START_NOT_STICKY
         }
@@ -173,9 +171,4 @@ class ServerBackgroundService : Service(), CoroutineScope {
             it.close()
         }
     }
-
-//    override fun stopService(name: Intent?): Boolean {
-//        job.cancel()
-//        return super.stopService(name)
-//    }
 }
