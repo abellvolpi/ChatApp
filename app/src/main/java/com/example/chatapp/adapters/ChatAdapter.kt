@@ -10,13 +10,13 @@ import android.widget.SeekBar
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
+import com.example.chatapp.R
 import com.example.chatapp.databinding.*
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.viewModel.UtilsViewModel
 import kotlinx.coroutines.*
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,6 +26,8 @@ class ChatAdapter(
     val lifecycleOwner: LifecycleOwner
 ) :
     RecyclerView.Adapter<ChatAdapter.BaseViewHolder>() {
+
+    private val context = MainApplication.getContextInstance()
     private lateinit var mediaPlayer: MediaPlayer
     private var positionMessageAudioRunning: Int = -1
 
@@ -95,11 +97,13 @@ class ChatAdapter(
                     }
                 })
                 name.text = msg.name
-                name.text = "You"
+                name.text = context.getString(R.string.you)
                 getAudio(msg.message) {
-                    message.text = "Audio (${getTimeAudioInString(it.duration.toLong())})"
+//                    message.text = "Audio (${getTimeAudioInString(it.duration.toLong())})"
+                    message.text = context.getString(R.string.audio,getTimeAudioInString(it.duration.toLong()))
                     seekBarAudio.max = it.duration
                 }
+
                 time.text = timeFormatter(msg.date)
                 startAudio.setOnClickListener {
                     startAudio(msg.message, layoutPosition, seekBarAudio.progress) {long: Long ->
@@ -170,9 +174,9 @@ class ChatAdapter(
                     }
                 })
                 name.text = msg.name
-                name.text = "You"
+                name.text = context.getString(R.string.you)
                 getAudio(msg.message) {
-                    message.text = "Audio (${getTimeAudioInString(it.duration.toLong())})"
+                    message.text = context.getString(R.string.audio,getTimeAudioInString(it.duration.toLong()))
                     seekBarAudio.max = it.duration
                 }
                 time.text = timeFormatter(msg.date)
@@ -262,7 +266,7 @@ class ChatAdapter(
                     )
                 )
             }
-            else -> return ViewHolderNotifyMessage( //apenas para validar um else
+            else -> return ViewHolderNotifyMessage(
                 MessageNotifyItemBinding.inflate(
                     LayoutInflater.from(parent.context), parent, false
                 )

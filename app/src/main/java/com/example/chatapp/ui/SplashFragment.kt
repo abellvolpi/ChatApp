@@ -10,14 +10,14 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentSplashBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+
 
 class SplashFragment : Fragment() {
 
     private lateinit var binding: FragmentSplashBinding
+    private val navController by lazy {
+        findNavController()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,14 +29,9 @@ class SplashFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-    }
-
     override fun onResume() {
         super.onResume()
-        delay(1000, { navigate() })
+        delay(1000) { navigate() }
 
     }
 
@@ -44,8 +39,8 @@ class SplashFragment : Fragment() {
         Handler(Looper.getMainLooper()).postDelayed(action, delay)
     }
 
-    fun navigate(){
-                findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment(null))
+    private fun navigate() {
+        navController.navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment(null))
     }
 
 }

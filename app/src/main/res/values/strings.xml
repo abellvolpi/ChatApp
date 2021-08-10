@@ -1,14 +1,14 @@
 <resources>
     <string name="app_name">ChatApp</string>
 
-
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="test">test</string>
 
     <!--    Adapters Strings-->
 
-    <string name="audio">Audio (%d)</string>
+    <string name="audio">Audio (%l,context: Context)</string>
     <string name="you">You</string>
+
 
     <!--   Warnings-->
 
@@ -30,7 +30,7 @@
     <string name="invite_received">Aceitar uma partida de TicTacToe com %s?</string>
     <string name="cancel">cancelar</string>
     <string name="waiting_accept">Aguardando oponente aceitar a partida</string>
-    <string name="waiting_move">Esperando o oponente jogar...</string>
+    <string name="waiting_move">Esperando o oponente jogar…</string>
     <string name="player_x_wins">Player X ganhou!</string>
     <string name="player_o_wins">Player O ganhou!</string>
     <string name="winner">%s ganhou o TicTacToe</string>

@@ -3,20 +3,13 @@ package com.example.chatapp.customDialog
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.renderscript.ScriptIntrinsicYuvToRGB
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.InviteMemberToEntryChatBinding
-import com.example.chatapp.ui.CreateServerDirections
-import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
-import com.example.chatapp.viewModel.ConnectionFactory
 
 class InviteMemberToEntryChat : DialogFragment() {
     private lateinit var qrCode : Bitmap

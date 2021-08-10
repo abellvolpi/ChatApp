@@ -1,27 +1,22 @@
 package com.example.chatapp.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.R
-import com.example.chatapp.customDialog.InviteMemberToEntryChat
 import com.example.chatapp.databinding.FragmentCreateServerBinding
-import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.ServerBackgroundService
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
-import kotlinx.coroutines.delay
-import java.net.Socket
+
 
 class CreateServer : Fragment() {
     private lateinit var binding: FragmentCreateServerBinding
@@ -87,7 +82,7 @@ class CreateServer : Fragment() {
                 requireContext().startService(intent)
                 createSocket(ipAddress, portField.text.toString().toInt()){
                     connectionFactory.setSocket(it)
-                findNavController().navigate(action)
+                navController.navigate(action)
             }
         }
     }

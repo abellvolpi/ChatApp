@@ -1,6 +1,5 @@
 package com.example.chatapp.ui
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -46,7 +45,7 @@ class ChatFragment : Fragment() {
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var adapter: ChatAdapter
     private val data = arrayListOf<Message>()
-    private lateinit var bottomsheetForConfig: BottomSheetBehavior<View>
+    private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
     private val utilsViewModel: UtilsViewModel by activityViewModels()
     private val navController by lazy {
@@ -85,9 +84,9 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bottomsheetForConfig =
+        bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
-        bottomsheetForConfig.peekHeight = 150
+        bottomSheetForConfig.peekHeight = 150
     }
 
     private fun initView() {
@@ -230,7 +229,7 @@ class ChatFragment : Fragment() {
                 player = Board.O
                 canIPlay = true
                 initViewTicTacToe()
-                bottomsheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
+                bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
                 return
             }
             if (message.message == "declined") {
@@ -259,10 +258,10 @@ class ChatFragment : Fragment() {
     private fun receiveInviteTicTacToe(name: String) {
         val builder = AlertDialog.Builder(requireContext()).apply {
             setMessage(getString(R.string.invite_received,name))
-            setPositiveButton("ok") { dialog, which ->
+            setPositiveButton("ok") { _, _ ->
                 acceptInviteTicTacToe()
             }
-            setNegativeButton(R.string.cancel) { dialog: DialogInterface?, which: Int ->
+            setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
                 dialog?.dismiss()
                 declineInviteTicTacToe()
             }
@@ -286,7 +285,7 @@ class ChatFragment : Fragment() {
         player = Board.X
         canIPlay = false
         initViewTicTacToe()
-        bottomsheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
+        bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         val message = Message("", "accepted", Message.INVITE_TICTACTOE)
         sendMessageSocket(message)
     }
