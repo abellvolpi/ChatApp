@@ -100,14 +100,14 @@ class ChatAdapter(
                 name.text = context.getString(R.string.you)
                 getAudio(msg.message) {
 //                    message.text = "Audio (${getTimeAudioInString(it.duration.toLong())})"
-                    message.text = context.getString(R.string.audio,getTimeAudioInString(it.duration.toLong()))
+                    message.text = context.getString(R.string.audio, getTimeAudioInString(it.duration.toLong()))
                     seekBarAudio.max = it.duration
                 }
 
                 time.text = timeFormatter(msg.date)
                 startAudio.setOnClickListener {
-                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) {long: Long ->
-                        if(msg == data[positionMessageAudioRunning]){
+                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) { long: Long ->
+                        if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
                             seekBarAudio.progress = long.toInt()
@@ -118,16 +118,17 @@ class ChatAdapter(
                             reproduceTimeAudio.text = getTimeAudioInString(0)
                             seekBarAudio.progress = 0
                         }
-                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                             override fun onProgressChanged(
                                 seekBar: SeekBar?,
                                 progress: Int,
                                 fromUser: Boolean
                             ) {
-                                if(mediaPlayer.isPlaying && fromUser && msg == data[positionMessageAudioRunning]){
+                                if (mediaPlayer.isPlaying && fromUser && msg == data[positionMessageAudioRunning]) {
                                     mediaPlayer.seekTo(progress)
                                 }
                             }
+
                             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
                             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -176,13 +177,13 @@ class ChatAdapter(
                 name.text = msg.name
                 name.text = context.getString(R.string.you)
                 getAudio(msg.message) {
-                    message.text = context.getString(R.string.audio,getTimeAudioInString(it.duration.toLong()))
+                    message.text = context.getString(R.string.audio, getTimeAudioInString(it.duration.toLong()))
                     seekBarAudio.max = it.duration
                 }
                 time.text = timeFormatter(msg.date)
                 startAudio.setOnClickListener {
-                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) {long: Long ->
-                        if(msg == data[positionMessageAudioRunning]){
+                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) { long: Long ->
+                        if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
                             seekBarAudio.progress = long.toInt()
@@ -193,16 +194,17 @@ class ChatAdapter(
                             reproduceTimeAudio.text = getTimeAudioInString(0)
                             seekBarAudio.progress = 0
                         }
-                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                             override fun onProgressChanged(
                                 seekBar: SeekBar?,
                                 progress: Int,
                                 fromUser: Boolean
                             ) {
-                                if(mediaPlayer.isPlaying && fromUser && msg == data[positionMessageAudioRunning]){
+                                if (mediaPlayer.isPlaying && fromUser && msg == data[positionMessageAudioRunning]) {
                                     mediaPlayer.seekTo(progress)
                                 }
                             }
+
                             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
                             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -315,11 +317,11 @@ class ChatAdapter(
             liveDataToObserve.changeAudioRunning(true, position)
             CoroutineScope(Dispatchers.IO).launch {
                 while (true) {
-                    if(mediaPlayer.isPlaying) {
+                    if (mediaPlayer.isPlaying) {
                         withContext(Dispatchers.Main) {
                             onResult.invoke(mediaPlayer.currentPosition.toLong())
                         }
-                    }else{
+                    } else {
                         break
                     }
                     delay(250)

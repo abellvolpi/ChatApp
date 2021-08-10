@@ -2,14 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.chatapp">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-
-
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name=".utils.MainApplication"
@@ -19,32 +17,43 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ChatApp">
-        <service android:name=".utils.ServerBackgroundService"
-            android:foregroundServiceType="dataSync"
+
+        <service
+            android:name=".utils.ServerBackgroundService"
             android:enabled="true"
-            android:exported="true">
-        </service>
-        <activity android:name=".ui.MainActivity"
+            android:exported="true"
+            android:foregroundServiceType="dataSync" />
+
+        <activity
+            android:name=".ui.MainActivity"
             android:launchMode="singleTask">
+
             <intent-filter>
-                <action android:name="com.example.startserver"/>
+                <action android:name="com.example.startserver" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter android:label="connectSharedLink">
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="app"
-                    android:host="connect.to.chat"/>
+
+                <data
+                    android:host="connect.to.chat"
+                    android:scheme="app" />
             </intent-filter>
         </activity>
-        <receiver android:name=".utils.ReceiverMessageBroadCast" android:exported="false">
+
+        <receiver
+            android:name=".utils.ReceiverMessageBroadCast"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.example.chatapp.STOPSERVICE"/>
+                <action android:name="com.example.chatapp.STOPSERVICE" />
             </intent-filter>
         </receiver>
+
     </application>
 </manifest>

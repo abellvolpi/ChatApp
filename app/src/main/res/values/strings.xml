@@ -6,9 +6,14 @@
 
     <!--    Adapters Strings-->
 
-    <string name="audio">Audio (%l,context: Context)</string>
+    <string name="audio">Audio (%s)</string>
     <string name="you">You</string>
 
+    <!--    Notifications-->
+
+    <string name="server_open">Server open</string>
+    <string name="server_configs">Server was opened ip: %s : %d"</string>
+    <string name="stop">Stop</string>
 
     <!--   Warnings-->
 
@@ -43,5 +48,8 @@
 
     <!--    Profile Fragment-->
 
+    <!--    ServerBackgroundService-->
+
+    <string name="player_disconnected">%s se desconectou</string>
 
 </resources>

@@ -23,7 +23,8 @@ import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class ServerBackgroundService : Service(), CoroutineScope {
-    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+    private val job = Job()
+    override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val startServer = "com.example.startserver"
     private val stopServer = "com.example.stopserver"
@@ -40,13 +41,15 @@ class ServerBackgroundService : Service(), CoroutineScope {
             val arguments = intent?.getIntExtra("socketConfigs", 0)
             port = arguments ?: 0
             start()
-            return START_STICKY
+            return START_NOT_STICKY
         }
-        if(intent?.action.equals(stopServer)){
+
+        if (intent?.action.equals(stopServer)) {
             stopForeground(true)
             stopSelf()
-
+            return START_NOT_STICKY
         }
+
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -65,9 +68,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 ) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
-        val intent = Intent(context, MainActivity::class.java)
-        val broadCastIntent = Intent(context,ReceiverMessageBroadCast::class.java).apply{
-            putExtra("finishConnection",true)
+        val broadCastIntent = Intent(context, ReceiverMessageBroadCast::class.java).apply {
+            putExtra("finishConnection", true)
         }
         val actionIntent = PendingIntent.getBroadcast(
             context,
@@ -76,22 +78,23 @@ class ServerBackgroundService : Service(), CoroutineScope {
             PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val intent = Intent(context, MainActivity::class.java)
         val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
-            setContentTitle("Server open")
-            setContentText("Server was opened ip: ${Utils.getipAddress()}:$port")
-            setContentIntent(
-                PendingIntent.getActivity(
-                    context,
-                    0,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
+            setContentTitle(getString(R.string.server_open))
+            setContentText(getString(R.string.server_configs, Utils.getipAddress(), port))
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        context,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                    )
                 )
-            )
             setAutoCancel(true)
-            addAction(R.mipmap.ic_launcher, "Stop", actionIntent)
+            addAction(R.mipmap.ic_launcher, getString(R.string.stop), actionIntent)
         }
         startForeground(
             notificationId, builder.build()
@@ -101,17 +104,18 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     private fun serverConnecting(port: Int) {
-        GlobalScope.launch(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
             while (true) {
                 val sock = serverSocket.accept()
-                sock.soTimeout = 2000
+                sock.soTimeout = 5000
                 readMessageAndSendToAllSockets(sock)
                 sockets.add(sock)
                 Log.e("service", "accepted new user")
             }
         }
     }
+
 
     @Synchronized
     private fun sendMessage(message: Message) {
@@ -124,9 +128,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     private fun readMessageAndSendToAllSockets(socket: Socket) {
-        GlobalScope.launch(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
             while (true) {
-                try{
+                try {
                     Log.e("service", "readingMessage")
                     val reader = Scanner(socket.getInputStream().bufferedReader())
                     val line: String
@@ -134,11 +138,13 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         line = reader.nextLine()
                         val message = Utils.JSONtoMessageClass(line)
                         sendMessage(message)
-                    }
-                }catch (e: Exception){
-                    sockets.remove(socket)
-                }
 
+                    }
+                    delay(1)
+                } catch (e: Exception) {
+                    sockets.remove(socket)
+                    break
+                }
             }
         }
     }
@@ -146,7 +152,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun verifyIfMemberLeaves() {
         var oldSocket = arrayListOf<Socket>()
         oldSocket.addAll(sockets)
-        GlobalScope.launch(Dispatchers.Default) {
+        launch(Dispatchers.Default) {
             while (true) {
                 if (oldSocket != sockets) {
                     val membersLeaves = arrayListOf<Socket>()
@@ -158,7 +164,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     membersLeaves.forEach {
                         val message = Message(
                             "",
-                            "${it.localSocketAddress}:was disconnected",
+                            getString(R.string.player_disconnected, it.localSocketAddress),
                             typeMessage = Message.NOTIFY_CHAT
                         )
                         sendMessage(message)
@@ -170,4 +176,18 @@ class ServerBackgroundService : Service(), CoroutineScope {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel("teste")
+        stopSelf()
+        sockets.forEach{
+            it.close()
+        }
+    }
+
+//    override fun stopService(name: Intent?): Boolean {
+//        job.cancel()
+//        return super.stopService(name)
+//    }
 }
