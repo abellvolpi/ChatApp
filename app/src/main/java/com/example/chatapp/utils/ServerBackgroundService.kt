@@ -15,11 +15,13 @@ import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
-import java.lang.Exception
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
+import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
 class ServerBackgroundService : Service(), CoroutineScope {
@@ -27,6 +29,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private var port: Int = 0
     private val startserver = "com.example.startserver"
     private val stopserver = "com.example.stopserver"
+    private val mutex = Mutex()
 
     @Volatile
     private var sockets: ArrayList<Socket> = arrayListOf()
@@ -44,6 +47,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
         if (intent?.action.equals(stopserver)) {
             stopForeground(true)
+            stopSelf()
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -99,7 +103,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     private fun serverConnecting(port: Int) {
-        GlobalScope.launch(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
             while (true) {
                 val sock = serverSocket.accept()
@@ -114,17 +118,17 @@ class ServerBackgroundService : Service(), CoroutineScope {
     @Synchronized
     private fun sendMessage(message: Message) {
         sockets.forEach {
-            val bw = DataOutputStream(it.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
-            bw.flush()
-            Log.e("service", "Sent Message")
+                val bw = DataOutputStream(it.getOutputStream())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+                bw.flush()
+                Log.e("service", "Sent Message")
         }
     }
 
     private fun readMessageAndSendToAllSockets(socket: Socket) {
-        GlobalScope.launch(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
             while (true) {
-                try{
+                try {
                     Log.e("service", "readingMessage")
                     val reader = Scanner(socket.getInputStream().bufferedReader())
                     val line: String
@@ -133,39 +137,38 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         val message = Utils.JSONtoMessageClass(line)
                         sendMessage(message)
                     }
-                }catch (e: Exception){
-                    sockets.remove(socket)
+                } catch (e: Exception) {
+                    removeSocket(socket)
                 }
-
             }
         }
     }
 
-    private fun verifyIfMemberLeaves() {
-        var oldSocket = arrayListOf<Socket>()
-        oldSocket.addAll(sockets)
-        GlobalScope.launch(Dispatchers.Default) {
-            while (true) {
-                if (oldSocket != sockets) {
-                    val membersLeaves = arrayListOf<Socket>()
-                    oldSocket.forEach {
-                        if (!sockets.contains(it)) { //verifica membros diferentes do antigo array de socket guardado em memória
-                            membersLeaves.add(it)
-                        }
-                    }
-                    membersLeaves.forEach {
-                        val message = Message(
-                            "",
-                            "${it.localSocketAddress}:was disconnected",
-                            typeMessage = Message.NOTIFY_CHAT
-                        )
-                        sendMessage(message)
-                    }
-                    oldSocket = arrayListOf()
-                    oldSocket.addAll(sockets)
+    private fun removeSocket(socket: Socket) {
+        launch(Dispatchers.Default) {
+            mutex.withLock {
+                sockets.remove(socket)
+                val message = Message(
+                    "",
+                    "${socket.localSocketAddress}:was disconnected",
+                    typeMessage = Message.NOTIFY_CHAT
+                )
+                withContext(Dispatchers.IO) {
+                    sendMessage(message)
                 }
-                delay(250)
             }
         }
+    }
+
+    override fun stopService(name: Intent?): Boolean {
+        coroutineContext.cancel()
+        coroutineContext.cancelChildren()
+        return super.stopService(name)
+    }
+
+    override fun onDestroy() {
+        coroutineContext.cancel(CancellationException("asd"))
+        coroutineContext.cancelChildren()
+        super.onDestroy()
     }
 }
