@@ -41,12 +41,15 @@
     <string name="winner">%s ganhou o TicTacToe</string>
     <string name="draw">O jogo empatou!</string>
     <string name="recording_audio">Gravando</string>
+    <string name="message">mensagem…</string>
+    <string name="link_copied">Link Copiado</string>
+
 
     <!--    Home Fragment-->
 
     <string name="player_connected">%s se conectou</string>
     <string name="name">Nome</string>
-    <string name="port">Porta</string>
+    <string name="port">Porta:</string>
     <string name="ip">IP</string>
     <string name="port_1025">1025</string>
     <string name="port_1087">1087</string>
@@ -57,7 +60,7 @@
     <!--    CreateServer Fragment-->
 
     <string name="create">Criar</string>
-    <string name="choose_port">Escolha a porta</string>
+    <string name="choose_port">Escolha a porta:</string>
 
     <!--    Profile Fragment-->
 

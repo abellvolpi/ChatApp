@@ -12,7 +12,7 @@
 
     <TextView
         android:background="@color/white"
-        android:layout_marginBottom="20dp"
+        android:layout_marginVertical="50dp"
         android:id="@+id/who_play"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

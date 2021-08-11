@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
@@ -15,6 +17,7 @@ import android.os.Build
 import android.util.Base64
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -26,6 +29,8 @@ import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
 import java.io.File
 import java.io.FileOutputStream
+import java.net.Inet4Address
+import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.coroutines.CoroutineContext
 
@@ -144,4 +149,27 @@ object Utils : CoroutineScope {
             }
         }
     }
+    fun copyToClipBoard(context: Context?, text: String){
+        val clipBoard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText("label",text)
+        clipBoard.setPrimaryClip(clipData)
+    }
+
+    fun getAddressFromSocket(socket: Socket): String {
+        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
+        val inet4Address = inetSocketAddress.address as Inet4Address
+        return inet4Address.toString().replace("/", "")
+    }
+
+    fun getPortFromSocket(socket: Socket):String{
+        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
+        val port = inetSocketAddress.port
+        return port.toString()
+    }
+
+    fun createToast(text: String){
+        Toast.makeText(MainApplication.getContextInstance(),text,Toast.LENGTH_LONG).show()
+    }
+
+
 }

@@ -27,10 +27,28 @@
             app:popExitAnim="@anim/exit_to_left" />
         <argument
             android:name="messageIfError"
-            app:nullable="true"/>
+            app:nullable="true"
+            android:defaultValue=""
+            />
         <action
             android:id="@+id/action_homeFragment_to_cameraQrCodeScan"
             app:destination="@id/cameraQrCodeScan" />
+        <argument
+            android:name="ip"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="true"
+            />
+        <argument
+            android:name="port"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="true" />
+
+        <deepLink
+            android:id="@+id/deepLink"
+            app:uri="www.mychatapp.com/home/{ip}:{port}" />
+
     </fragment>
     <fragment
         android:id="@+id/chatFragment"

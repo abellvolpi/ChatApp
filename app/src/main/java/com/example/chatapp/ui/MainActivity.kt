@@ -1,9 +1,7 @@
 package com.example.chatapp.ui
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import com.example.chatapp.R
 
 class MainActivity : AppCompatActivity() {

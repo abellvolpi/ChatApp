@@ -6,14 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
-import android.widget.Toast
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.utils.ServerBackgroundService
-import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 
@@ -53,13 +51,13 @@ class CreateServer : Fragment() {
 
     private fun createServer() {
         with(binding) {
-            val action = CreateServerDirections.actionCreateServerToHomeFragment(null)
+            val action = CreateServerDirections.actionCreateServerToHomeFragment("")
             val intent = Intent(requireContext(), ServerBackgroundService::class.java)
             radioGroupPort.forEach {
                 with(it as RadioButton){
                     if(isChecked){
                         intent.putExtra("socketConfigs", text.toString().toInt())
-                        intent.action = "com.example.startserver"
+                        intent.action = ServerBackgroundService.START_SERVER
                         requireContext().startService(intent)
                         findNavController().navigate(action)
                         return@forEach

@@ -32,8 +32,8 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/photo"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="20dp"
                 android:padding="1dp"
@@ -80,6 +80,7 @@
         </RelativeLayout>
 
         <TextView
+            android:layout_gravity="start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/port"
@@ -87,6 +88,7 @@
             android:layout_marginVertical="10dp"/>
 
         <RadioGroup
+            android:id="@+id/radio_group_port"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -96,18 +98,18 @@
                 android:id="@+id/radioPort1025"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
+
                 android:text="@string/port_1025" />
 
             <RadioButton
                 android:id="@+id/radioPort1087"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/port_1087" />
+                android:text="@string/port_1087"
+                android:layout_marginHorizontal="10dp"/>
 
             <RadioButton
                 android:id="@+id/radioPort1998"
-
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/port_1998" />
@@ -122,9 +124,9 @@
 
         <ProgressBar
             android:id="@+id/progress_bar"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_marginVertical="5dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginVertical="4dp"
             android:alpha="0" />
 
         <TextView

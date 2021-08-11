@@ -5,6 +5,7 @@ import android.app.Activity.RESULT_OK
 
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,7 @@ import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
@@ -31,7 +33,9 @@ import kotlin.coroutines.CoroutineContext
 
 class HomeFragment : Fragment(), CoroutineScope {
     private lateinit var binding: FragmentHomeBinding
-    override val coroutineContext: CoroutineContext = Job()+ Dispatchers.Main
+    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+
+    private val args: HomeFragmentArgs by navArgs()
 
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private val navController by lazy {
@@ -55,16 +59,42 @@ class HomeFragment : Fragment(), CoroutineScope {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        val list = activity?.intent?.data?.path?.split('/')
+        val test = activity?.intent?.data?.path
+//        val ipPorta = list?.get(2)?.split(":")
+//        val ip = ipPorta?.get(0)
+//        val porta = ipPorta?.get(1)
+//        binding.ipField.setText(ip)
+        Log.d("teste", list.toString())
+        Log.d("teste2",test.toString())
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.constraintLayoutHome.setOnClickListener {
-            activity?.hideSoftKeyboard()
-        }
-        val message = arguments?.getString("messageIfError")
-        if (message != null) {
-            Snackbar.make(requireContext(), requireView(), R.string.server_disconnected.toString(), Snackbar.LENGTH_LONG).show()
-//          connectionFactory.closeSocket()
+        with(binding) {
+            val ip = args.ip
+            val port = args.port
+            ipField.setText(ip)
+            radioGroupPort.forEach {
+                with(it as RadioButton) {
+                    if (text.equals(port)) {
+                        isChecked = true
+                        return@forEach
+                    }
+                }
+            }
+            binding.constraintLayoutHome.setOnClickListener {
+                activity?.hideSoftKeyboard()
+            }
+            val message = arguments?.getString("messageIfError")
+            if (message != null) {
+                if (message.isNotBlank()) {
+                    Snackbar.make(requireContext(), requireView(), getString(R.string.server_disconnected), Snackbar.LENGTH_LONG).show()
+                }
+            }
         }
     }
 
@@ -110,11 +140,11 @@ class HomeFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private fun radioGroupSelected(): String{
+    private fun radioGroupSelected(): String {
         binding.let {
-            it.radioGroupPort.forEach {
-                with(it as RadioButton){
-                    if(isChecked){
+            it.radioGroupPort.forEach { view ->
+                with(view as RadioButton) {
+                    if (isChecked) {
                         return text.toString()
                     }
                 }
@@ -137,10 +167,10 @@ class HomeFragment : Fragment(), CoroutineScope {
                 }
                 val message = Message(
                     image,
-                    getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
+                    getString(R.string.player_connected, ProfileSharedProfile.getProfile()),
                     Message.NOTIFY_CHAT
                 )
-                connectionFactory.sendMessageToSocket(message){}
+                connectionFactory.sendMessageToSocket(message) {}
                 findNavController().navigate(action)
             }
         }
@@ -160,3 +190,5 @@ class HomeFragment : Fragment(), CoroutineScope {
         }
     }
 }
+
+
