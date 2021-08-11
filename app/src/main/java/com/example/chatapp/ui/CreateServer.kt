@@ -68,7 +68,7 @@ class CreateServer : Fragment() {
 
     private fun createServer() {
         with(binding) {
-            val ipAddress = Utils.getipAddress()
+            val ipAddress = Utils.getIpAddress()
             ProfileSharedProfile.saveProfile(nameField.text.toString())
                 val action = CreateServerDirections.actionCreateServerToHomeFragment(null)
                 val intent = Intent(requireContext(), ServerBackgroundService::class.java)

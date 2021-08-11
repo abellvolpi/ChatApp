@@ -33,7 +33,7 @@ class MainApplication : Application(), LifecycleObserver {
         fun getContextInstance(): Context {
             return instance.applicationContext
         }
-        fun aplicationIsInBackground(): Boolean {
+        fun applicationIsInBackground(): Boolean {
             return isBackground
         }
     }

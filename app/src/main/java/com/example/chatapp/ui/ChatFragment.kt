@@ -94,7 +94,7 @@ class ChatFragment : Fragment() {
             connectionFactory.line.observe(viewLifecycleOwner) {
                 if (it != null) {
                     if (it != "error") {
-                        val messageClass = Utils.JSONtoMessageClass(it)
+                        val messageClass = Utils.jsonToMessageClass(it)
                         validReceivedMessage(messageClass)
                         Log.e("Listener: ", it)
                     }
@@ -197,7 +197,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun validReceivedMessage(message: Message) {
-        if (message.ipAddress == Utils.getipAddress()) return
+        if (message.ipAddress == Utils.getIpAddress()) return
         if (message.typeMessage == Message.SENT_MESSAGE_VOICE) {
             message.typeMessage = Message.RECEIVED_MESSAGE_VOICE
             refreshUIChat(message)

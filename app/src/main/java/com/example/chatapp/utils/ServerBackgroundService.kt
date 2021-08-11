@@ -36,6 +36,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
         if (intent?.action.equals(START_SERVER)) {
             val arguments = intent?.getIntExtra("socketConfigs", 0)
             port = arguments ?: 0
@@ -48,11 +49,11 @@ class ServerBackgroundService : Service(), CoroutineScope {
             stopSelf()
             return START_NOT_STICKY
         }
-
         return super.onStartCommand(intent, flags, startId)
     }
 
     private fun start() {
+
         val context = MainApplication.getContextInstance()
         val notificationId = 1005
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -82,7 +83,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle(getString(R.string.server_openned))
-            setContentText(getString(R.string.server_configs, Utils.getipAddress(), port))
+            setContentText(getString(R.string.server_configs, Utils.getIpAddress(), port))
             setContentIntent(
                 PendingIntent.getActivity(
                     context,
@@ -134,7 +135,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
-                        val message = Utils.JSONtoMessageClass(line)
+                        val message = Utils.jsonToMessageClass(line)
                         sendMessage(message)
 
                     }

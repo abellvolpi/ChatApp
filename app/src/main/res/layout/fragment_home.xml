@@ -13,7 +13,6 @@
 
 
     <LinearLayout
-
         android:id="@+id/linearLayout"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
@@ -56,7 +55,7 @@
             android:id="@+id/name_field"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nome"
+            android:hint="@string/name"
             android:inputType="text" />
 
         <RelativeLayout
@@ -68,7 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toStartOf="@id/openCameraButton"
-                android:hint="IP"
+                android:hint="@string/ip"
                 android:inputType="text" />
 
             <ImageView
@@ -81,19 +80,42 @@
                 app:srcCompat="@android:drawable/ic_menu_camera" />
         </RelativeLayout>
 
-        <EditText
-            android:id="@+id/port_field"
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Porta"
-            android:inputType="number" />
+            android:text="@string/port"
+            android:textSize="18dp"
+            android:layout_marginVertical="10dp"/>
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/port_1025" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/port_1087" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/port_1998" />
+        </RadioGroup>
 
         <Button
             android:id="@+id/connect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="connect" />
+            android:text="@string/connect" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
@@ -106,7 +128,7 @@
             android:id="@+id/create_server"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Criar Servidor"
+            android:text="@string/create_server"
             android:textColor="?android:colorPrimary" />
 
     </LinearLayout>

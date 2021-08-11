@@ -34,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-    fun getipAddress(): String {
+    fun getIpAddress(): String {
             val wifiManager =
                 MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             return  android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)?: ""
@@ -46,7 +46,7 @@ object Utils : CoroutineScope {
         return json
     }
 
-    fun JSONtoMessageClass(json: String): Message {
+    fun jsonToMessageClass(json: String): Message {
         val jsonToClass = Gson().fromJson(json, Message::class.java)
         Log.e("toClass", jsonToClass.toString())
         return jsonToClass
@@ -69,20 +69,19 @@ object Utils : CoroutineScope {
     }
 
     fun generateQRCode(string: String): Bitmap {
-        val bitmap = QRCode.from(string).bitmap()
-        return bitmap
+        return QRCode.from(string).bitmap()
     }
 
     fun createNotification(tittle: String, text: String) {
 
         val context = MainApplication.getContextInstance()
         val notificationId = 101
-        val CHANNEL_ID = "channel_id"
+        val channelId = "channel_id"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
+            val channel = NotificationChannel(channelId, tittle, importance).apply {
                 description = text
             }
             // Register the channel with the system
@@ -90,22 +89,14 @@ object Utils : CoroutineScope {
                 .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
-        val intent = Intent(context, MainActivity::class.java).apply {
-//            putExtra("PORTA","testeporta")
-//            putExtra("IP","testeip")
-        }
-        var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+        val intent = Intent(context, MainActivity::class.java)
+
+        var builder = NotificationCompat.Builder(context, channelId).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle(tittle)
             setContentText(text)
-            setExtras(
-                bundleOf(
-//                Pair("PORTA",port)
-//                Pair("IP",ip)
-                )
-            )
             setContentIntent(
                 PendingIntent.getActivity(
                     context,

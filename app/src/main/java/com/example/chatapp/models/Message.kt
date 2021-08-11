@@ -8,7 +8,7 @@ class Message(val name: String,
               val message: String,
               var typeMessage: Int,
               val date: Long = Calendar.getInstance().time.time,
-              val ipAddress: String = Utils.getipAddress()): Serializable {
+              val ipAddress: String = Utils.getIpAddress()): Serializable {
 
     companion object{
         // type of messages

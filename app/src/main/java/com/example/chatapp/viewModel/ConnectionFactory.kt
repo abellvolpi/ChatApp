@@ -28,8 +28,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
-                            if (MainApplication.aplicationIsInBackground()) {
-                                val message = Utils.JSONtoMessageClass(line)
+                            if (MainApplication.applicationIsInBackground()) {
+                                val message = Utils.jsonToMessageClass(line)
                                 backgroundMessages.add(message)
                                 if(message.typeMessage == Message.RECEIVED_MESSAGE_VOICE){
                                     Utils.createNotification(message.name, "Received audio message")
