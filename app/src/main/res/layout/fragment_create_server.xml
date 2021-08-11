@@ -16,30 +16,36 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+
         <TextView
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/choose_port"/>
         <RadioGroup
+            android:id="@+id/radioGroupPort"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <RadioButton
+                android:id="@+id/radioPort1025"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="1025"
                 android:checked="true"/>
             <RadioButton
+                android:id="@+id/radioPort1087"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1025"/>
+                android:text="1087"/>
             <RadioButton
+                android:id="@+id/radioPort1998"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1025"/>
+                android:text="1998"/>
         </RadioGroup>
+
 
         <Button
             android:id="@+id/btnCreateServer"

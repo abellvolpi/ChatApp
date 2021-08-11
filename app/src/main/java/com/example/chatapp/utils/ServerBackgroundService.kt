@@ -1,5 +1,4 @@
 package com.example.chatapp.utils
-
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,16 +8,21 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
-import java.lang.Exception
+import java.net.Inet4Address
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
@@ -26,6 +30,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
+    private val mutex = Mutex()
 
 
     @Volatile
@@ -35,6 +40,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return null
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         if (intent?.action.equals(START_SERVER)) {
@@ -52,6 +58,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun start() {
 
         val context = MainApplication.getContextInstance()
@@ -102,6 +109,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         serverConnecting(port)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
@@ -110,14 +118,16 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 sock.soTimeout = 5000
                 readMessageAndSendToAllSockets(sock)
                 sockets.add(sock)
-                Log.e("service", "accepted new user")
+                val inetSocketAddress = sock.remoteSocketAddress as InetSocketAddress
+                val inet4Address = inetSocketAddress.address as Inet4Address
+                val address = inet4Address.toString().replace("/", "")
+                Log.e("service", "accepted new user $address")
             }
         }
     }
 
-
     @Synchronized
-    private fun sendMessage(message: Message) {
+    private suspend fun sendMessage(message: Message)  = withContext(Dispatchers.IO){
         sockets.forEach {
             val bw = DataOutputStream(it.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
@@ -137,41 +147,27 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         line = reader.nextLine()
                         val message = Utils.jsonToMessageClass(line)
                         sendMessage(message)
-
                     }
                     delay(1)
                 } catch (e: Exception) {
-                    sockets.remove(socket)
+                    removeSocket(socket)
                     break
                 }
             }
         }
     }
 
-    private fun verifyIfMemberLeaves() {
-        var oldSocket = arrayListOf<Socket>()
-        oldSocket.addAll(sockets)
+    private fun removeSocket(socket: Socket) {
         launch(Dispatchers.Default) {
-            while (true) {
-                if (oldSocket != sockets) {
-                    val membersLeaves = arrayListOf<Socket>()
-                    oldSocket.forEach {
-                        if (!sockets.contains(it)) { //verifica membros diferentes do antigo array de socket guardado em memória
-                            membersLeaves.add(it)
-                        }
-                    }
-                    membersLeaves.forEach {
-                        val message = Message(
-                            "",
-                            getString(R.string.player_disconnected, it.localSocketAddress),
-                            typeMessage = Message.NOTIFY_CHAT
-                        )
-                        sendMessage(message)
-                    }
-                    oldSocket = arrayListOf()
-                    oldSocket.addAll(sockets)
-                }
-                delay(250)
+            mutex.withLock {
+                sockets.remove(socket)
+                val message = Message(
+                    "",
+                    "${socket.localSocketAddress}:was disconnected",
+                    typeMessage = Message.NOTIFY_CHAT
+                )
+                Log.e("service", socket.inetAddress.address.toString()+"disconnect")
+                sendMessage(message)
             }
         }
     }
@@ -184,14 +180,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
             it.close()
         }
     }
-
-    //    override fun stopService(name: Intent?): Boolean {
-//        job.cancel()
-//        return super.stopService(name)
-//    }
     companion object {
         const val START_SERVER = "com.example.START_SERVER"
         const val STOP_SERVER = "com.example.STOP_SERVER"
         private const val CHANNEL_ID = "server_connection_channel_id"
     }
+
 }

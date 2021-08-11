@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.*
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
@@ -19,7 +18,6 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
@@ -35,9 +33,10 @@ object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
     fun getIpAddress(): String {
-            val wifiManager =
-                MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-            return  android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)?: ""
+        val wifiManager =
+            MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        return android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
+            ?: ""
     }
 
     fun messageClassToJSON(dataClass: Message): String {
@@ -119,7 +118,6 @@ object Utils : CoroutineScope {
             0
         )
         MediaPlayer.create(context, R.raw.bemteviaudio).start()
-
     }
 
     fun parseAnythingToByteString(file: File, onResult: (String) -> Unit) {
@@ -146,9 +144,4 @@ object Utils : CoroutineScope {
             }
         }
     }
-
-/*
-passar um bundle com ip, porta, etc.. e remontar o chat na main
-ou só abrir o app caso background
-*/
 }

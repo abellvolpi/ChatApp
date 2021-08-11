@@ -13,6 +13,7 @@
 
 
     <LinearLayout
+
         android:id="@+id/linearLayout"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
@@ -23,7 +24,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -48,7 +48,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|bottom"
                 android:src="@drawable/ic_edit" />
-
         </FrameLayout>
 
         <EditText
@@ -94,17 +93,21 @@
             android:orientation="horizontal">
 
             <RadioButton
+                android:id="@+id/radioPort1025"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="@string/port_1025" />
 
             <RadioButton
+                android:id="@+id/radioPort1087"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/port_1087" />
 
             <RadioButton
+                android:id="@+id/radioPort1998"
+
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/port_1998" />

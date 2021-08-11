@@ -8,7 +8,9 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -104,27 +106,35 @@ class HomeFragment : Fragment(), CoroutineScope {
                 nameField.error = getString(R.string.name_error)
                 return true
             }
-            if (portField.text.isBlank()) {
-                portField.error = getString(R.string.port_error)
-                return true
-            }
             return false
         }
     }
 
+    private fun radioGroupSelected(): String{
+        binding.let {
+            it.radioGroupPort.forEach {
+                with(it as RadioButton){
+                    if(isChecked){
+                        return text.toString()
+                    }
+                }
+            }
+        }
+        return ""
+    }
+
     private fun connect() {
+        val port = radioGroupSelected().toInt()
         with(binding) {
-            createSocket(ipField.text.toString(), portField.text.toString().toInt()) {
+            createSocket(ipField.text.toString(), port) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
-                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(ipField.text.toString(), portField.text.toString().toInt())
+                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(ipField.text.toString(), port)
                 var image = ""
                 val bitmap = ProfileSharedProfile.getProfilePhoto()
                 if (bitmap != null) {
                     image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
                 }
-
-
                 val message = Message(
                     image,
                     getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
