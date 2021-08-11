@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.*
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
@@ -35,9 +34,10 @@ object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
     fun getipAddress(): String {
-            val wifiManager =
-                MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-            return  android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)?: ""
+        val wifiManager =
+            MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        return android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
+            ?: ""
     }
 
     fun messageClassToJSON(dataClass: Message): String {
@@ -128,7 +128,6 @@ object Utils : CoroutineScope {
             0
         )
         MediaPlayer.create(context, R.raw.bemteviaudio).start()
-
     }
 
     fun parseAnythingToByteString(file: File, onResult: (String) -> Unit) {

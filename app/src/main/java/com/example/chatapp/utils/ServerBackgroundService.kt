@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.chatapp.R
@@ -17,8 +18,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
+import java.net.Inet4Address
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
@@ -37,6 +41,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return null
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(startServer)) {
             val arguments = intent?.getIntExtra("socketConfigs", 0)
@@ -53,6 +58,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun start() {
         val context = MainApplication.getContextInstance()
         val notificationId = 1005
@@ -103,6 +109,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         serverConnecting(port)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
@@ -111,13 +118,16 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 sock.soTimeout = 5000
                 readMessageAndSendToAllSockets(sock)
                 sockets.add(sock)
-                Log.e("service", "accepted new user")
+                val inetSocketAddress = sock.remoteSocketAddress as InetSocketAddress
+                val inet4Address = inetSocketAddress.address as Inet4Address
+                val address = inet4Address.toString().replace("/", "")
+                Log.e("service", "accepted new user $address")
             }
         }
     }
 
     @Synchronized
-    private fun sendMessage(message: Message) {
+    private suspend fun sendMessage(message: Message)  = withContext(Dispatchers.IO){
         sockets.forEach {
             val bw = DataOutputStream(it.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
@@ -140,7 +150,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     }
                     delay(1)
                 } catch (e: Exception) {
-                    sockets.remove(socket)
+                    removeSocket(socket)
                     break
                 }
             }
@@ -156,9 +166,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     "${socket.localSocketAddress}:was disconnected",
                     typeMessage = Message.NOTIFY_CHAT
                 )
-                withContext(Dispatchers.IO) {
-                    sendMessage(message)
-                }
+                Log.e("service", socket.inetAddress.address.toString()+"disconnect")
+                sendMessage(message)
             }
         }
     }

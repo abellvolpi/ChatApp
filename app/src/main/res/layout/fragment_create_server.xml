@@ -7,8 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.CreateServer">
 
-
-
     <LinearLayout
         android:layout_width="300dp"
         android:layout_height="wrap_content"
@@ -18,18 +16,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <EditText
-            android:id="@+id/port_field"
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="1025"
-            android:inputType="number" />
-
-        <EditText
-            android:id="@+id/name_field"
-            android:layout_width="match_parent"
+            android:text="Choose port"/>
+        <RadioGroup
+            android:id="@+id/radioGroupPort"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Your name" />
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/radioPort1025"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1025"
+                android:checked="true"/>
+            <RadioButton
+                android:id="@+id/radioPort1087"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1087"/>
+            <RadioButton
+                android:id="@+id/radioPort1998"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1998"/>
+        </RadioGroup>
 
         <Button
             android:id="@+id/btnCreateServer"

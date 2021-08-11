@@ -13,7 +13,6 @@
 
 
     <LinearLayout
-
         android:id="@+id/linearLayout"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
@@ -24,7 +23,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -49,7 +47,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|bottom"
                 android:src="@drawable/ic_edit" />
-
         </FrameLayout>
 
         <EditText
@@ -81,12 +78,33 @@
                 app:srcCompat="@android:drawable/ic_menu_camera" />
         </RelativeLayout>
 
-        <EditText
-            android:id="@+id/port_field"
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Porta"
-            android:inputType="number" />
+            android:text="Port"/>
+        <RadioGroup
+            android:id="@+id/radioGroupPort"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/radioPort1025"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1025"
+                android:checked="true"/>
+            <RadioButton
+                android:id="@+id/radioPort1087"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1087"/>
+            <RadioButton
+                android:id="@+id/radioPort1998"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1998"/>
+        </RadioGroup>
 
         <Button
             android:id="@+id/connect"

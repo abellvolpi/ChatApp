@@ -28,7 +28,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
-                            if (MainApplication.aplicationIsInBackground()) {
+                            if (MainApplication.applicationIsInBackground()) {
                                 val message = Utils.JSONtoMessageClass(line)
                                 backgroundMessages.add(message)
                                 if(message.typeMessage == Message.RECEIVED_MESSAGE_VOICE || message.typeMessage == Message.SENT_MESSAGE_VOICE){
