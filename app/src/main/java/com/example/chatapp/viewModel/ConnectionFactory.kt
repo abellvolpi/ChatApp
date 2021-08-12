@@ -84,11 +84,16 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         return backgroundMessages
     }
 
-    fun getIpHost(): String{
-        return socket.getAddressFromSocket()
-    }
-
-    fun empyBackgroundMessages() {
+    fun emptyBackgroundMessages() {
         backgroundMessages = arrayListOf()
     }
+
+    fun getIpHost(): String{
+        return Utils.getAddressFromSocket(socket)
+    }
+
+    fun getIpPort(): String{
+        return Utils.getPortFromSocket(socket)
+    }
+
 }

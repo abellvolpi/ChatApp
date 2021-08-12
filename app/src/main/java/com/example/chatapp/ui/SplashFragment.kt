@@ -40,7 +40,7 @@ class SplashFragment : Fragment() {
     }
 
     private fun navigate() {
-        navController.navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment(null))
+        navController.navigate(SplashFragmentDirections.actionSplashFragmentToHomeFragment())
     }
 
 }

@@ -331,7 +331,7 @@ class ChatFragment : Fragment() {
         connectionFactory.getBackgroundMessages().forEach {
             validReceivedMessage(it)
         }
-        connectionFactory.empyBackgroundMessages()
+        connectionFactory.emptyBackgroundMessages()
     }
 
     //bottom sheet functions
@@ -510,6 +510,13 @@ class ChatFragment : Fragment() {
         return when (item.itemId) {
             R.id.perfil -> {
                 findNavController().navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                return true
+            }
+            R.id.share_link ->{
+                val ip = connectionFactory.getIpHost()
+                val port = connectionFactory.getIpPort()
+                Utils.copyToClipBoard(context,"http://www.mychatapp.com/home/$ip:$port")
+                Utils.createToast(getString(R.string.link_copied))
                 return true
             }
             else -> super.onOptionsItemSelected(item)

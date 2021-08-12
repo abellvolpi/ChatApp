@@ -1,7 +1,5 @@
 package com.example.chatapp.models
 
-import com.example.chatapp.utils.ProfileSharedProfile
-import com.example.chatapp.utils.Utils
 import java.io.Serializable
 import java.util.*
 

@@ -10,8 +10,8 @@
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_bottom_sheet.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_camera_qr_code_scan.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_chat.xml" value="0.36666666666666664" />
-        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_create_server.xml" value="0.20462962962962963" />
-        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_home.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_create_server.xml" value="0.33" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_home.xml" value="0.33" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_profile.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_splash.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/invite_member_to_entry_chat.xml" value="0.36666666666666664" />
@@ -20,6 +20,7 @@
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_received_item.xml" value="0.20462962962962963" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_sent_audio.xml" value="0.20092592592592592" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_sent_item.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/menu/chat_menu.xml" value="0.1" />
       </map>
     </option>
   </component>

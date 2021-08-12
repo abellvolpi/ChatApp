@@ -16,33 +16,44 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+
         <TextView
-            android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose port"/>
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:text="@string/choose_port"
+            android:textSize="20dp" />
+
         <RadioGroup
             android:id="@+id/radioGroupPort"
-            android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:orientation="horizontal">
+
             <RadioButton
                 android:id="@+id/radioPort1025"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1025"
-                android:checked="true"/>
+                android:checked="true"
+                android:text="@string/port_1025"
+                android:textSize="15dp" />
+
             <RadioButton
                 android:id="@+id/radioPort1087"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1087"/>
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/port_1087"
+                android:textSize="15dp" />
+
             <RadioButton
                 android:id="@+id/radioPort1998"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1998"/>
+                android:text="@string/port_1998"
+                android:textSize="15dp" />
         </RadioGroup>
         <EditText
             android:id="@+id/password"
@@ -51,12 +62,13 @@
             android:hint="Password"
             android:maxLines="1"/>
 
+
         <Button
             android:id="@+id/btnCreateServer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="30dp"
-            android:text="Create" />
+            android:text="@string/create" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

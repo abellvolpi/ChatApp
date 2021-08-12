@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
@@ -15,10 +17,10 @@ import android.os.Build
 import android.util.Base64
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
@@ -79,20 +81,19 @@ object Utils : CoroutineScope {
     }
 
     fun generateQRCode(string: String): Bitmap {
-        val bitmap = QRCode.from(string).bitmap()
-        return bitmap
+        return QRCode.from(string).bitmap()
     }
 
     fun createNotification(tittle: String, text: String) {
 
         val context = MainApplication.getContextInstance()
         val notificationId = 101
-        val CHANNEL_ID = "channel_id"
+        val channelId = "channel_id"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
+            val channel = NotificationChannel(channelId, tittle, importance).apply {
                 description = text
             }
             // Register the channel with the system
@@ -100,22 +101,14 @@ object Utils : CoroutineScope {
                 .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
-        val intent = Intent(context, MainActivity::class.java).apply {
-//            putExtra("PORTA","testeporta")
-//            putExtra("IP","testeip")
-        }
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+        val intent = Intent(context, MainActivity::class.java)
+
+        val builder = NotificationCompat.Builder(context, channelId).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle(tittle)
             setContentText(text)
-            setExtras(
-                bundleOf(
-//                Pair("PORTA",port)
-//                Pair("IP",ip)
-                )
-            )
             setContentIntent(
                 PendingIntent.getActivity(
                     context,
@@ -164,6 +157,27 @@ object Utils : CoroutineScope {
             }
         }
     }
+    fun copyToClipBoard(context: Context?, text: String){
+        val clipBoard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText("label",text)
+        clipBoard.setPrimaryClip(clipData)
+    }
+
+    fun getAddressFromSocket(socket: Socket): String {
+        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
+        val inet4Address = inetSocketAddress.address as Inet4Address
+        return inet4Address.toString().replace("/", "")
+    }
+
+    fun getPortFromSocket(socket: Socket):String{
+        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
+        val port = inetSocketAddress.port
+        return port.toString()
+    }
+
+    fun createToast(text: String){
+        Toast.makeText(MainApplication.getContextInstance(),text,Toast.LENGTH_LONG).show()
+    }
 
     fun Socket.getAddressFromSocket(): String {
         val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
@@ -175,4 +189,5 @@ object Utils : CoroutineScope {
 passar um bundle com ip, porta, etc.. e remontar o chat na main
 ou só abrir o app caso background
 */
+
 }

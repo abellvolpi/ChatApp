@@ -1,5 +1,4 @@
 package com.example.chatapp.utils
-
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -29,8 +28,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
-    private val startServer = "com.example.startserver"
-    private val stopServer = "com.example.stopserver"
     private var id = 0
     private lateinit var password: String
 
@@ -42,14 +39,15 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action.equals(startServer)) {
-            port = intent?.getIntExtra("socketConfigs", 0) ?: 0
-            password = intent?.getStringExtra("password") ?: ""
+
+        if (intent?.action.equals(START_SERVER)) {
+            port = intent?.getIntExtra("socketConfigs", 0)
+            password = intent?.getStringExtra("password")
             start()
             return START_NOT_STICKY
         }
 
-        if (intent?.action.equals(stopServer)) {
+        if (intent?.action.equals(STOP_SERVER)) {
             stopForeground(true)
             stopSelf()
             return START_NOT_STICKY
@@ -58,9 +56,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     private fun start() {
+
         val context = MainApplication.getContextInstance()
         val notificationId = 1005
-        val CHANNEL_ID = "server_connection_channel_id"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, "Server open", importance).apply {
@@ -83,11 +81,11 @@ class ServerBackgroundService : Service(), CoroutineScope {
         )
 
         val intent = Intent(context, MainActivity::class.java)
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+        val builder = NotificationCompat.Builder(context, Companion.CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
-            setContentTitle(getString(R.string.server_open))
+            setContentTitle(getString(R.string.server_opened))
             setContentText(getString(R.string.server_configs, Utils.getIpAddress(), port))
             setContentIntent(
                 PendingIntent.getActivity(
@@ -219,4 +217,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
             Log.e("service", "Sent id to socket")
         }
     }
+    companion object {
+        const val START_SERVER = "com.example.START_SERVER"
+        const val STOP_SERVER = "com.example.STOP_SERVER"
+        private const val CHANNEL_ID = "server_connection_channel_id"
+    }
+
 }

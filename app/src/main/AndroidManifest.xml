@@ -29,22 +29,30 @@
             android:launchMode="singleTask">
 
             <intent-filter>
-                <action android:name="com.example.startserver" />
+                <action android:name="com.example.START_SERVER" />
             </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter android:label="connectSharedLink">
-                <action android:name="android.intent.action.VIEW" />
 
+            <intent-filter android:label="connectSharedLink">
+
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="connect.to.chat"
-                    android:scheme="app" />
+                    android:scheme="http"
+                    android:host="www.mychatapp.com"
+                    android:pathPrefix="/"
+
+                     />
             </intent-filter>
+
+            <nav-graph android:value="@navigation/nav_graph"/>
+
         </activity>
 
         <receiver

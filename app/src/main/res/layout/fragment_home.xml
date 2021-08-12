@@ -31,8 +31,8 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/photo"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="20dp"
                 android:padding="1dp"
@@ -53,7 +53,7 @@
             android:id="@+id/name_field"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nome"
+            android:hint="@string/name"
             android:inputType="text" />
 
         <RelativeLayout
@@ -65,7 +65,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toStartOf="@id/openCameraButton"
-                android:hint="IP"
+                android:hint="@string/ip"
                 android:inputType="text" />
             <ImageView
                 android:id="@+id/openCameraButton"
@@ -84,32 +84,38 @@
         </RelativeLayout>
 
         <TextView
+            android:layout_gravity="start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:text="Port"/>
+            android:text="@string/port"
+            android:textSize="18dp"
+            android:layout_marginVertical="10dp"/>
+
         <RadioGroup
-            android:id="@+id/radioGroupPort"
-            android:layout_gravity="center"
+            android:id="@+id/radio_group_port"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:orientation="horizontal">
+
             <RadioButton
                 android:id="@+id/radioPort1025"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1025"
-                android:checked="true"/>
+                android:text="@string/port_1025" />
+
             <RadioButton
                 android:id="@+id/radioPort1087"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1087"/>
+                android:text="@string/port_1087"
+                android:layout_marginHorizontal="10dp"/>
+
             <RadioButton
                 android:id="@+id/radioPort1998"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1998"/>
+                android:text="@string/port_1998" />
         </RadioGroup>
 
         <Button
@@ -117,20 +123,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="connect" />
+            android:text="@string/connect" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_marginVertical="5dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginVertical="4dp"
             android:alpha="0" />
 
         <TextView
             android:id="@+id/create_server"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Criar Servidor"
+            android:text="@string/create_server"
             android:textColor="?android:colorPrimary" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

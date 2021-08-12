@@ -3,9 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-
         android:id="@+id/perfil"
-        android:title="Perfil"
-        />
+        android:title="@string/profile" />
+
+    <item
+        android:id="@+id/share_link"
+        android:title="@string/share_link" />
 
 </menu>
