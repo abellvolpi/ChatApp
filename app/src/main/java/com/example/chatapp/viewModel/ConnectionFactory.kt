@@ -20,8 +20,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     private lateinit var socket: Socket
     var line: MutableLiveData<String> = MutableLiveData()
     private var backgroundMessages = arrayListOf<Message>()
+    var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
 
     private fun readMessage() {
+        observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
             while (true) {
                 if (socket.isConnected) {
@@ -97,4 +99,23 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         return socket.getPortFromSocket()
     }
 
+    private fun observerWhenSocketClose() {
+        launch(Dispatchers.IO) {
+            while (true) {
+                if (socket.isConnected) {
+                    try {
+                        if (socket.getInputStream().read() == -1) {
+                            Log.e("connection factory", "Server has disconnected")
+                            serverOnline.postValue(false)
+                            break
+                        }
+                    } catch (e: Exception) {
+                        serverOnline.postValue(false)
+                        break
+                    }
+                }
+                delay(1)
+            }
+        }
+    }
 }

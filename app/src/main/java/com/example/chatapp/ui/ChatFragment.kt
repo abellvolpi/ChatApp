@@ -33,9 +33,12 @@ import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.net.Socket
 
 class ChatFragment : Fragment() {
     private lateinit var output: String
@@ -105,6 +108,12 @@ class ChatFragment : Fragment() {
                         com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
                             Message.ACTION_DISCONNECTED
                         )
+                    navController.navigate(action)
+                }
+            }
+            connectionFactory.serverOnline.observe(viewLifecycleOwner){
+                if(it == false){
+                    val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
                     navController.navigate(action)
                 }
             }

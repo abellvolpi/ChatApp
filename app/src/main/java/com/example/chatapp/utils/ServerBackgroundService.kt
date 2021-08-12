@@ -150,9 +150,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                 )
                                 sendMessage(message)
                             }
-                        } else {
-                            sendMessage(classMessage)
                         }
+                    }else{
+                        sendMessage(classMessage)
                     }
                 }
                 delay(1)
@@ -164,9 +164,13 @@ class ServerBackgroundService : Service(), CoroutineScope {
         launch(Dispatchers.IO) {
             while (true) {
                 if (socket.isConnected) {
-                    if (socket.getInputStream().read() == -1) {
-                        Log.e("service", "observer when disconnected triggered")
-                        removeSocket(socket)
+                    try {
+                        if (socket.getInputStream().read() == -1) {
+                            Log.e("service", "observer when disconnected triggered")
+                            removeSocket(socket)
+                            break
+                        }
+                    }catch (e:Exception){
                         break
                     }
                 }

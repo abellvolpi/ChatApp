@@ -14,7 +14,7 @@
     <string name="message_blank">Mensagem não pode ser vazia</string>
     <string name="your_move">Sua vez de jogar. você é %s</string>
     <string name="invite_rejected">Jogador recusou seu convite</string>
-    <string name="invite_received">Aceitar uma partida de TicTacToe com %s?</string>
+    <string name="invite_received">Aceitar uma partida de TicTacToe com %s ?</string>
     <string name="cancel">cancelar</string>
     <string name="waiting_accept">Aguardando oponente aceitar a partida</string>
     <string name="waiting_move">Esperando o oponente jogar…</string>
