@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">ChatApp</string>
+    <string name="app_name" translatable="false">ChatApp</string>
 
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="test">test</string>
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="test" translatable="false">test</string>
 
     <!--    Adapters Strings-->
 
@@ -11,67 +11,67 @@
 
     <!--    Notifications-->
 
-    <string name="server_openned">Servidor aberto</string>
-    <string name="server_configs">No endereço ip: %s : %d"</string>
+    <string name="server_opened">Server opened</string>
+    <string name="server_configs">Ip address: %s : %d</string>
     <string name="stop">Stop</string>
 
     <!--   Warnings-->
 
     <string name="port_error">Please, insert a port number</string>
-    <string name="name_error">Please, insert your name</string>
+    <string name="name_error">Please, insert a name</string>
     <string name="ip_error">Please, insert a ip</string>
 
     <!--    QRCode Fragment-->
 
-    <string name="error_name">ERROR NAME</string>
+    <string name="error_name" translatable="false">ERROR NAME</string>
 
     <!--    Chat Fragment-->
 
     <string name="server_disconnected">Server disconnected</string>
-    <string name="game_started">O jogo já começou. Para retornar arraste para cima</string>
-    <string name="message_blank">Mensagem não pode ser vazia</string>
-    <string name="your_move">Sua vez de jogar. você é %s</string>
-    <string name="invite_rejected">Jogador recusou seu convite</string>
-    <string name="invite_received">Aceitar uma partida de TicTacToe com %s?</string>
-    <string name="cancel">cancelar</string>
-    <string name="waiting_accept">Aguardando oponente aceitar a partida</string>
-    <string name="waiting_move">Esperando o oponente jogar…</string>
-    <string name="player_x_wins">Player X ganhou!</string>
-    <string name="player_o_wins">Player O ganhou!</string>
-    <string name="winner">%s ganhou o TicTacToe</string>
-    <string name="draw">O jogo empatou!</string>
-    <string name="recording_audio">Gravando</string>
-    <string name="message">mensagem…</string>
-    <string name="link_copied">Link Copiado</string>
+    <string name="game_started">Game started. Swipe up</string>
+    <string name="message_blank">Message cannot be blank</string>
+    <string name="your_move">Your move. You are %s</string>
+    <string name="invite_rejected">Player rejected your invite</string>
+    <string name="invite_received">Accept a match of TicTacToe with s%?</string>
+    <string name="cancel">Cancel</string>
+    <string name="waiting_accept">Waiting Opponent accept the invite</string>
+    <string name="waiting_move">Waiting opponent\'s move</string>
+    <string name="winner">%s won the match</string>
+    <string name="draw">It\'s a draw</string>
+    <string name="message">message…</string>
+    <string name="link_copied">Link Copied</string>
 
 
     <!--    Home Fragment-->
 
-    <string name="player_connected">%s se conectou</string>
-    <string name="name">Nome</string>
-    <string name="port">Porta:</string>
-    <string name="ip">IP</string>
-    <string name="port_1025">1025</string>
-    <string name="port_1087">1087</string>
-    <string name="port_1998">1998</string>
-    <string name="connect">Conectar</string>
-    <string name="create_server">Criar Servidor</string>
+    <string name="player_connected">%s connected</string>
+    <string name="name">Name</string>
+    <string name="port">Port:</string>
+    <string name="ip" translatable="false">IP</string>
+    <string name="port_1025" translatable="false">1025</string>
+    <string name="port_1087" translatable="false">1087</string>
+    <string name="port_1998" translatable="false">1998</string>
+    <string name="connect">Connect</string>
+    <string name="create_server">Create server</string>
 
     <!--    CreateServer Fragment-->
 
-    <string name="create">Criar</string>
-    <string name="choose_port">Escolha a porta:</string>
+    <string name="create">Create</string>
+    <string name="choose_port">Choose a port:</string>
 
     <!--    Profile Fragment-->
 
     <!--    ServerBackgroundService-->
 
-    <string name="player_disconnected">%s se desconectou</string>
+    <string name="player_disconnected">%s has connected</string>
 
     <!--    Menu Fragment-->
 
-    <string name="profile">Perfil</string>
-    <string name="share_link">Link de compartilhamento</string>
+    <string name="profile">Profile</string>
+    <string name="share_link">Share room</string>
+    <string name="player_x_wins">Player X wins!</string>
+    <string name="player_o_wins">Player O wins!</string>
+    <string name="recording_audio">Recording…</string>
 
 
 </resources>

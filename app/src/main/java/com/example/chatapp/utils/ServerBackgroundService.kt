@@ -89,7 +89,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
-            setContentTitle(getString(R.string.server_openned))
+            setContentTitle(getString(R.string.server_opened))
             setContentText(getString(R.string.server_configs, Utils.getIpAddress(), port))
             setContentIntent(
                 PendingIntent.getActivity(

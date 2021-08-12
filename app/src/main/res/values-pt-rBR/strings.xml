@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="you">Você</string>
+    <string name="server_openned">Servidor aberto</string>
+    <string name="server_configs">No endereço ip: %s : %d</string>
+    <string name="stop">Encerrar</string>
+    <string name="port_error">Insira uma porta</string>
+    <string name="name_error">Insira um nome</string>
+    <string name="ip_error">Insira um Ip</string>
+    <string name="server_disconnected">Servidor Desconectado</string>
+    <string name="game_started">O jogo já começou. Para retornar arraste para cima</string>
+    <string name="player_x_wins">Jogador X ganhou!</string>
+    <string name="winner">%s ganhou a partida</string>
+    <string name="message_blank">Mensagem não pode ser vazia</string>
+    <string name="your_move">Sua vez de jogar. você é %s</string>
+    <string name="invite_rejected">Jogador recusou seu convite</string>
+    <string name="invite_received">Aceitar uma partida de TicTacToe com %s?</string>
+    <string name="cancel">cancelar</string>
+    <string name="waiting_accept">Aguardando oponente aceitar a partida</string>
+    <string name="waiting_move">Esperando o oponente jogar…</string>
+    <string name="player_o_wins">Jogador O ganhou!</string>
+    <string name="draw">O jogo empatou</string>
+    <string name="recording_audio">Gravando</string>
+    <string name="message">mensagem...</string>
+    <string name="link_copied">Link Copiado</string>
+    <string name="player_connected">%s se conectou</string>
+    <string name="name">Nome</string>
+    <string name="port">Porta:</string>
+    <string name="connect">Conectar</string>
+    <string name="create_server">Criar servidor</string>
+    <string name="create">Criar</string>
+    <string name="choose_port">Escolha a porta:</string>
+    <string name="player_disconnected">%s se desconectou</string>
+    <string name="profile">Perfil</string>
+    <string name="share_link">Compartilhar sala</string>
+    <string name="audio">Áudio (%s)</string>
+    <string name="server_opened">Servidor aberto</string>
+</resources>

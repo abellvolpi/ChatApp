@@ -63,12 +63,12 @@ class HomeFragment : Fragment(), CoroutineScope {
         super.onResume()
         val list = activity?.intent?.data?.path?.split('/')
         val test = activity?.intent?.data?.path
-//        val ipPorta = list?.get(2)?.split(":")
-//        val ip = ipPorta?.get(0)
-//        val porta = ipPorta?.get(1)
+//        val ipPort = list?.get(2)?.split(":")
+//        val ip = ipPort?.get(0)
+//        val port = ipPort?.get(1)
 //        binding.ipField.setText(ip)
-        Log.d("teste", list.toString())
-        Log.d("teste2",test.toString())
+        Log.d("test", list.toString())
+        Log.d("test2",test.toString())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
