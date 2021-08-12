@@ -2,6 +2,7 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -180,7 +181,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendMessageSocket(message: Message) {
-            connectionFactory.sendMessageToSocket(message){}
+        connectionFactory.sendMessageToSocket(message) {}
     }
 
     private fun refreshUIChat(message: Message) {
@@ -211,7 +212,7 @@ class ChatFragment : Fragment() {
             val cell = Cell(i, j)
             board.placeMove(cell, playerReceived)
             mapBoardToUi()
-            binding.bottomSheet.whoPlay.text = getString(R.string.your_move,player)
+            binding.bottomSheet.whoPlay.text = getString(R.string.your_move, player)
             canIPlay = true
             verifyIfHasWinner()
             return
@@ -251,7 +252,7 @@ class ChatFragment : Fragment() {
 
     private fun receiveInviteTicTacToe(name: String) {
         val builder = AlertDialog.Builder(requireContext()).apply {
-            setMessage(getString(R.string.invite_received,name))
+            setMessage(getString(R.string.invite_received, name))
             setPositiveButton("ok") { _, _ ->
                 acceptInviteTicTacToe()
             }
@@ -311,7 +312,7 @@ class ChatFragment : Fragment() {
             boardCells[2][1] = btn8
             boardCells[2][2] = btn9
             if (canIPlay) {
-                whoPlay.text = getString(R.string.your_move,player)
+                whoPlay.text = getString(R.string.your_move, player)
             } else {
                 whoPlay.text = getString(R.string.waiting_move)
             }
@@ -387,7 +388,7 @@ class ChatFragment : Fragment() {
                     rematchButton.visibility = View.VISIBLE
                     if (player == Board.O) {
                         val message =
-                            Message("", getString(R.string.winner,profileName), Message.NOTIFY_CHAT)
+                            Message("", getString(R.string.winner, profileName), Message.NOTIFY_CHAT)
                         sendMessageSocket(message)
                     }
                     return
@@ -397,7 +398,7 @@ class ChatFragment : Fragment() {
                     rematchButton.visibility = View.VISIBLE
                     if (player == Board.X) {
                         val message =
-                            Message("", getString(R.string.winner,profileName), Message.NOTIFY_CHAT)
+                            Message("", getString(R.string.winner, profileName), Message.NOTIFY_CHAT)
                         sendMessageSocket(message)
                     }
                     return
@@ -476,11 +477,15 @@ class ChatFragment : Fragment() {
                 findNavController().navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
                 return true
             }
-            R.id.share_link ->{
+            R.id.share_link -> {
                 val ip = connectionFactory.getIpHost()
                 val port = connectionFactory.getIpPort()
-                Utils.copyToClipBoard(context,"http://www.mychatapp.com/home/$ip:$port")
-                Utils.createToast(getString(R.string.link_copied))
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
+                    type = "text/plain"
+                }
+                startActivity(Intent.createChooser(shareIntent,""))
                 return true
             }
             else -> super.onOptionsItemSelected(item)

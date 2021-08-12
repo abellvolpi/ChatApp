@@ -61,14 +61,30 @@ class HomeFragment : Fragment(), CoroutineScope {
 
     override fun onResume() {
         super.onResume()
-        val list = activity?.intent?.data?.path?.split('/')
-        val test = activity?.intent?.data?.path
-//        val ipPort = list?.get(2)?.split(":")
-//        val ip = ipPort?.get(0)
-//        val port = ipPort?.get(1)
-//        binding.ipField.setText(ip)
-        Log.d("test", list.toString())
-        Log.d("test2",test.toString())
+        var list = activity?.intent?.data?.path?.split('/')
+        var ipPort = list?.get(2)?.split(":")
+        var ip = ipPort?.get(0)
+        var port = ipPort?.get(1)
+
+
+        with(binding) {
+            ipField.setText(ip)
+            radioGroupPort.forEach {
+                with(it as RadioButton) {
+                    if (text.equals(port)) {
+                        isChecked = true
+                        return@forEach
+                    }
+                }
+            }
+        }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
