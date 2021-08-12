@@ -27,7 +27,7 @@
 
     <!--    Chat Fragment-->
 
-    <string name="server_disconnected">Server disconnected</string>
+    <string name="server_disconnected">Server disconnected because: %s</string>
     <string name="game_started">O jogo já começou. Para retornar arraste para cima</string>
     <string name="message_blank">Mensagem não pode ser vazia</string>
     <string name="your_move">Sua vez de jogar. você é %s</string>

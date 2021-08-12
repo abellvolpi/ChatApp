@@ -67,7 +67,6 @@
                 android:layout_toStartOf="@id/openCameraButton"
                 android:hint="IP"
                 android:inputType="text" />
-
             <ImageView
                 android:id="@+id/openCameraButton"
                 android:layout_width="wrap_content"
@@ -76,11 +75,18 @@
                 android:layout_marginTop="15dp"
                 android:background="#00FFFFFF"
                 app:srcCompat="@android:drawable/ic_menu_camera" />
+            <EditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/ip_field"
+                android:hint="Password"/>
         </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="Port"/>
         <RadioGroup
             android:id="@+id/radioGroupPort"
@@ -126,6 +132,5 @@
             android:layout_height="wrap_content"
             android:text="Criar Servidor"
             android:textColor="?android:colorPrimary" />
-
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

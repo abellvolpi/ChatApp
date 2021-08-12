@@ -44,6 +44,12 @@
                 android:layout_height="wrap_content"
                 android:text="1998"/>
         </RadioGroup>
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:maxLines="1"/>
 
         <Button
             android:id="@+id/btnCreateServer"

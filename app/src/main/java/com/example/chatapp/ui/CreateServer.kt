@@ -42,7 +42,6 @@ class CreateServer : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.constraintLayoutCreateServer.setOnClickListener {
             activity?.hideSoftKeyboard()
-
         }
     }
 
@@ -62,6 +61,7 @@ class CreateServer : Fragment() {
                 with(it as RadioButton){
                     if(isChecked){
                         intent.putExtra("socketConfigs", text.toString().toInt())
+                        intent.putExtra("password", password.text.toString())
                         intent.action = "com.example.startserver"
                         requireContext().startService(intent)
                         findNavController().navigate(action)

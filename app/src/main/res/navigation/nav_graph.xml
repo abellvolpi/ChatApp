@@ -40,7 +40,7 @@
         <action
             android:id="@+id/action_chatFragment_to_homeFragment"
             app:destination="@id/homeFragment"
-            app:popUpTo="@id/homeFragment">
+            app:popUpTo="@id/chatFragment">
         </action>
         <action
             android:id="@+id/action_chatFragment_to_profileFragment"
@@ -49,13 +49,9 @@
             android:id="@+id/action_chatFragment_to_inviteMemberToEntryChat"
             app:destination="@id/inviteMemberToEntryChat" />
         <argument
-            android:name="ip"
+            android:name="joinMessage"
             app:nullable="false"
-            app:argType="string"/>
-        <argument
-            android:name="port"
-            app:nullable="false"
-            app:argType="integer"/>
+            app:argType=".models.Message"/>
     </fragment>
     <fragment
         android:id="@+id/createServer"

@@ -1,4 +1,5 @@
 package com.example.chatapp.utils
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,21 +9,18 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.MainActivity
+import com.example.chatapp.utils.Utils.getAddressFromSocket
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
-import java.net.Inet4Address
-import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
@@ -33,6 +31,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private val mutex = Mutex()
     private val startServer = "com.example.startserver"
     private val stopServer = "com.example.stopserver"
+    private var id = 0
+    private lateinit var password: String
 
     @Volatile
     private var sockets: ArrayList<Socket> = arrayListOf()
@@ -41,11 +41,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return null
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(startServer)) {
-            val arguments = intent?.getIntExtra("socketConfigs", 0)
-            port = arguments ?: 0
+            port = intent?.getIntExtra("socketConfigs", 0) ?: 0
+            password = intent?.getStringExtra("password") ?: ""
             start()
             return START_NOT_STICKY
         }
@@ -58,7 +57,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun start() {
         val context = MainApplication.getContextInstance()
         val notificationId = 1005
@@ -90,44 +88,39 @@ class ServerBackgroundService : Service(), CoroutineScope {
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
             setContentTitle(getString(R.string.server_open))
-            setContentText(getString(R.string.server_configs, Utils.getipAddress(), port))
-                setContentIntent(
-                    PendingIntent.getActivity(
-                        context,
-                        0,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                    )
+            setContentText(getString(R.string.server_configs, Utils.getIpAddress(), port))
+            setContentIntent(
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
                 )
+            )
             setAutoCancel(true)
             addAction(R.mipmap.ic_launcher, getString(R.string.stop), actionIntent)
         }
         startForeground(
             notificationId, builder.build()
         )
-//        readMessageAndSendToAllSockets()
         serverConnecting(port)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
             while (true) {
                 val sock = serverSocket.accept()
-                sock.soTimeout = 5000
                 readMessageAndSendToAllSockets(sock)
+                observerWhenSocketClose(sock)
                 sockets.add(sock)
-                val inetSocketAddress = sock.remoteSocketAddress as InetSocketAddress
-                val inet4Address = inetSocketAddress.address as Inet4Address
-                val address = inet4Address.toString().replace("/", "")
-                Log.e("service", "accepted new user $address")
+                Log.e("service", "accepted new user ${sock.getAddressFromSocket()}")
             }
         }
     }
 
     @Synchronized
-    private suspend fun sendMessage(message: Message)  = withContext(Dispatchers.IO){
+    private suspend fun sendMessage(message: Message) = withContext(Dispatchers.IO) {
         sockets.forEach {
             val bw = DataOutputStream(it.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
@@ -139,20 +132,47 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun readMessageAndSendToAllSockets(socket: Socket) {
         launch(Dispatchers.IO) {
             while (true) {
-                try {
-                    Log.e("service", "readingMessage")
-                    val reader = Scanner(socket.getInputStream().bufferedReader())
-                    val line: String
-                    if (reader.hasNextLine()) {
-                        line = reader.nextLine()
-                        val message = Utils.JSONtoMessageClass(line)
-                        sendMessage(message)
+                Log.e("service", "readingMessage")
+                val reader = Scanner(socket.getInputStream().bufferedReader())
+                val line: String
+                if (reader.hasNextLine()) {
+                    line = reader.nextLine()
+                    val classMessage = Utils.jsonToMessageClass(line)
+                    if (classMessage.type == Message.MessageType.JOIN.code) {
+                        if (password != "") {
+                            if (classMessage.join?.password == password) {
+                                sendIdToSocket(socket)
+                            } else {
+                                val message = Message(
+                                    Message.MessageType.ACKNOWLEDGE.code,
+                                    username = null,
+                                    text = null,
+                                    base64Data = null,
+                                    id = -1
+                                )
+                                sendMessage(message)
+                            }
+                        } else {
+                            sendMessage(classMessage)
+                        }
                     }
-                    delay(1)
-                } catch (e: Exception) {
-                    removeSocket(socket)
-                    break
                 }
+                delay(1)
+            }
+        }
+    }
+
+    private fun observerWhenSocketClose(socket: Socket) {
+        launch(Dispatchers.IO) {
+            while (true) {
+                if (socket.isConnected) {
+                    if (socket.getInputStream().read() == -1) {
+                        Log.e("service", "observer when disconnected triggered")
+                        removeSocket(socket)
+                        break
+                    }
+                }
+                delay(1)
             }
         }
     }
@@ -161,14 +181,16 @@ class ServerBackgroundService : Service(), CoroutineScope {
         launch(Dispatchers.Default) {
             mutex.withLock {
                 sockets.remove(socket)
-                val message = Message(
-                    "",
-                    "${socket.localSocketAddress}:was disconnected",
-                    typeMessage = Message.NOTIFY_CHAT
-                )
-                Log.e("service", socket.inetAddress.address.toString()+"disconnect")
-                sendMessage(message)
             }
+            val message = Message(
+                Message.MessageType.LEAVE.code,
+                text = getString(R.string.player_disconnected, "${socket.getAddressFromSocket()}:"),
+                id = null,
+                base64Data = null,
+                username = null
+            )
+            Log.e("service", socket.getAddressFromSocket() + "disconnect")
+            sendMessage(message)
         }
     }
 
@@ -176,8 +198,25 @@ class ServerBackgroundService : Service(), CoroutineScope {
         super.onDestroy()
         job.cancel("teste")
         stopSelf()
-        sockets.forEach{
+        sockets.forEach {
             it.close()
+        }
+    }
+
+    private fun sendIdToSocket(socket: Socket) {
+        launch(Dispatchers.IO) {
+            id++
+            val bw = DataOutputStream(socket.getOutputStream())
+            val message = Message(
+                Message.MessageType.ACKNOWLEDGE.code,
+                username = null,
+                text = null,
+                base64Data = null,
+                id = id
+            )
+            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+            bw.flush()
+            Log.e("service", "Sent id to socket")
         }
     }
 }

@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.*
@@ -39,9 +38,9 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                message.text = msg.message
-                name.text = msg.name
-                time.text = timeFormatter(msg.date)
+                message.text = msg.text
+                name.text = msg.username
+                time.text = timeFormatter(msg.time)
             }
         }
     }
@@ -50,9 +49,13 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                message.text = msg.message
-                name.text = msg.name
-                time.text = timeFormatter(msg.date)
+                name.text = msg.username
+                time.text = timeFormatter(msg.time)
+                if (msg.base64Data == null) {
+                    message.text = msg.text
+                } else {
+                    message.text = msg.base64Data
+                }
             }
         }
     }
@@ -61,7 +64,11 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                message.text = msg.message
+                if (msg.base64Data == null) {
+                    message.text = msg.text
+                } else {
+                    message.text = msg.base64Data
+                }
             }
         }
     }
@@ -82,7 +89,7 @@ class ChatAdapter(
                     startAudio.visibility = View.VISIBLE
                     stopAudio.visibility = View.GONE
                 }
-                liveDataToObserve.getHasAudioRunning().observe(lifecycleOwner, Observer {
+                liveDataToObserve.getHasAudioRunning().observe(lifecycleOwner, {
                     if (msg == data[it.first]) {
                         if (it.second) {
                             startAudio.visibility = View.GONE
@@ -96,17 +103,19 @@ class ChatAdapter(
                         stopAudio.visibility = View.GONE
                     }
                 })
-                name.text = msg.name
+                name.text = msg.username
                 name.text = context.getString(R.string.you)
-                getAudio(msg.message) {
-//                    message.text = "Audio (${getTimeAudioInString(it.duration.toLong())})"
-                    message.text = context.getString(R.string.audio, getTimeAudioInString(it.duration.toLong()))
+                getAudio(msg.base64Data?: "") {
+                    message.text = context.getString(
+                        R.string.audio,
+                        getTimeAudioInString(it.duration.toLong())
+                    )
                     seekBarAudio.max = it.duration
                 }
 
-                time.text = timeFormatter(msg.date)
+                time.text = timeFormatter(msg.time)
                 startAudio.setOnClickListener {
-                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) { long: Long ->
+                    startAudio(msg.base64Data?: "", layoutPosition, seekBarAudio.progress) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
@@ -118,7 +127,8 @@ class ChatAdapter(
                             reproduceTimeAudio.text = getTimeAudioInString(0)
                             seekBarAudio.progress = 0
                         }
-                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        seekBarAudio.setOnSeekBarChangeListener(object :
+                            SeekBar.OnSeekBarChangeListener {
                             override fun onProgressChanged(
                                 seekBar: SeekBar?,
                                 progress: Int,
@@ -160,7 +170,7 @@ class ChatAdapter(
                     startAudio.visibility = View.VISIBLE
                     stopAudio.visibility = View.GONE
                 }
-                liveDataToObserve.getHasAudioRunning().observe(lifecycleOwner, Observer {
+                liveDataToObserve.getHasAudioRunning().observe(lifecycleOwner, {
                     if (msg == data[it.first]) {
                         if (it.second) {
                             startAudio.visibility = View.GONE
@@ -174,15 +184,18 @@ class ChatAdapter(
                         stopAudio.visibility = View.GONE
                     }
                 })
-                name.text = msg.name
+                name.text = msg.username
                 name.text = context.getString(R.string.you)
-                getAudio(msg.message) {
-                    message.text = context.getString(R.string.audio, getTimeAudioInString(it.duration.toLong()))
+                getAudio(msg.base64Data?:"") {
+                    message.text = context.getString(
+                        R.string.audio,
+                        getTimeAudioInString(it.duration.toLong())
+                    )
                     seekBarAudio.max = it.duration
                 }
-                time.text = timeFormatter(msg.date)
+                time.text = timeFormatter(msg.time)
                 startAudio.setOnClickListener {
-                    startAudio(msg.message, layoutPosition, seekBarAudio.progress) { long: Long ->
+                    startAudio(msg.base64Data?:"", layoutPosition, seekBarAudio.progress) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
@@ -194,7 +207,8 @@ class ChatAdapter(
                             reproduceTimeAudio.text = getTimeAudioInString(0)
                             seekBarAudio.progress = 0
                         }
-                        seekBarAudio.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        seekBarAudio.setOnSeekBarChangeListener(object :
+                            SeekBar.OnSeekBarChangeListener {
                             override fun onProgressChanged(
                                 seekBar: SeekBar?,
                                 progress: Int,
@@ -211,7 +225,6 @@ class ChatAdapter(
                         })
                     }
                 }
-
                 stopAudio.setOnClickListener {
                     stopAudio()
                     liveDataToObserve.changeAudioRunning(false, layoutPosition)
@@ -221,27 +234,9 @@ class ChatAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
-        when (viewType) {
-            Message.SENT_MESSAGE -> {
-                return ViewHolderSentMessage(
-                    MessageSentItemBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            }
-
-            Message.RECEIVED_MESSAGE -> {
-                return ViewHolderReceiveMessage(
-                    MessageReceivedItemBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            }
-            Message.NOTIFY_CHAT -> {
+        with(viewType) {
+            val viewTypeWithoutFirstNumber = viewType.toString().drop(1).toInt()
+            if (viewTypeWithoutFirstNumber == Message.MessageType.JOIN.code || viewTypeWithoutFirstNumber == Message.MessageType.LEAVE.code) {
                 return ViewHolderNotifyMessage(
                     MessageNotifyItemBinding.inflate(
                         LayoutInflater.from(parent.context), parent, false
@@ -249,35 +244,68 @@ class ChatAdapter(
                 )
             }
 
-            Message.SENT_MESSAGE_VOICE -> {
-                return ViewHolderSentAudioMessage(
-                    MessageSentAudioBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
+            if (toString().first() == '1') {
+                when (viewTypeWithoutFirstNumber) {
+                    Message.MessageType.MESSAGE.code -> {
+                        return ViewHolderSentMessage(
+                            MessageSentItemBinding.inflate(
+                                LayoutInflater.from(parent.context),
+                                parent,
+                                false
+                            )
+                        )
+                    }
+                    Message.MessageType.AUDIO.code -> {
+                        return ViewHolderSentAudioMessage(
+                            MessageSentAudioBinding.inflate(
+                                LayoutInflater.from(parent.context),
+                                parent,
+                                false
+                            )
+                        )
+                    }
+                    else -> return ViewHolderNotifyMessage(
+                        MessageNotifyItemBinding.inflate(
+                            LayoutInflater.from(parent.context), parent, false
+                        )
                     )
-                )
-            }
-
-            Message.RECEIVED_MESSAGE_VOICE -> {
-                return ViewHolderReceiveAudioMessage(
-                    MessageReceivedAudioBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
+                }
+            } else {
+                when (viewTypeWithoutFirstNumber) {
+                    Message.MessageType.MESSAGE.code -> {
+                        return ViewHolderReceiveMessage(
+                            MessageReceivedItemBinding.inflate(
+                                LayoutInflater.from(parent.context),
+                                parent,
+                                false
+                            )
+                        )
+                    }
+                    Message.MessageType.AUDIO.code -> {
+                        return ViewHolderReceiveAudioMessage(
+                            MessageReceivedAudioBinding.inflate(
+                                LayoutInflater.from(parent.context),
+                                parent,
+                                false
+                            )
+                        )
+                    }
+                    else -> return ViewHolderNotifyMessage(
+                        MessageNotifyItemBinding.inflate(
+                            LayoutInflater.from(parent.context), parent, false
+                        )
                     )
-                )
+                }
             }
-            else -> return ViewHolderNotifyMessage(
-                MessageNotifyItemBinding.inflate(
-                    LayoutInflater.from(parent.context), parent, false
-                )
-            )
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return data[position].typeMessage
+        return if (data[position].status == Message.MessageStatus.SENT.code) {
+            "1${data[position].type}".toInt() //when sent message
+        } else {
+            "2${data[position].type}".toInt()//when recent message
+        }
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
@@ -304,7 +332,12 @@ class ChatAdapter(
         notifyItemInserted(data.size - 1)
     }
 
-    private fun startAudio(message: String, position: Int, progressSeekBar: Int, onResult: (Long) -> Unit) {
+    private fun startAudio(
+        message: String,
+        position: Int,
+        progressSeekBar: Int,
+        onResult: (Long) -> Unit
+    ) {
         Utils.parseByteToAudio(message) {
             if (positionMessageAudioRunning != -1) {
                 stopAudio()

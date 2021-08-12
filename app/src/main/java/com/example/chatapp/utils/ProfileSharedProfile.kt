@@ -28,6 +28,19 @@ object ProfileSharedProfile {
         }
     }
 
+    fun saveIdProfile(id: Int){
+        val profileSharedPreferences = getSharedProfile()
+        with(profileSharedPreferences.edit()){
+            putInt("id", id)
+        }
+    }
+
+    fun getIdProfile(): Int{
+        val shred = getSharedProfile()
+        val int = shred.getInt("id", 0) ?: 0
+        return int
+    }
+
     fun getProfile(): String {
         val shared = getSharedProfile()
         val string = shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"

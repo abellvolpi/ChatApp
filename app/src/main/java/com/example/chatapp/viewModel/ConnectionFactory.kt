@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
+import com.example.chatapp.utils.Utils.getAddressFromSocket
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
 import java.net.Socket
@@ -29,12 +30,12 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
                             if (MainApplication.applicationIsInBackground()) {
-                                val message = Utils.JSONtoMessageClass(line)
+                                val message = Utils.jsonToMessageClass(line)
                                 backgroundMessages.add(message)
-                                if(message.typeMessage == Message.RECEIVED_MESSAGE_VOICE || message.typeMessage == Message.SENT_MESSAGE_VOICE){
-                                    Utils.createNotification(message.name, "Received audio message")
+                                if(message.type == Message.MessageType.AUDIO.code){
+                                    Utils.createNotification(message.username?: "Error user name", "Received audio message")
                                 }else{
-                                    Utils.createNotification(message.name, message.message)
+                                    Utils.createNotification(message.username?: "Error user name", message.text?: "Error text")
                                 }
                                 Utils.playBemTeVi()
                             } else {
@@ -81,6 +82,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
 
     fun getBackgroundMessages(): ArrayList<Message> {
         return backgroundMessages
+    }
+
+    fun getIpHost(): String{
+        return socket.getAddressFromSocket()
     }
 
     fun empyBackgroundMessages() {

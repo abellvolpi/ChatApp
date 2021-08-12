@@ -63,7 +63,7 @@ class HomeFragment : Fragment(), CoroutineScope {
         }
         val message = arguments?.getString("messageIfError")
         if (message != null) {
-            Snackbar.make(requireContext(), requireView(), R.string.server_disconnected.toString(), Snackbar.LENGTH_LONG).show()
+            Snackbar.make(requireContext(), requireView(), getString(R.string.server_disconnected, message), Snackbar.LENGTH_LONG).show()
 //          connectionFactory.closeSocket()
         }
     }
@@ -129,18 +129,21 @@ class HomeFragment : Fragment(), CoroutineScope {
             createSocket(ipField.text.toString(), port) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
-                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(ipField.text.toString(), port)
+
                 var image = ""
                 val bitmap = ProfileSharedProfile.getProfilePhoto()
                 if (bitmap != null) {
                     image = ProfileSharedProfile.BitmapToByteArrayToString(bitmap)
                 }
                 val message = Message(
-                    image,
-                    getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
-                    Message.NOTIFY_CHAT
+                    Message.MessageType.JOIN.code,
+                    username = image,
+                    text = getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
+                    base64Data = null,
+                    join = Message.Join(avatar = image, password = password.text.toString()),
+                    id = null
                 )
-                connectionFactory.sendMessageToSocket(message){}
+                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
                 findNavController().navigate(action)
             }
         }

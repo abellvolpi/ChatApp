@@ -27,13 +27,15 @@ import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
 import java.io.File
 import java.io.FileOutputStream
+import java.net.Inet4Address
+import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
-    fun getipAddress(): String {
+    fun getIpAddress(): String {
         val wifiManager =
             MainApplication.getContextInstance().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         return android.text.format.Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
@@ -46,8 +48,16 @@ object Utils : CoroutineScope {
         return json
     }
 
-    fun JSONtoMessageClass(json: String): Message {
-        val jsonToClass = Gson().fromJson(json, Message::class.java)
+    fun jsonToMessageClass(json: String): Message {
+        var jsonVerify = ""
+        if(json.first() != '{'){ // se fez necessario esse if pois o parse class to Json estava dando falta ao {.  *Biblioteca GSON
+            jsonVerify += "{"
+            jsonVerify += json
+        }else{
+            jsonVerify = json
+        }
+        Log.e("toClass", json)
+        val jsonToClass = Gson().fromJson(jsonVerify, Message::class.java)
         Log.e("toClass", jsonToClass.toString())
         return jsonToClass
     }
@@ -94,7 +104,7 @@ object Utils : CoroutineScope {
 //            putExtra("PORTA","testeporta")
 //            putExtra("IP","testeip")
         }
-        var builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
@@ -153,6 +163,12 @@ object Utils : CoroutineScope {
                 onResult.invoke(File(output))
             }
         }
+    }
+
+    fun Socket.getAddressFromSocket(): String {
+        val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
+        val inet4Address = inetSocketAddress.address as Inet4Address
+        return inet4Address.toString().replace("/", "")
     }
 
 /*
