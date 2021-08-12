@@ -41,8 +41,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         if (intent?.action.equals(START_SERVER)) {
-            port = intent?.getIntExtra("socketConfigs", 0)
-            password = intent?.getStringExtra("password")
+            port = intent?.getIntExtra("socketConfigs", 0)?: 0
+            password = intent?.getStringExtra("password")?: ""
             start()
             return START_NOT_STICKY
         }

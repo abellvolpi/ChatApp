@@ -163,14 +163,8 @@ object Utils : CoroutineScope {
         clipBoard.setPrimaryClip(clipData)
     }
 
-    fun getAddressFromSocket(socket: Socket): String {
-        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
-        val inet4Address = inetSocketAddress.address as Inet4Address
-        return inet4Address.toString().replace("/", "")
-    }
-
-    fun getPortFromSocket(socket: Socket):String{
-        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
+    fun Socket.getPortFromSocket():String{
+        val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
         val port = inetSocketAddress.port
         return port.toString()
     }

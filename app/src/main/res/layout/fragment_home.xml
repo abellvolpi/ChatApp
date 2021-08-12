@@ -102,6 +102,7 @@
                 android:id="@+id/radioPort1025"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/port_1025" />
 
             <RadioButton

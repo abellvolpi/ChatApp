@@ -8,6 +8,7 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.getAddressFromSocket
+import com.example.chatapp.utils.Utils.getPortFromSocket
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
 import java.net.Socket
@@ -89,11 +90,11 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     }
 
     fun getIpHost(): String{
-        return Utils.getAddressFromSocket(socket)
+        return socket.getAddressFromSocket()
     }
 
     fun getIpPort(): String{
-        return Utils.getPortFromSocket(socket)
+        return socket.getPortFromSocket()
     }
 
 }

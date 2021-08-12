@@ -92,7 +92,7 @@ class HomeFragment : Fragment(), CoroutineScope {
             val message = arguments?.getString("messageIfError")
             if (message != null) {
                 if (message.isNotBlank()) {
-                    Snackbar.make(requireContext(), requireView(), getString(R.string.server_disconnected), Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(requireContext(), requireView(), getString(R.string.server_disconnected, message), Snackbar.LENGTH_LONG).show()
                 }
             }
         }
