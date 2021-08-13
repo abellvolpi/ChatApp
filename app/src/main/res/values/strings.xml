@@ -27,12 +27,12 @@
 
     <!--    Chat Fragment-->
 
-    <string name="server_disconnected">Server disconnected</string>
+    <string name="server_disconnected">Server disconnected because: %s</string>
     <string name="game_started">Game started. Swipe up</string>
     <string name="message_blank">Message cannot be blank</string>
     <string name="your_move">Your move. You are %s</string>
     <string name="invite_rejected">Player rejected your invite</string>
-    <string name="invite_received">Accept a match of TicTacToe with s%?</string>
+    <string name="invite_received">Accept a match of TicTacToe with %s ?</string>
     <string name="cancel">Cancel</string>
     <string name="waiting_accept">Waiting Opponent accept the invite</string>
     <string name="waiting_move">Waiting opponent\'s move</string>

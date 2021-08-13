@@ -1,24 +1,29 @@
 package com.example.chatapp.models
 
-import com.example.chatapp.utils.Utils
 import java.io.Serializable
 import java.util.*
 
-class Message(val name: String,
-              val message: String,
-              var typeMessage: Int,
-              val date: Long = Calendar.getInstance().time.time,
-              val ipAddress: String = Utils.getIpAddress()): Serializable {
+class Message(var type: Int,
+              var status: Int = MessageStatus.SENT.code,
+              val username: String?,
+              val text: String?,
+              val base64Data: String?,
+              val time: Long = Calendar.getInstance().time.time,
+              val id: Int?,
+              val join: Join? = null): Serializable {
+
+    data class Join(val avatar: String, val password: String): Serializable
+
 
     companion object{
-        // type of messages
-        const val RECEIVED_MESSAGE = 0
-        const val SENT_MESSAGE = 1
-        const val NOTIFY_CHAT = 2
-        const val INVITE_TICTACTOE = 3
-        const val RECEIVE_PLAY = 4
-        const val RECEIVED_MESSAGE_VOICE = 5
-        const val SENT_MESSAGE_VOICE = 6
         const val ACTION_DISCONNECTED = "ACTION_DISCONNECTED"
+    }
+
+    enum class MessageType(val code: Int) {
+        MESSAGE(0), JOIN(1), VIBRATE(2), AUDIO(3), IMAGE(4), TICINVITE(5), TICPLAY(6), LEAVE(7), ACKNOWLEDGE(8)
+    }
+
+    enum class MessageStatus(val code: Int) {
+        RECEIVED(0), SENT(1)
     }
 }

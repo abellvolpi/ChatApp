@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
+import com.example.chatapp.utils.Utils.getAddressFromSocket
+import com.example.chatapp.utils.Utils.getPortFromSocket
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
 import java.net.Socket
@@ -18,8 +20,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     private lateinit var socket: Socket
     var line: MutableLiveData<String> = MutableLiveData()
     private var backgroundMessages = arrayListOf<Message>()
+    var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
 
     private fun readMessage() {
+        observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
             while (true) {
                 if (socket.isConnected) {
@@ -31,10 +35,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                             if (MainApplication.applicationIsInBackground()) {
                                 val message = Utils.jsonToMessageClass(line)
                                 backgroundMessages.add(message)
-                                if(message.typeMessage == Message.RECEIVED_MESSAGE_VOICE || message.typeMessage == Message.SENT_MESSAGE_VOICE){
-                                    Utils.createNotification(message.name, "Received audio message")
+                                if(message.type == Message.MessageType.AUDIO.code){
+                                    Utils.createNotification(message.username?: "Error user name", "Received audio message")
                                 }else{
-                                    Utils.createNotification(message.name, message.message)
+                                    Utils.createNotification(message.username?: "Error user name", message.text?: "Error text")
                                 }
                                 Utils.playBemTeVi()
                             } else {
@@ -88,11 +92,30 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     }
 
     fun getIpHost(): String{
-        return Utils.getAddressFromSocket(socket)
+        return socket.getAddressFromSocket()
     }
 
     fun getIpPort(): String{
-        return Utils.getPortFromSocket(socket)
+        return socket.getPortFromSocket()
     }
 
+    private fun observerWhenSocketClose() {
+        launch(Dispatchers.IO) {
+            while (true) {
+                if (socket.isConnected) {
+                    try {
+                        if (socket.getInputStream().read() == -1) {
+                            Log.e("connection factory", "Server has disconnected")
+                            serverOnline.postValue(false)
+                            break
+                        }
+                    } catch (e: Exception) {
+                        serverOnline.postValue(false)
+                        break
+                    }
+                }
+                delay(1)
+            }
+        }
+    }
 }

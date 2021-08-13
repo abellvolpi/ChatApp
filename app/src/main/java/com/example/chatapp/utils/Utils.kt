@@ -51,7 +51,15 @@ object Utils : CoroutineScope {
     }
 
     fun jsonToMessageClass(json: String): Message {
-        val jsonToClass = Gson().fromJson(json, Message::class.java)
+        var jsonVerify = ""
+        if(json.first() != '{'){ // se fez necessario esse if pois o parse class to Json estava dando falta ao {.  *Biblioteca GSON
+            jsonVerify += "{"
+            jsonVerify += json
+        }else{
+            jsonVerify = json
+        }
+        Log.e("toClass", json)
+        val jsonToClass = Gson().fromJson(jsonVerify, Message::class.java)
         Log.e("toClass", jsonToClass.toString())
         return jsonToClass
     }
@@ -95,7 +103,7 @@ object Utils : CoroutineScope {
         }
         val intent = Intent(context, MainActivity::class.java)
 
-        var builder = NotificationCompat.Builder(context, channelId).apply {
+        val builder = NotificationCompat.Builder(context, channelId).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
@@ -155,14 +163,8 @@ object Utils : CoroutineScope {
         clipBoard.setPrimaryClip(clipData)
     }
 
-    fun getAddressFromSocket(socket: Socket): String {
-        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
-        val inet4Address = inetSocketAddress.address as Inet4Address
-        return inet4Address.toString().replace("/", "")
-    }
-
-    fun getPortFromSocket(socket: Socket):String{
-        val inetSocketAddress = socket.remoteSocketAddress as InetSocketAddress
+    fun Socket.getPortFromSocket():String{
+        val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
         val port = inetSocketAddress.port
         return port.toString()
     }
@@ -171,5 +173,15 @@ object Utils : CoroutineScope {
         Toast.makeText(MainApplication.getContextInstance(),text,Toast.LENGTH_LONG).show()
     }
 
+    fun Socket.getAddressFromSocket(): String {
+        val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
+        val inet4Address = inetSocketAddress.address as Inet4Address
+        return inet4Address.toString().replace("/", "")
+    }
+
+/*
+passar um bundle com ip, porta, etc.. e remontar o chat na main
+ou só abrir o app caso background
+*/
 
 }
