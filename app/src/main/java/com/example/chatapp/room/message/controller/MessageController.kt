@@ -7,6 +7,7 @@ import com.example.chatapp.utils.MainApplication
 
 
 object MessageController {
+
     private val messageController = Room
         .databaseBuilder(MainApplication.getContextInstance(), AppDataBase::class.java, "chatAppDB")
         .fallbackToDestructiveMigration()

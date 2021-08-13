@@ -1,11 +1,9 @@
 package com.example.chatapp.room.message.dao
 
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import com.example.chatapp.models.Message
 
+@Dao
 interface MessageDao {
 
     @Query("SELECT * FROM message")

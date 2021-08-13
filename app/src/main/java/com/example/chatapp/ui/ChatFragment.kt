@@ -34,6 +34,9 @@ import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 
@@ -188,10 +191,12 @@ class ChatFragment : Fragment() {
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-        MessageController.insert(message)
 
-        MessageController.getAll().forEach {
-            Log.d("test",it.toString())
+        CoroutineScope(Dispatchers.IO).launch {
+            MessageController.insert(message)
+            MessageController.getAll().forEach {
+                Log.d("test", it.toString())
+            }
         }
 
     }
@@ -211,9 +216,9 @@ class ChatFragment : Fragment() {
 
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
-            if(type == Message.MessageType.REVOKED.code){
+            if (type == Message.MessageType.REVOKED.code) {
                 var message = ""
-                when(id){
+                when (id) {
                     1 -> message = "Wrong Password"
                     2 -> message = "Server Security Kick"
                     3 -> message = "Admin kicked you"
@@ -223,8 +228,8 @@ class ChatFragment : Fragment() {
                 navController.navigate(action)
                 return@with
             }
-            if(type == Message.MessageType.ACKNOWLEDGE.code){
-                ProfileSharedProfile.saveIdProfile(id?: 0)
+            if (type == Message.MessageType.ACKNOWLEDGE.code) {
+                ProfileSharedProfile.saveIdProfile(id ?: 0)
                 return
             }
 
