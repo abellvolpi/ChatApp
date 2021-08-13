@@ -24,8 +24,8 @@ class ProfileController {
     fun update(profile: Profile){
         profileController.update(profile)
     }
-    fun getByIp(ip: String): Profile?{
-        return profileController.getByIpAddress(ip)
+    fun getByIp(id: String): Profile?{
+        return profileController.getById(id)
     }
     fun deleteAll(){
         profileController.deleteAll()

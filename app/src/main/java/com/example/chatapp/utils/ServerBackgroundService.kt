@@ -1,23 +1,27 @@
 package com.example.chatapp.utils
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
+import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
+import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Utils.getAddressFromSocket
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.io.DataOutputStream
+import java.io.*
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
@@ -28,11 +32,16 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
+
+    @Volatile
     private var id = 0
     private lateinit var password: String
 
     @Volatile
     private var sockets: ArrayList<Socket> = arrayListOf()
+
+    @Volatile
+    private var profiles: ArrayList<Profile> = arrayListOf()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -41,8 +50,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         if (intent?.action.equals(START_SERVER)) {
-            port = intent?.getIntExtra("socketConfigs", 0)?: 0
-            password = intent?.getStringExtra("password")?: ""
+            port = intent?.getIntExtra("socketConfigs", 0) ?: 0
+            password = intent?.getStringExtra("password") ?: ""
             start()
             return START_NOT_STICKY
         }
@@ -139,19 +148,25 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     if (classMessage.type == Message.MessageType.JOIN.code) {
                         if (password != "") {
                             if (classMessage.join?.password == password) {
-                                sendIdToSocket(socket)
+                                sendIdToSocket(socket) {
+                                    saveProfile(classMessage, it)
+                                }
                             } else {
                                 val message = Message(
-                                    Message.MessageType.ACKNOWLEDGE.code,
+                                    Message.MessageType.REVOKED.code,
                                     username = null,
                                     text = null,
                                     base64Data = null,
-                                    id = -1
+                                    id = 1
                                 )
                                 sendMessage(message)
                             }
+                        } else {
+                            sendIdToSocket(socket) {
+                                saveProfile(classMessage, it)
+                            }
                         }
-                    }else{
+                    } else {
                         sendMessage(classMessage)
                     }
                 }
@@ -170,7 +185,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             removeSocket(socket)
                             break
                         }
-                    }catch (e:Exception){
+                    } catch (e: Exception) {
                         break
                     }
                 }
@@ -205,7 +220,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    private fun sendIdToSocket(socket: Socket) {
+    private fun sendIdToSocket(socket: Socket, onResult: (Int) -> Unit) {
         launch(Dispatchers.IO) {
             id++
             val bw = DataOutputStream(socket.getOutputStream())
@@ -219,12 +234,32 @@ class ServerBackgroundService : Service(), CoroutineScope {
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
             bw.flush()
             Log.e("service", "Sent id to socket")
+            withContext(Dispatchers.Main) {
+                onResult.invoke(id)
+            }
         }
     }
+
+    private fun saveProfile(messageJoin: Message, idSocket: Int) {
+        val context = MainApplication.getContextInstance()
+        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${idSocket}.jpg")
+        val base64 = Base64.decode(messageJoin.join?.avatar ?: "", Base64.NO_WRAP)
+        launch(Dispatchers.IO) {
+            output.parentFile.mkdirs()
+            val fos = FileOutputStream(output)
+            fos.write(base64)
+            fos.flush()
+            fos.close()
+            val profile = Profile(idSocket, messageJoin.username ?: "name error", output.absolutePath, 0)
+            //salvar no banco de dados
+            profile.photoProfile = messageJoin.join?.avatar ?: ""
+            profiles.add(profile)
+        }
+    }
+
     companion object {
         const val START_SERVER = "com.example.START_SERVER"
         const val STOP_SERVER = "com.example.STOP_SERVER"
         private const val CHANNEL_ID = "server_connection_channel_id"
     }
-
 }

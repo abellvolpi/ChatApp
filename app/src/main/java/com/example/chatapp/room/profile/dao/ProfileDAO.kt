@@ -17,8 +17,8 @@ interface ProfileDAO {
     @Update
     fun update(vararg profile: Profile)
 
-    @Query("Select * from Profile where ipAddress = :ip")
-    fun getByIpAddress(vararg ip: String): Profile?
+    @Query("Select * from Profile where id = :id")
+    fun getById(vararg id: String): Profile?
 
     @Query("Delete From Profile")
     fun deleteAll()

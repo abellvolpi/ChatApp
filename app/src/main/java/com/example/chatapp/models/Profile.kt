@@ -5,10 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity
 class Profile(
-    val name : String,
-    val ipAddress : String,
-    val photoProfile : String?
+    @PrimaryKey
+    var id : Int,
+    var name : String,
+    var photoProfile : String?,
+    var scoreTicTacToe: Int
 )  {
-    @PrimaryKey(autoGenerate = true)
-    var id : Int? =null
 }

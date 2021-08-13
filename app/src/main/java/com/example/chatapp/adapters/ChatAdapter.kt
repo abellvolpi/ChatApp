@@ -49,7 +49,6 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                name.text = msg.username
                 time.text = timeFormatter(msg.time)
                 if (msg.base64Data == null) {
                     message.text = msg.text

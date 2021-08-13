@@ -73,7 +73,7 @@ object ProfileSharedProfile {
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
         val byteArrayOutputStream = ByteArrayOutputStream()
 //        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
-        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 10, byteArrayOutputStream)
+        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 30, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
