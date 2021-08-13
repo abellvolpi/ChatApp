@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.wifi.WifiManager
@@ -177,6 +178,11 @@ object Utils : CoroutineScope {
         val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
         val inet4Address = inetSocketAddress.address as Inet4Address
         return inet4Address.toString().replace("/", "")
+    }
+
+    fun byteArrayToBitMap(byte: String): Bitmap{
+        val base64 = Base64.decode(byte, Base64.NO_WRAP)
+        return BitmapFactory.decodeByteArray(base64, 0, base64.size)
     }
 
 /*

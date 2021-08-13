@@ -207,11 +207,19 @@ class ChatFragment : Fragment() {
 
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
-            if(type == Message.MessageType.ACKNOWLEDGE.code){
-                if(id == -1){
-                    val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Password Wrong")
-                    navController.navigate(action)
+            if(type == Message.MessageType.REVOKED.code){
+                var message = ""
+                when(id){
+                    1 -> message = "Wrong Password"
+                    2 -> message = "Server Security Kick"
+                    3 -> message = "Admin kicked you"
                 }
+                val action =
+                    ChatFragmentDirections.actionChatFragmentToHomeFragment(message)
+                navController.navigate(action)
+                return@with
+            }
+            if(type == Message.MessageType.ACKNOWLEDGE.code){
                 ProfileSharedProfile.saveIdProfile(id?: 0)
                 return
             }
