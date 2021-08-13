@@ -11,8 +11,8 @@ interface ProfileDAO {
     @Insert
     fun insert(vararg profile: Profile)
 
-    @Delete
-    fun delete(vararg profile: Profile)
+    @Query("Delete from Profile where Profile.id = :id")
+    fun delete(vararg id: Int)
 
     @Update
     fun update(vararg profile: Profile)

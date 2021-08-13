@@ -6,10 +6,8 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
-import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -21,10 +19,11 @@ import com.example.chatapp.utils.Utils.getAddressFromSocket
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.io.*
+import java.io.DataOutputStream
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
+import kotlin.collections.HashMap
 import kotlin.coroutines.CoroutineContext
 
 class ServerBackgroundService : Service(), CoroutineScope {
@@ -38,7 +37,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private lateinit var password: String
 
     @Volatile
-    private var sockets: ArrayList<Socket> = arrayListOf()
+    private var sockets: HashMap<Int, Socket> = HashMap()
 
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
@@ -119,20 +118,20 @@ class ServerBackgroundService : Service(), CoroutineScope {
             while (true) {
                 val sock = serverSocket.accept()
                 readMessageAndSendToAllSockets(sock)
-                observerWhenSocketClose(sock)
-                sockets.add(sock)
                 Log.e("service", "accepted new user ${sock.getAddressFromSocket()}")
             }
         }
     }
 
     @Synchronized
-    private suspend fun sendMessage(message: Message) = withContext(Dispatchers.IO) {
-        sockets.forEach {
-            val bw = DataOutputStream(it.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
-            bw.flush()
-            Log.e("service", "Sent Message")
+    private fun sendMessageToAllSockets(message: Message) {
+        launch(Dispatchers.IO) {
+            sockets.forEach {
+                val bw = DataOutputStream(it.value.getOutputStream())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+                bw.flush()
+                Log.e("service", "Sent Message")
+            }
         }
     }
 
@@ -150,6 +149,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             if (classMessage.join?.password == password) {
                                 sendIdToSocket(socket) {
                                     saveProfile(classMessage, it)
+                                    notifyProfileConnected(classMessage, it)
                                 }
                             } else {
                                 val message = Message(
@@ -159,15 +159,16 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                     base64Data = null,
                                     id = 1
                                 )
-                                sendMessage(message)
+                                sendMessageToASocket(socket, message)
                             }
                         } else {
                             sendIdToSocket(socket) {
                                 saveProfile(classMessage, it)
+                                notifyProfileConnected(classMessage, it)
                             }
                         }
                     } else {
-                        sendMessage(classMessage)
+                        sendMessageToAllSockets(classMessage)
                     }
                 }
                 delay(1)
@@ -196,18 +197,29 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     private fun removeSocket(socket: Socket) {
         launch(Dispatchers.Default) {
+            var idSocket: Int? = null
+            sockets.forEach {
+                if (it.value == socket) {
+                    idSocket = it.key
+                }
+            }
             mutex.withLock {
-                sockets.remove(socket)
+                if (idSocket != null) {
+                    sockets.remove(idSocket)
+                } else {
+                    Log.e("server", "error when remove socket from socket")
+                }
             }
             val message = Message(
                 Message.MessageType.LEAVE.code,
-                text = getString(R.string.player_disconnected, "${socket.getAddressFromSocket()}:"),
-                id = null,
+                text = null,
+                id = idSocket,
                 base64Data = null,
                 username = null
             )
             Log.e("service", socket.getAddressFromSocket() + "disconnect")
-            sendMessage(message)
+            idSocket?.let { notifyWhenProfileDisconnected(message, it) }
+                ?: Log.e("server", "error when notify user disconnect")
         }
     }
 
@@ -216,14 +228,25 @@ class ServerBackgroundService : Service(), CoroutineScope {
         job.cancel("teste")
         stopSelf()
         sockets.forEach {
-            it.close()
+            it.value.close()
         }
     }
 
-    private fun sendIdToSocket(socket: Socket, onResult: (Int) -> Unit) {
-        launch(Dispatchers.IO) {
+    private suspend fun sendMessageToASocket(socket: Socket, message: Message) =
+        withContext(Dispatchers.IO) {
+            launch(Dispatchers.IO) {
+                val bw = DataOutputStream(socket.getOutputStream())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+                bw.flush()
+                Log.e("service", "Sent id to socket")
+            }
+        }
+
+    private fun sendIdToSocket(socket: Socket, onResume: (Int) -> Unit) {
+        launch(Dispatchers.Default) {
             id++
-            val bw = DataOutputStream(socket.getOutputStream())
+            observerWhenSocketClose(socket)
+            sockets[id] = socket
             val message = Message(
                 Message.MessageType.ACKNOWLEDGE.code,
                 username = null,
@@ -231,30 +254,51 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 base64Data = null,
                 id = id
             )
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
-            bw.flush()
+            sendMessageToASocket(socket, message)
             Log.e("service", "Sent id to socket")
             withContext(Dispatchers.Main) {
-                onResult.invoke(id)
+                onResume.invoke(id)
             }
         }
     }
 
+    private fun notifyProfileConnected(message: Message, idProfile: Int) {
+        val join = Message.Join(message.join?.avatar ?: "", "")
+        val messageToSend = Message(
+            id = idProfile,
+            type = Message.MessageType.JOIN.code,
+            username = message.username,
+            join = join,
+            text = null,
+            base64Data = null
+        )
+        sendMessageToAllSockets(messageToSend)
+    }
+
+    private fun notifyWhenProfileDisconnected(message: Message, idProfile: Int){
+        val messageToSend = Message(id = idProfile, type = Message.MessageType.LEAVE.code, username = message.username, join = null, base64Data = null, text = null)
+        sendMessageToAllSockets(messageToSend)
+    }
+
     private fun saveProfile(messageJoin: Message, idSocket: Int) {
-        val context = MainApplication.getContextInstance()
-        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${idSocket}.jpg")
-        val base64 = Base64.decode(messageJoin.join?.avatar ?: "", Base64.NO_WRAP)
-        launch(Dispatchers.IO) {
-            output.parentFile.mkdirs()
-            val fos = FileOutputStream(output)
-            fos.write(base64)
-            fos.flush()
-            fos.close()
-            val profile = Profile(idSocket, messageJoin.username ?: "name error", output.absolutePath, 0)
-            //salvar no banco de dados
-            profile.photoProfile = messageJoin.join?.avatar ?: ""
-            profiles.add(profile)
-        }
+//        val context = MainApplication.getContextInstance()
+//        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${idSocket}.jpg")
+//        val base64 = Base64.decode(messageJoin.join?.avatar ?: "", Base64.NO_WRAP)
+//        launch(Dispatchers.IO) {
+//            output.parentFile.mkdirs()
+//            val fos = FileOutputStream(output)
+//            fos.write(base64)
+//            fos.flush()
+//            fos.close()
+        val profile = Profile(
+            idSocket,
+            messageJoin.username ?: "name error",
+            messageJoin.join?.avatar ?: "",
+            0
+        )
+//            //salvar no banco de dados
+//            profile.photoProfile = messageJoin.join?.avatar ?: ""
+        profiles.add(profile)
     }
 
     companion object {

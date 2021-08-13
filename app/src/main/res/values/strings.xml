@@ -63,7 +63,7 @@
 
     <!--    ServerBackgroundService-->
 
-    <string name="player_disconnected">%s has connected</string>
+    <string name="player_disconnected">%s has disconnected</string>
 
     <!--    Menu Fragment-->
 

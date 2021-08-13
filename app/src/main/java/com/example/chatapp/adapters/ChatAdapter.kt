@@ -63,10 +63,13 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                if (msg.base64Data == null) {
-                    message.text = msg.text
-                } else {
-                    message.text = msg.base64Data
+                when(msg.type){
+                    Message.MessageType.JOIN.code ->{
+                        message.text = MainApplication.getContextInstance().getString(R.string.player_connected, msg.username)
+                    }
+                    Message.MessageType.LEAVE.code -> {
+                        message.text = MainApplication.getContextInstance().getString(R.string.player_disconnected, msg.username)
+                    }
                 }
             }
         }
@@ -103,7 +106,6 @@ class ChatAdapter(
                     }
                 })
                 name.text = msg.username
-                name.text = context.getString(R.string.you)
                 getAudio(msg.base64Data?: "") {
                     message.text = context.getString(
                         R.string.audio,
@@ -183,7 +185,6 @@ class ChatAdapter(
                         stopAudio.visibility = View.GONE
                     }
                 })
-                name.text = msg.username
                 name.text = context.getString(R.string.you)
                 getAudio(msg.base64Data?:"") {
                     message.text = context.getString(

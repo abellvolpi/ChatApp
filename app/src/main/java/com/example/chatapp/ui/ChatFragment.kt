@@ -7,6 +7,7 @@ import android.media.MediaRecorder
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.widget.ImageButton
@@ -24,21 +25,20 @@ import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
+import com.example.chatapp.models.Profile
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
+import com.example.chatapp.viewModel.ProfileViewModel
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
-import java.net.Socket
 
 class ChatFragment : Fragment() {
     private lateinit var output: String
@@ -50,8 +50,10 @@ class ChatFragment : Fragment() {
     private val data = arrayListOf<Message>()
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
-    private val profileId : Int by lazy {
-        ProfileSharedProfile.getIdProfile()
+    private val profileViewModel : ProfileViewModel by activityViewModels()
+    private val profileId : Int
+    get() {
+        return ProfileSharedProfile.getIdProfile()
     }
     private val utilsViewModel: UtilsViewModel by activityViewModels()
     private val navController by lazy {
@@ -224,14 +226,32 @@ class ChatFragment : Fragment() {
                 return
             }
 
+            if(type == Message.MessageType.JOIN.code){
+                refreshUIChat(this)
+                if(id!= null){
+                    saveAvatarToCacheDir(id, join?.avatar?: ""){
+                        val profile = Profile(id , it, join?.avatar, 0)
+                        profileViewModel.insert(profile)
+                    }
+                }else{
+                    Log.e("database", "error when insert profile")
+                }
+                return@with
+            }
+
+            if(type == Message.MessageType.LEAVE.code){
+                refreshUIChat(this)
+                if(id!= null){
+                    profileViewModel.deleteProfile(id)
+                }else{
+                    Log.e("database", "error when insert profile")
+                }
+                return@with
+            }
             if (id == profileId) {
                 if(status == Message.MessageStatus.RECEIVED.code){
                     status = Message.MessageStatus.SENT.code
                 }
-            }
-            if(type == Message.MessageType.JOIN.code){
-                refreshUIChat(this)
-                return@with
             }
 
             when(status){
@@ -301,6 +321,18 @@ class ChatFragment : Fragment() {
 //                }
 //            }
         }
+    }
+
+    private fun saveAvatarToCacheDir(id: Int, string: String, onResult : (String) -> Unit){
+        val context = MainApplication.getContextInstance()
+        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${id}.jpg")
+        val base64 = Base64.decode(string, Base64.NO_WRAP)
+        output.parentFile?.mkdirs()
+        val fos = FileOutputStream(output)
+        fos.write(base64)
+        fos.flush()
+        fos.close()
+        onResult.invoke(output.absolutePath)
     }
 
     private fun receiveInviteTicTacToe(name: String) {

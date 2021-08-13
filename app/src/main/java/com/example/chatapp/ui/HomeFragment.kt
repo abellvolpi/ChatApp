@@ -167,8 +167,8 @@ class HomeFragment : Fragment(), CoroutineScope {
                 }
                 val message = Message(
                     Message.MessageType.JOIN.code,
-                    username = image,
-                    text = getString(R.string.player_connected,ProfileSharedProfile.getProfile()),
+                    username = nameField.text.toString(),
+                    text = null,
                     base64Data = null,
                     join = Message.Join(avatar = image, password = password.text.toString()),
                     id = null
