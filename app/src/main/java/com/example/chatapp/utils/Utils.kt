@@ -1,9 +1,6 @@
 package com.example.chatapp.utils
 
-import android.app.Activity
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -21,6 +18,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
@@ -53,10 +51,10 @@ object Utils : CoroutineScope {
 
     fun jsonToMessageClass(json: String): Message {
         var jsonVerify = ""
-        if(json.first() != '{'){ // se fez necessario esse if pois o parse class to Json estava dando falta ao {.  *Biblioteca GSON
+        if (json.first() != '{') { // se fez necessario esse if pois o parse class to Json estava dando falta ao {.  *Biblioteca GSON
             jsonVerify += "{"
             jsonVerify += json
-        }else{
+        } else {
             jsonVerify = json
         }
         Log.e("toClass", json)
@@ -123,6 +121,54 @@ object Utils : CoroutineScope {
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
 
+
+    fun createReplyableNotification(tittle: String, text: String) {
+
+        val context = MainApplication.getContextInstance()
+        val intent = Intent(context, MainActivity::class.java)
+        val notificationId = 101
+        val channelId = "channel_id"
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(channelId, tittle, importance).apply {
+                description = text
+            }
+            val notificationManager: NotificationManager = MainApplication.getContextInstance()
+                .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val KEY_TEXT_REPLY = "key_text_reply"
+
+        var replyLabel: String = context.getString(R.string.test)
+        var remoteInput: RemoteInput = RemoteInput.Builder(KEY_TEXT_REPLY).run {
+            setLabel(replyLabel)
+            build()
+        }
+        val replyPendingIntent: PendingIntent = PendingIntent.getBroadcast(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        var action =
+            NotificationCompat.Action.Builder(R.drawable.ic_send_icon, context.getString(R.string.reply), replyPendingIntent)
+                .addRemoteInput(remoteInput).build()
+
+
+        val builder = NotificationCompat.Builder(context, channelId).apply {
+            color = ContextCompat.getColor(context, R.color.blue)
+            priority = NotificationCompat.PRIORITY_HIGH
+            setSmallIcon(R.drawable.ic_telegram)
+            setContentTitle(tittle)
+            setContentText(text)
+            addAction(action)
+            setAutoCancel(true)
+        }
+        NotificationManagerCompat.from(context).notify(notificationId, builder.build())
+    }
+
+
     fun playBemTeVi() {
         val context = MainApplication.getContextInstance()
         val audioManager: AudioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
@@ -158,20 +204,21 @@ object Utils : CoroutineScope {
             }
         }
     }
-    fun copyToClipBoard(context: Context?, text: String){
+
+    fun copyToClipBoard(context: Context?, text: String) {
         val clipBoard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clipData = ClipData.newPlainText("label",text)
+        val clipData = ClipData.newPlainText("label", text)
         clipBoard.setPrimaryClip(clipData)
     }
 
-    fun Socket.getPortFromSocket():String{
+    fun Socket.getPortFromSocket(): String {
         val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
         val port = inetSocketAddress.port
         return port.toString()
     }
 
-    fun createToast(text: String){
-        Toast.makeText(MainApplication.getContextInstance(),text,Toast.LENGTH_LONG).show()
+    fun createToast(text: String) {
+        Toast.makeText(MainApplication.getContextInstance(), text, Toast.LENGTH_LONG).show()
     }
 
     fun Socket.getAddressFromSocket(): String {
@@ -180,7 +227,7 @@ object Utils : CoroutineScope {
         return inet4Address.toString().replace("/", "")
     }
 
-    fun byteArrayToBitMap(byte: String): Bitmap{
+    fun byteArrayToBitMap(byte: String): Bitmap {
         val base64 = Base64.decode(byte, Base64.NO_WRAP)
         return BitmapFactory.decodeByteArray(base64, 0, base64.size)
     }

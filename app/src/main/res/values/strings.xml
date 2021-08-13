@@ -14,6 +14,14 @@
     <string name="server_opened">Server opened</string>
     <string name="server_configs">Ip address: %s : %d</string>
     <string name="stop">Stop</string>
+    <string name="reply">Reply</string>
+    <string name="received_audio">Audio: %s</string>
+    <string name="received_photo">Received a photo</string>
+    <string name="joined_chat">Joined in the Chat</string>
+    <string name="left_the_chat">Left the Chat</string>
+
+
+
 
     <!--   Warnings-->
 
