@@ -1,4 +1,4 @@
-package com.example.chatapp.room.Profile.DAO
+package com.example.chatapp.room.profile.dao
 
 import androidx.room.*
 import com.example.chatapp.models.Profile

@@ -25,6 +25,7 @@ import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
+import com.example.chatapp.room.message.controller.MessageController
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
@@ -33,13 +34,8 @@ import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
-import java.net.Socket
 
 class ChatFragment : Fragment() {
     private lateinit var output: String
@@ -51,7 +47,7 @@ class ChatFragment : Fragment() {
     private val data = arrayListOf<Message>()
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
-    private val profileId : Int by lazy {
+    private val profileId: Int by lazy {
         ProfileSharedProfile.getIdProfile()
     }
     private val utilsViewModel: UtilsViewModel by activityViewModels()
@@ -112,8 +108,8 @@ class ChatFragment : Fragment() {
                     navController.navigate(action)
                 }
             }
-            connectionFactory.serverOnline.observe(viewLifecycleOwner){
-                if(it == false){
+            connectionFactory.serverOnline.observe(viewLifecycleOwner) {
+                if (it == false) {
                     val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
                     navController.navigate(action)
                 }
@@ -156,6 +152,7 @@ class ChatFragment : Fragment() {
                         buttonVoiceMessageRecord.visibility = View.GONE
                     }
                 }
+
                 override fun afterTextChanged(s: Editable?) {}
             })
 
@@ -171,7 +168,7 @@ class ChatFragment : Fragment() {
             buttonSend.setOnClickListener {
                 if (messageField.text.isNotBlank()) {
                     val message =
-                        Message(Message.MessageType.MESSAGE.code, username= profileName, text= messageField.text.toString(), id = profileId, base64Data = null)
+                        Message(Message.MessageType.MESSAGE.code, username = profileName, text = messageField.text.toString(), id = profileId, base64Data = null)
                     sendMessageSocket(message)
                     messageField.text.clear()
                 } else {
@@ -191,11 +188,17 @@ class ChatFragment : Fragment() {
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
+        MessageController.insert(message)
+
+        MessageController.getAll().forEach {
+            Log.d("test",it.toString())
+        }
+
     }
 
     private fun refreshUIChat(message: Message) {
         adapter.addData(message)
-        if(message.status == Message.MessageStatus.SENT.code){
+        if (message.status == Message.MessageStatus.SENT.code) {
             binding.messagesRecyclerview.scrollToPosition(data.size - 1)
             return
         }
@@ -208,29 +211,29 @@ class ChatFragment : Fragment() {
 
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
-            if(type == Message.MessageType.ACKNOWLEDGE.code){
-                if(id == -1){
+            if (type == Message.MessageType.ACKNOWLEDGE.code) {
+                if (id == -1) {
                     val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Password Wrong")
                     navController.navigate(action)
                 }
-                ProfileSharedProfile.saveIdProfile(id?: 0)
+                ProfileSharedProfile.saveIdProfile(id ?: 0)
                 return
             }
 
             if (id == profileId) {
-                if(status == Message.MessageStatus.RECEIVED.code){
+                if (status == Message.MessageStatus.RECEIVED.code) {
                     status = Message.MessageStatus.SENT.code
                 }
             }
-            if(type == Message.MessageType.JOIN.code){
+            if (type == Message.MessageType.JOIN.code) {
                 refreshUIChat(this)
                 return@with
             }
 
-            when(status){
+            when (status) {
                 Message.MessageStatus.SENT.code -> {
-                    when (type){
-                        Message.MessageType.MESSAGE.code ->{
+                    when (type) {
+                        Message.MessageType.MESSAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
@@ -240,14 +243,14 @@ class ChatFragment : Fragment() {
                 }
 
                 Message.MessageStatus.RECEIVED.code -> {
-                    when(type){
+                    when (type) {
                         Message.MessageType.MESSAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
                             refreshUIChat(this)
                         }
-                        Message.MessageType.TICPLAY.code ->{
+                        Message.MessageType.TICPLAY.code -> {
                             Log.e("Received", "play")
                             val i = text?.split(",")?.get(0)?.toInt() ?: -1
                             val j = text?.split(",")?.get(1)?.toInt() ?: -1
@@ -260,7 +263,7 @@ class ChatFragment : Fragment() {
                             verifyIfHasWinner()
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            receiveInviteTicTacToe(username?: "Error username")
+                            receiveInviteTicTacToe(username ?: "Error username")
                         }
                     }
                 }
@@ -311,7 +314,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendInviteTicTacToe() {
-        val message = Message(Message.MessageType.TICINVITE.code, text =  null, id = profileId, base64Data = null, username = profileName)
+        val message = Message(Message.MessageType.TICINVITE.code, text = null, id = profileId, base64Data = null, username = profileName)
         sendMessageSocket(message)
         snackbar = Snackbar.make(
             requireView(),
@@ -327,7 +330,7 @@ class ChatFragment : Fragment() {
         canIPlay = false
         initViewTicTacToe()
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
-        val message = Message(Message.MessageType.TICINVITE.code, text =  "accepted", id = profileId, base64Data = null, username = profileName)
+        val message = Message(Message.MessageType.TICINVITE.code, text = "accepted", id = profileId, base64Data = null, username = profileName)
         sendMessageSocket(message)
     }
 
@@ -432,10 +435,6 @@ class ChatFragment : Fragment() {
                 if (board.playerWon()) { //player O
                     whoPlay.text = getString(R.string.player_o_wins)
                     rematchButton.visibility = View.VISIBLE
-                    if (player == Board.O) {
-                        val message =
-                            Message("", getString(R.string.winner, profileName), Message.NOTIFY_CHAT)
-                        sendMessageSocket(message)
                     if (player == Board.O) { // verifica se eu sou o jogador O
                         // adicionar pontos ao placar do jogador
                     }
@@ -510,10 +509,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    companion object {
-        private const val RECORD_PERMISSION = 102
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.chat_menu, menu)
         super.onCreateOptionsMenu(menu, menuInflater)
@@ -534,10 +529,15 @@ class ChatFragment : Fragment() {
                     putExtra(Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
                     type = "text/plain"
                 }
-                startActivity(Intent.createChooser(shareIntent,""))
+                startActivity(Intent.createChooser(shareIntent, ""))
                 return true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    companion object {
+        private const val RECORD_PERMISSION = 102
+    }
 }
+

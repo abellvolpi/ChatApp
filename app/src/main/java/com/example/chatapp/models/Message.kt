@@ -1,16 +1,23 @@
 package com.example.chatapp.models
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.io.Serializable
 import java.util.*
 
-class Message(var type: Int,
-              var status: Int = MessageStatus.SENT.code,
-              val username: String?,
-              val text: String?,
-              val base64Data: String?,
-              val time: Long = Calendar.getInstance().time.time,
-              val id: Int?,
-              val join: Join? = null): Serializable {
+@Entity
+class Message(
+    var type: Int,
+    var status: Int = MessageStatus.SENT.code,
+    val username: String?,
+    val text: String?,
+    val base64Data: String?,
+    val time: Long = Calendar.getInstance().time.time,
+    val id: Int?,
+    val join: Join? = null): Serializable {
+
+    @PrimaryKey(autoGenerate = true)
+    var messageId : Int? =null
 
     data class Join(val avatar: String, val password: String): Serializable
 
