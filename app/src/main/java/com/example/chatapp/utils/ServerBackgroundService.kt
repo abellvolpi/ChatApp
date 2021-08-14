@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
 import android.util.Base64
@@ -17,7 +16,7 @@ import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
-import com.example.chatapp.utils.Utils.getAddressFromSocket
+import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

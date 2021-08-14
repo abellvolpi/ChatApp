@@ -63,11 +63,7 @@ object Utils : CoroutineScope {
         return jsonToClass
     }
 
-    fun Activity.hideSoftKeyboard() {
-        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
-            hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-        }
-    }
+
 
     fun createSocket(ip: String, port: Int, onResult: (Socket) -> Unit) {
         launch(Dispatchers.IO) {
@@ -139,10 +135,10 @@ object Utils : CoroutineScope {
             notificationManager.createNotificationChannel(channel)
         }
 
-        val KEY_TEXT_REPLY = "key_text_reply"
+        val keyTextReply = "key_text_reply"
 
         var replyLabel: String = context.getString(R.string.test)
-        var remoteInput: RemoteInput = RemoteInput.Builder(KEY_TEXT_REPLY).run {
+        var remoteInput: RemoteInput = RemoteInput.Builder(keyTextReply).run {
             setLabel(replyLabel)
             build()
         }
@@ -211,21 +207,12 @@ object Utils : CoroutineScope {
         clipBoard.setPrimaryClip(clipData)
     }
 
-    fun Socket.getPortFromSocket(): String {
-        val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
-        val port = inetSocketAddress.port
-        return port.toString()
-    }
 
     fun createToast(text: String) {
         Toast.makeText(MainApplication.getContextInstance(), text, Toast.LENGTH_LONG).show()
     }
 
-    fun Socket.getAddressFromSocket(): String {
-        val inetSocketAddress = this.remoteSocketAddress as InetSocketAddress
-        val inet4Address = inetSocketAddress.address as Inet4Address
-        return inet4Address.toString().replace("/", "")
-    }
+
 
     fun byteArrayToBitMap(byte: String): Bitmap {
         val base64 = Base64.decode(byte, Base64.NO_WRAP)

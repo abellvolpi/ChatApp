@@ -6,10 +6,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
+import com.example.chatapp.utils.Extensions.getAddressFromSocket
+import com.example.chatapp.utils.Extensions.getPortFromSocket
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
-import com.example.chatapp.utils.Utils.getAddressFromSocket
-import com.example.chatapp.utils.Utils.getPortFromSocket
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
 import java.net.Socket

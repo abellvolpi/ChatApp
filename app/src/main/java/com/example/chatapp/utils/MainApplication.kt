@@ -3,7 +3,6 @@ package com.example.chatapp.utils
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.*
-import androidx.room.Room
 import com.example.chatapp.room.appDataBase.AppDataBase
 
 class MainApplication : Application(), LifecycleObserver {
@@ -30,7 +29,6 @@ class MainApplication : Application(), LifecycleObserver {
 
     companion object {
 
-        var database: AppDataBase? = null
 
         private lateinit var instance: Context
         private var isBackground: Boolean = false

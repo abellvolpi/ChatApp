@@ -5,7 +5,6 @@ import android.app.Activity.RESULT_OK
 
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,9 +19,9 @@ import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.ProfileFragment.Companion.PICK_IMAGE
+import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils.createSocket
-import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope

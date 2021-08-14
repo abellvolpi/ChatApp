@@ -26,10 +26,10 @@ import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.room.message.controller.MessageController
+import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
-import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior

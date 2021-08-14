@@ -11,12 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCreateServerBinding
+import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.ServerBackgroundService
-import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 
 
-class CreateServer : Fragment() {
+class   CreateServer : Fragment() {
     private lateinit var binding: FragmentCreateServerBinding
     private val connectionFactory: ConnectionFactory by activityViewModels()
 
