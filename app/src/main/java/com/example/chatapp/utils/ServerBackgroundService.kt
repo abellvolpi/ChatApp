@@ -62,6 +62,13 @@ class ServerBackgroundService : Service(), CoroutineScope {
             stopSelf()
             return START_NOT_STICKY
         }
+        if (intent?.action.equals(SEND_REPLY)){
+            val message = intent?.getSerializableExtra("message") as Message
+            sendMessage(message)
+            return START_NOT_STICKY
+        }
+
+
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -142,9 +149,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 val line: String
                 if (reader.hasNextLine()) {
                     line = reader.nextLine()
-                    Log.d("before moshi", line)
                     val classMessage = Utils.jsonToMessageClass(line)
-                    Log.d("after moshi", line)
                     if (classMessage.type == Message.MessageType.JOIN.code) {
                         if (password != "") {
                             if (classMessage.join?.password == password) {
@@ -307,5 +312,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         const val START_SERVER = "com.example.START_SERVER"
         const val STOP_SERVER = "com.example.STOP_SERVER"
         private const val CHANNEL_ID = "server_connection_channel_id"
+        const val SEND_REPLY = "send_reply"
     }
 }

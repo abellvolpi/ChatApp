@@ -37,6 +37,9 @@ import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+    const val KEY_TEXT_REPLY = "key_text_reply"
+    const val CHANNEL_ID = "channel_id"
+    const val NOTIFICATION_ID = 101
 
     fun getIpAddress(): String {
         val wifiManager =
@@ -120,13 +123,11 @@ object Utils : CoroutineScope {
     fun createReplyableNotification(tittle: String, text: String) {
 
         val context = MainApplication.getContextInstance()
-        val intent = Intent(context, MainActivity::class.java)
-        val notificationId = 101
-        val channelId = "channel_id"
+        val intent = Intent(context, ReplyReceiver::class.java)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES. O) {
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(channelId, tittle, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
                 description = text
             }
             val notificationManager: NotificationManager = MainApplication.getContextInstance()
@@ -134,10 +135,9 @@ object Utils : CoroutineScope {
             notificationManager.createNotificationChannel(channel)
         }
 
-        val keyTextReply = "key_text_reply"
-
         var replyLabel: String = context.getString(R.string.test)
-        var remoteInput: RemoteInput = RemoteInput.Builder(keyTextReply).run {
+
+        var remoteInput: RemoteInput = RemoteInput.Builder(KEY_TEXT_REPLY).run {
             setLabel(replyLabel)
             build()
         }
@@ -151,7 +151,7 @@ object Utils : CoroutineScope {
                 .addRemoteInput(remoteInput).build()
 
 
-        val builder = NotificationCompat.Builder(context, channelId).apply {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
@@ -160,7 +160,7 @@ object Utils : CoroutineScope {
             addAction(action)
             setAutoCancel(true)
         }
-        NotificationManagerCompat.from(context).notify(notificationId, builder.build())
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
     }
 
 
