@@ -31,14 +31,11 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
-
     @Volatile
     private var id = 0
     private lateinit var password: String
-
     @Volatile
     private var sockets: HashMap<Int, Socket> = HashMap()
-
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
 
@@ -47,14 +44,12 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
         if (intent?.action.equals(START_SERVER)) {
             port = intent?.getIntExtra("socketConfigs", 0) ?: 0
             password = intent?.getStringExtra("password") ?: ""
             start()
             return START_NOT_STICKY
         }
-
         if (intent?.action.equals(STOP_SERVER)) {
             stopForeground(true)
             stopSelf()
@@ -64,7 +59,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     private fun start() {
-
         val context = MainApplication.getContextInstance()
         val notificationId = 1005
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -89,7 +83,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         )
 
         val intent = Intent(context, MainActivity::class.java)
-        val builder = NotificationCompat.Builder(context, Companion.CHANNEL_ID).apply {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setSmallIcon(R.drawable.ic_telegram)
@@ -232,15 +226,14 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    private suspend fun sendMessageToASocket(socket: Socket, message: Message) =
-        withContext(Dispatchers.IO) {
-            launch(Dispatchers.IO) {
-                val bw = DataOutputStream(socket.getOutputStream())
-                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
-                bw.flush()
-                Log.e("service", "Sent id to socket")
-            }
+    private fun sendMessageToASocket(socket: Socket, message: Message) {
+        launch(Dispatchers.IO) {
+            val bw = DataOutputStream(socket.getOutputStream())
+            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+            bw.flush()
+            Log.e("service", "Sent id to socket")
         }
+    }
 
     private fun sendIdToSocket(socket: Socket, onResume: (Int) -> Unit) {
         launch(Dispatchers.Default) {
@@ -281,23 +274,12 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     private fun saveProfile(messageJoin: Message, idSocket: Int) {
-//        val context = MainApplication.getContextInstance()
-//        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${idSocket}.jpg")
-//        val base64 = Base64.decode(messageJoin.join?.avatar ?: "", Base64.NO_WRAP)
-//        launch(Dispatchers.IO) {
-//            output.parentFile.mkdirs()
-//            val fos = FileOutputStream(output)
-//            fos.write(base64)
-//            fos.flush()
-//            fos.close()
         val profile = Profile(
             idSocket,
             messageJoin.username ?: "name error",
             messageJoin.join?.avatar ?: "",
             0
         )
-//            //salvar no banco de dados
-//            profile.photoProfile = messageJoin.join?.avatar ?: ""
         profiles.add(profile)
     }
 
