@@ -86,12 +86,11 @@ object Utils : CoroutineScope {
 
         val context = MainApplication.getContextInstance()
         val notificationId = 101
-        val channelId = "channel_id"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(channelId, tittle, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
                 description = text
             }
             // Register the channel with the system
@@ -101,7 +100,7 @@ object Utils : CoroutineScope {
         }
         val intent = Intent(context, MainActivity::class.java)
 
-        val builder = NotificationCompat.Builder(context, channelId).apply {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
@@ -212,16 +211,9 @@ object Utils : CoroutineScope {
         Toast.makeText(MainApplication.getContextInstance(), text, Toast.LENGTH_LONG).show()
     }
 
-
-
     fun byteArrayToBitMap(byte: String): Bitmap {
         val base64 = Base64.decode(byte, Base64.NO_WRAP)
         return BitmapFactory.decodeByteArray(base64, 0, base64.size)
     }
-
-/*
-passar um bundle com ip, porta, etc.. e remontar o chat na main
-ou só abrir o app caso background
-*/
 
 }

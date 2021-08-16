@@ -9,6 +9,7 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.getPortFromSocket
 import com.example.chatapp.utils.MainApplication
+import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
@@ -51,7 +52,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                         Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.left_the_chat))
                                     }
                                     else -> {
-                                        Utils.createReplyableNotification(message.username ?: "Error user name", message.text ?: "Error text")
+                                        if (message.username != ProfileSharedProfile.getProfile()) {
+                                            Utils.createReplyableNotification(message.username ?: "Error user name", message.text ?: "Error text")
+                                        }
+                                        else return@withContext
                                     }
                                 }
                                 Utils.playBemTeVi()
