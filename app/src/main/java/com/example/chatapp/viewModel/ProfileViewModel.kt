@@ -30,14 +30,10 @@ class ProfileViewModel : ViewModel(), CoroutineScope{
             controller.insert(profile)
         }
     }
-
     fun deleteAll(){
         launch(Dispatchers.IO) {
             controller.deleteAll()
         }
     }
-
-
-
 
 }

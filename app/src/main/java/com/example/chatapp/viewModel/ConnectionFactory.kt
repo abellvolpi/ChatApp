@@ -9,6 +9,7 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.getPortFromSocket
 import com.example.chatapp.utils.MainApplication
+import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
@@ -24,8 +25,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
 
     private fun readMessage() {
-        observerWhenSocketClose()
         val context = MainApplication.getContextInstance()
+        observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
             while (true) {
                 if (socket.isConnected) {
@@ -33,10 +34,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
-                        Log.d("before moshi 2", line)
-                        val message = Utils.jsonToMessageClass(line)
-                        Log.d("after moshi 2", line)
                         withContext(Dispatchers.Main) {
+                            val message = Utils.jsonToMessageClass(line)
                             if (MainApplication.applicationIsInBackground()) {
                                 backgroundMessages.add(message)
                                 when (message.type) {
@@ -65,10 +64,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                         )
                                     }
                                     else -> {
-                                        Utils.createReplyableNotification(
-                                            message.username ?: "Error user name",
-                                            message.text ?: "Error text"
-                                        )
+                                        if (message.username != ProfileSharedProfile.getProfile()) {
+                                            Utils.createReplyableNotification(message.username ?: "Error user name", message.text ?: "Error text")
+                                        }
+                                        else return@withContext
                                     }
                                 }
                                 Utils.playBemTeVi()

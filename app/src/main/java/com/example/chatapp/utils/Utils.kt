@@ -85,12 +85,11 @@ object Utils : CoroutineScope {
 
         val context = MainApplication.getContextInstance()
         val notificationId = 101
-        val channelId = "channel_id"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(channelId, tittle, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
                 description = text
             }
             // Register the channel with the system
@@ -100,7 +99,7 @@ object Utils : CoroutineScope {
         }
         val intent = Intent(context, MainActivity::class.java)
 
-        val builder = NotificationCompat.Builder(context, channelId).apply {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             color = ContextCompat.getColor(context, R.color.blue)
             priority = NotificationCompat.PRIORITY_HIGH
             setSmallIcon(R.drawable.ic_telegram)
@@ -135,9 +134,9 @@ object Utils : CoroutineScope {
             notificationManager.createNotificationChannel(channel)
         }
 
-        var replyLabel: String = context.getString(R.string.test)
+        val replyLabel: String = context.getString(R.string.test)
 
-        var remoteInput: RemoteInput = RemoteInput.Builder(KEY_TEXT_REPLY).run {
+        val remoteInput: RemoteInput = RemoteInput.Builder(KEY_TEXT_REPLY).run {
             setLabel(replyLabel)
             build()
         }
@@ -146,7 +145,7 @@ object Utils : CoroutineScope {
             PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        var action =
+        val action =
             NotificationCompat.Action.Builder(R.drawable.ic_send_icon, context.getString(R.string.reply), replyPendingIntent)
                 .addRemoteInput(remoteInput).build()
 
@@ -222,10 +221,5 @@ object Utils : CoroutineScope {
         val base64 = Base64.decode(byte, Base64.NO_WRAP)
         return BitmapFactory.decodeByteArray(base64, 0, base64.size)
     }
-
-/*
-passar um bundle com ip, porta, etc.. e remontar o chat na main
-ou só abrir o app caso background
-*/
 
 }
