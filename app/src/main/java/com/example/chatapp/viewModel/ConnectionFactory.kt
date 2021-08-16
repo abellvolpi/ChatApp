@@ -4,11 +4,12 @@ package com.example.chatapp.viewModel
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.chatapp.R
 import com.example.chatapp.models.Message
+import com.example.chatapp.utils.Extensions.getAddressFromSocket
+import com.example.chatapp.utils.Extensions.getPortFromSocket
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
-import com.example.chatapp.utils.Utils.getAddressFromSocket
-import com.example.chatapp.utils.Utils.getPortFromSocket
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
 import java.net.Socket
@@ -23,6 +24,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
 
     private fun readMessage() {
+        val context = MainApplication.getContextInstance()
         observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
             while (true) {
@@ -35,10 +37,22 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                             if (MainApplication.applicationIsInBackground()) {
                                 val message = Utils.jsonToMessageClass(line)
                                 backgroundMessages.add(message)
-                                if(message.type == Message.MessageType.AUDIO.code){
-                                    Utils.createNotification(message.username?: "Error user name", "Received audio message")
-                                }else{
-                                    Utils.createNotification(message.username?: "Error user name", message.text?: "Error text")
+                                when (message.type) {
+                                    Message.MessageType.AUDIO.code -> {
+                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.received_audio))
+                                    }
+                                    Message.MessageType.IMAGE.code -> {
+                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.received_photo))
+                                    }
+                                    Message.MessageType.JOIN.code -> {
+                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.joined_chat))
+                                    }
+                                    Message.MessageType.LEAVE.code -> {
+                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.left_the_chat))
+                                    }
+                                    else -> {
+                                        Utils.createReplyableNotification(message.username ?: "Error user name", message.text ?: "Error text")
+                                    }
                                 }
                                 Utils.playBemTeVi()
                             } else {
@@ -91,11 +105,11 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         backgroundMessages = arrayListOf()
     }
 
-    fun getIpHost(): String{
+    fun getIpHost(): String {
         return socket.getAddressFromSocket()
     }
 
-    fun getIpPort(): String{
+    fun getIpPort(): String {
         return socket.getPortFromSocket()
     }
 

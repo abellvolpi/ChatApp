@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="you">Você</string>
-    <string name="server_openned">Servidor aberto</string>
     <string name="server_configs">No endereço ip: %s : %d</string>
     <string name="stop">Encerrar</string>
     <string name="port_error">Insira uma porta</string>
@@ -35,4 +34,9 @@
     <string name="share_link">Compartilhar sala</string>
     <string name="audio">Áudio (%s)</string>
     <string name="server_opened">Servidor aberto</string>
+    <string name="reply">Responder</string>
+    <string name="received_audio">Áudio: %s</string>
+    <string name="received_photo">Imagem Recebida</string>
+    <string name="joined_chat">Entrou no chat</string>
+    <string name="left_the_chat">Saiu do chat</string>
 </resources>

@@ -5,7 +5,6 @@ import android.app.Activity.RESULT_OK
 
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,9 +19,9 @@ import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.ui.ProfileFragment.Companion.PICK_IMAGE
+import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils.createSocket
-import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
@@ -61,14 +60,30 @@ class HomeFragment : Fragment(), CoroutineScope {
 
     override fun onResume() {
         super.onResume()
-        val list = activity?.intent?.data?.path?.split('/')
-        val test = activity?.intent?.data?.path
-//        val ipPort = list?.get(2)?.split(":")
-//        val ip = ipPort?.get(0)
-//        val port = ipPort?.get(1)
-//        binding.ipField.setText(ip)
-        Log.d("test", list.toString())
-        Log.d("test2",test.toString())
+        var list = activity?.intent?.data?.path?.split('/')
+        var ipPort = list?.get(2)?.split(":")
+        var ip = ipPort?.get(0)
+        var port = ipPort?.get(1)
+
+
+        with(binding) {
+            ipField.setText(ip)
+            radioGroupPort.forEach {
+                with(it as RadioButton) {
+                    if (text.equals(port)) {
+                        isChecked = true
+                        return@forEach
+                    }
+                }
+            }
+        }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

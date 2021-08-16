@@ -2,6 +2,7 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -26,10 +27,11 @@ import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
+import com.example.chatapp.room.message.controller.MessageController
+import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
-import com.example.chatapp.utils.Utils.hideSoftKeyboard
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.ProfileViewModel
 import com.example.chatapp.viewModel.UtilsViewModel
@@ -192,11 +194,19 @@ class ChatFragment : Fragment() {
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
+
+        CoroutineScope(Dispatchers.IO).launch {
+            MessageController.insert(message)
+            MessageController.getAll().forEach {
+                Log.d("test", it.toString())
+            }
+        }
+
     }
 
     private fun refreshUIChat(message: Message) {
         adapter.addData(message)
-        if(message.status == Message.MessageStatus.SENT.code){
+        if (message.status == Message.MessageStatus.SENT.code) {
             binding.messagesRecyclerview.scrollToPosition(data.size - 1)
             return
         }
@@ -209,9 +219,9 @@ class ChatFragment : Fragment() {
 
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
-            if(type == Message.MessageType.REVOKED.code){
+            if (type == Message.MessageType.REVOKED.code) {
                 var message = ""
-                when(id){
+                when (id) {
                     1 -> message = "Wrong Password"
                     2 -> message = "Server Security Kick"
                     3 -> message = "Admin kicked you"
@@ -221,8 +231,8 @@ class ChatFragment : Fragment() {
                 navController.navigate(action)
                 return@with
             }
-            if(type == Message.MessageType.ACKNOWLEDGE.code){
-                ProfileSharedProfile.saveIdProfile(id?: 0)
+            if (type == Message.MessageType.ACKNOWLEDGE.code) {
+                ProfileSharedProfile.saveIdProfile(id ?: 0)
                 return
             }
 
@@ -545,10 +555,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    companion object {
-        private const val RECORD_PERMISSION = 102
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.chat_menu, menu)
         super.onCreateOptionsMenu(menu, menuInflater)
@@ -561,14 +567,22 @@ class ChatFragment : Fragment() {
                 findNavController().navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
                 return true
             }
-            R.id.share_link ->{
+            R.id.share_link -> {
                 val ip = connectionFactory.getIpHost()
                 val port = connectionFactory.getIpPort()
-                Utils.copyToClipBoard(context,"http://www.mychatapp.com/home/$ip:$port")
-                Utils.createToast(getString(R.string.link_copied))
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
+                    type = "text/plain"
+                }
+                startActivity(Intent.createChooser(shareIntent, ""))
                 return true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    companion object {
+        private const val RECORD_PERMISSION = 102
     }
 }

@@ -15,7 +15,7 @@ import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
-import com.example.chatapp.utils.Utils.getAddressFromSocket
+import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

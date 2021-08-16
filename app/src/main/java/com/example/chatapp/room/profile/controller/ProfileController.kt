@@ -1,14 +1,13 @@
-package com.example.chatapp.room.Profile.Controller
+package com.example.chatapp.room.profile.controller
 
 import androidx.room.Room
 import com.example.chatapp.models.Profile
-import com.example.chatapp.room.AppDataBase.AppDataBase
+import com.example.chatapp.room.appDataBase.AppDataBase
 import com.example.chatapp.utils.MainApplication
 
 class ProfileController {
     private val profileController = Room
-        .databaseBuilder(MainApplication.getContextInstance(), AppDataBase::class.java, "chatappDB")
-        .allowMainThreadQueries()
+        .databaseBuilder(MainApplication.getContextInstance(), AppDataBase::class.java, "chatAppDB")
         .fallbackToDestructiveMigration()
         .build()
         .profileDAO()
@@ -16,7 +15,6 @@ class ProfileController {
     fun getAll(): List<Profile>{
         return  profileController.getAll()
     }
-
     fun insert(profile: Profile){
         profileController.insert(profile)
     }
