@@ -60,6 +60,13 @@ class ServerBackgroundService : Service(), CoroutineScope {
             stopSelf()
             return START_NOT_STICKY
         }
+        if (intent?.action.equals(SEND_REPLY)){
+            val message = intent?.getSerializableExtra("message") as Message
+            sendMessage(message)
+            return START_NOT_STICKY
+        }
+
+
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -126,7 +133,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     @Synchronized
-    private suspend fun sendMessage(message: Message) = withContext(Dispatchers.IO) {
+    private fun sendMessage(message: Message) = withContext(Dispatchers.IO) {
         sockets.forEach {
             val bw = DataOutputStream(it.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
@@ -138,7 +145,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun readMessageAndSendToAllSockets(socket: Socket) {
         launch(Dispatchers.IO) {
             while (true) {
-                Log.e("service", "readingMessage")
+//                Log.e("service", "readingMessage")
                 val reader = Scanner(socket.getInputStream().bufferedReader())
                 val line: String
                 if (reader.hasNextLine()) {
@@ -240,25 +247,20 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     private fun saveProfile(messageJoin: Message, idSocket: Int) {
-        val context = MainApplication.getContextInstance()
-        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${idSocket}.jpg")
-        val base64 = Base64.decode(messageJoin.join?.avatar ?: "", Base64.NO_WRAP)
-        launch(Dispatchers.IO) {
-            output.parentFile.mkdirs()
-            val fos = FileOutputStream(output)
-            fos.write(base64)
-            fos.flush()
-            fos.close()
-            val profile = Profile(idSocket, messageJoin.username ?: "name error", output.absolutePath, 0)
-            //salvar no banco de dados
-            profile.photoProfile = messageJoin.join?.avatar ?: ""
-            profiles.add(profile)
-        }
+        val profile = Profile(
+            idSocket,
+            messageJoin.username ?: "name error",
+            messageJoin.join?.avatar ?: "",
+            0
+        )
+        profiles.add(profile)
     }
+
 
     companion object {
         const val START_SERVER = "com.example.START_SERVER"
         const val STOP_SERVER = "com.example.STOP_SERVER"
         private const val CHANNEL_ID = "server_connection_channel_id"
+        const val SEND_REPLY = "send_reply"
     }
 }

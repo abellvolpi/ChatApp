@@ -7,9 +7,9 @@ import android.content.Intent
 class ReceiverMessageBroadCast : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.getBooleanExtra("finishConnection",false) == true) {
-            val intent = Intent(context, ServerBackgroundService::class.java)
-            intent.action = ServerBackgroundService.STOP_SERVER
-            MainApplication.getContextInstance().stopService(intent)
+            val myIntent = Intent(context, ServerBackgroundService::class.java)
+            myIntent.action = ServerBackgroundService.STOP_SERVER
+            MainApplication.getContextInstance().stopService(myIntent)
         }
     }
 }
