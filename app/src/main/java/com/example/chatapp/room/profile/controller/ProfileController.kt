@@ -18,8 +18,8 @@ class ProfileController {
     fun insert(profile: Profile){
         profileController.insert(profile)
     }
-    fun delete(profile: Profile){
-        profileController.delete(profile)
+    fun delete(id: Int){
+        profileController.delete(id)
     }
     fun update(profile: Profile){
         profileController.update(profile)
