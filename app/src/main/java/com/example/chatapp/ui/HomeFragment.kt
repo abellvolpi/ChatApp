@@ -23,6 +23,7 @@ import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.viewModel.ConnectionFactory
+import com.example.chatapp.viewModel.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,7 @@ class HomeFragment : Fragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
     private val args: HomeFragmentArgs by navArgs()
-
+    private val profileViewModel : ProfileViewModel by activityViewModels()
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private val navController by lazy {
         findNavController()
@@ -174,14 +175,14 @@ class HomeFragment : Fragment(), CoroutineScope {
             createSocket(ipField.text.toString(), port) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
-
+                profileViewModel.deleteAll()
                 var image = ""
                 val bitmap = ProfileSharedProfile.getProfilePhoto()
                 if (bitmap != null) {
                     image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
                 }
                 val message = Message(
-                    Message.MessageType.JOIN.code,
+                    type = Message.MessageType.JOIN.code,
                     username = nameField.text.toString(),
                     text = null,
                     base64Data = null,

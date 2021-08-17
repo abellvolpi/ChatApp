@@ -30,12 +30,13 @@ object ProfileSharedProfile {
         val profileSharedPreferences = getSharedProfile()
         with(profileSharedPreferences.edit()){
             putInt("id", id)
+            apply()
         }
     }
 
     fun getIdProfile(): Int{
         val shred = getSharedProfile()
-        val int = shred.getInt("id", 0) ?: 0
+        val int = shred.getInt("id", 0)
         return int
     }
 

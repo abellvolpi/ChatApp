@@ -52,11 +52,11 @@ class ChatFragment : Fragment() {
     private val data = arrayListOf<Message>()
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
-    private val profileViewModel : ProfileViewModel by activityViewModels()
-    private val profileId : Int
-    get() {
-        return ProfileSharedProfile.getIdProfile()
-    }
+    private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val profileId: Int
+        get() {
+            return ProfileSharedProfile.getIdProfile()
+        }
     private val utilsViewModel: UtilsViewModel by activityViewModels()
     private val navController by lazy {
         findNavController()
@@ -102,11 +102,7 @@ class ChatFragment : Fragment() {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
                 if (it != null) {
-                    if (it != "error") {
-                        val jsonMessage = Utils.jsonToMessageClass(it)
-                        validReceivedMessage(jsonMessage)
-                        Log.e("Listener: ", it)
-                    }
+                    validReceivedMessage(it)
                 } else {
                     val action =
                         com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
@@ -115,9 +111,10 @@ class ChatFragment : Fragment() {
                     navController.navigate(action)
                 }
             }
-            connectionFactory.serverOnline.observe(viewLifecycleOwner){
-                if(it == false){
-                    val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
+            connectionFactory.serverOnline.observe(viewLifecycleOwner) {
+                if (it == false) {
+                    val action =
+                        ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
                     navController.navigate(action)
                 }
             }
@@ -159,6 +156,7 @@ class ChatFragment : Fragment() {
                         buttonVoiceMessageRecord.visibility = View.GONE
                     }
                 }
+
                 override fun afterTextChanged(s: Editable?) {}
             })
 
@@ -174,7 +172,13 @@ class ChatFragment : Fragment() {
             buttonSend.setOnClickListener {
                 if (messageField.text.isNotBlank()) {
                     val message =
-                        Message(Message.MessageType.MESSAGE.code, username= profileName, text= messageField.text.toString(), id = profileId, base64Data = null)
+                        Message(
+                            Message.MessageType.MESSAGE.code,
+                            username = profileName,
+                            text = messageField.text.toString(),
+                            id = profileId,
+                            base64Data = null
+                        )
                     sendMessageSocket(message)
                     messageField.text.clear()
                 } else {
@@ -232,42 +236,73 @@ class ChatFragment : Fragment() {
                 return@with
             }
             if (type == Message.MessageType.ACKNOWLEDGE.code) {
-                ProfileSharedProfile.saveIdProfile(id ?: 0)
+                if (id != null) {
+                    ProfileSharedProfile.saveIdProfile(id)
+                    val file = File(
+                        MainApplication.getContextInstance().cacheDir.absolutePath,
+                        "/photosProfile"
+                    )
+                    if (file.exists()) {
+                        file.listFiles()?.forEach {
+                            it.delete()
+                        }
+                    }
+
+                    if (text != null) {
+                        profileViewModel.deleteAll()
+                        Utils.listJsonToProfiles(text)?.forEach { profile ->
+                            if (profile.photoProfile != "" || profile.photoProfile != null) {
+                                saveAvatarToCacheDir(profile.id, profile.photoProfile ?: "") {
+                                    profile.photoProfile = it
+                                    profileViewModel.insert(profile)
+                                }
+                            } else {
+                                profile.photoProfile = ""
+                                profileViewModel.insert(profile)
+                            }
+                        }
+                    }
+                }
                 return
             }
 
-            if(type == Message.MessageType.JOIN.code){
+            if (type == Message.MessageType.JOIN.code) {
                 refreshUIChat(this)
-                if(id!= null){
-                    saveAvatarToCacheDir(id, join?.avatar?: ""){
-                        val profile = Profile(id , it, join?.avatar, 0)
+                if (id != null) {
+                    if (join?.avatar != "" || join?.avatar != null) {
+                        saveAvatarToCacheDir(id, join?.avatar ?: "") {
+                            val profile = Profile(id, username ?: "", it, 0)
+                            profileViewModel.insert(profile)
+                        }
+                    } else {
+                        val profile = Profile(id, username ?: "", "", 0)
                         profileViewModel.insert(profile)
                     }
-                }else{
+                } else {
                     Log.e("database", "error when insert profile")
                 }
                 return@with
             }
 
-            if(type == Message.MessageType.LEAVE.code){
+            if (type == Message.MessageType.LEAVE.code) {
                 refreshUIChat(this)
-                if(id!= null){
+                if (id != null) {
                     profileViewModel.deleteProfile(id)
-                }else{
+                } else {
                     Log.e("database", "error when insert profile")
                 }
                 return@with
             }
             if (id == profileId) {
-                if(status == Message.MessageStatus.RECEIVED.code){
+                if (status == Message.MessageStatus.RECEIVED.code) {
                     status = Message.MessageStatus.SENT.code
                 }
             }
 
-            when(status){
+            when (status) {
                 Message.MessageStatus.SENT.code -> {
-                    when (type){
-                        Message.MessageType.MESSAGE.code ->{
+                    when (type) {
+                        Message.MessageType.MESSAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
@@ -277,14 +312,14 @@ class ChatFragment : Fragment() {
                 }
 
                 Message.MessageStatus.RECEIVED.code -> {
-                    when(type){
+                    when (type) {
                         Message.MessageType.MESSAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
                             refreshUIChat(this)
                         }
-                        Message.MessageType.TICPLAY.code ->{
+                        Message.MessageType.TICPLAY.code -> {
                             Log.e("Received", "play")
                             val i = text?.split(",")?.get(0)?.toInt() ?: -1
                             val j = text?.split(",")?.get(1)?.toInt() ?: -1
@@ -292,12 +327,13 @@ class ChatFragment : Fragment() {
                             val cell = Cell(i, j)
                             board.placeMove(cell, playerReceived)
                             mapBoardToUi()
-                            binding.bottomSheet.whoPlay.text = getString(R.string.your_move, player)
+                            binding.bottomSheet.whoPlay.text =
+                                getString(R.string.your_move, player)
                             canIPlay = true
                             verifyIfHasWinner()
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            receiveInviteTicTacToe(username?: "Error username")
+                            receiveInviteTicTacToe(username ?: "Error username")
                         }
                     }
                 }
@@ -333,9 +369,10 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun saveAvatarToCacheDir(id: Int, string: String, onResult : (String) -> Unit){
+    private fun saveAvatarToCacheDir(id: Int, string: String, onResult: (String) -> Unit) {
         val context = MainApplication.getContextInstance()
-        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${id}.jpg")
+        val output =
+            File(context.cacheDir.absolutePath + "/photosProfile", "profilePhoto_${id}.jpg")
         val base64 = Base64.decode(string, Base64.NO_WRAP)
         output.parentFile?.mkdirs()
         val fos = FileOutputStream(output)
@@ -360,7 +397,13 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendInviteTicTacToe() {
-        val message = Message(Message.MessageType.TICINVITE.code, text =  null, id = profileId, base64Data = null, username = profileName)
+        val message = Message(
+            Message.MessageType.TICINVITE.code,
+            text = null,
+            id = profileId,
+            base64Data = null,
+            username = profileName
+        )
         sendMessageSocket(message)
         snackbar = Snackbar.make(
             requireView(),
@@ -376,12 +419,24 @@ class ChatFragment : Fragment() {
         canIPlay = false
         initViewTicTacToe()
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
-        val message = Message(Message.MessageType.TICINVITE.code, text =  "accepted", id = profileId, base64Data = null, username = profileName)
+        val message = Message(
+            Message.MessageType.TICINVITE.code,
+            text = "accepted",
+            id = profileId,
+            base64Data = null,
+            username = profileName
+        )
         sendMessageSocket(message)
     }
 
     private fun declineInviteTicTacToe() {
-        val message = Message(Message.MessageType.TICINVITE.code, text = "declined", id = profileId, base64Data = null, username = profileName)
+        val message = Message(
+            Message.MessageType.TICINVITE.code,
+            text = "declined",
+            id = profileId,
+            base64Data = null,
+            username = profileName
+        )
         sendMessageSocket(message)
     }
 
@@ -462,7 +517,13 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendPlay(i: Int, j: Int) {
-        val messagePlay = Message(Message.MessageType.TICPLAY.code, text = "${i},${j},${player}", id = profileId, base64Data = null, username = profileName)
+        val messagePlay = Message(
+            Message.MessageType.TICPLAY.code,
+            text = "${i},${j},${player}",
+            id = profileId,
+            base64Data = null,
+            username = profileName
+        )
         sendMessageSocket(messagePlay)
         binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)
         canIPlay = false
@@ -549,7 +610,13 @@ class ChatFragment : Fragment() {
         binding.buttonVoiceMessageRecord.background =
             ContextCompat.getDrawable(requireContext(), R.drawable.layout_button)
         Utils.parseAnythingToByteString(File(output)) {
-            val message = Message(Message.MessageType.AUDIO.code, id = profileId, base64Data = it, text = null, username = profileName)
+            val message = Message(
+                Message.MessageType.AUDIO.code,
+                id = profileId,
+                base64Data = it,
+                text = null,
+                username = profileName
+            )
             sendMessageSocket(message)
             binding.progressBarSendMessage.visibility = View.GONE
         }

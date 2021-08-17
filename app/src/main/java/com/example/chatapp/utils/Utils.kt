@@ -13,8 +13,8 @@ import android.media.MediaPlayer
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
+import android.util.JsonReader
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -22,14 +22,16 @@ import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
+import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
-import com.google.gson.Gson
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
 import java.io.File
 import java.io.FileOutputStream
-import java.net.Inet4Address
-import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.coroutines.CoroutineContext
 
@@ -44,26 +46,23 @@ object Utils : CoroutineScope {
     }
 
     fun messageClassToJSON(dataClass: Message): String {
-        val json = Gson().toJson(dataClass)
-        Log.e("toJSON", json)
+        val moshi = Moshi.Builder().build()
+        val adapter = moshi.adapter(Message::class.java)
+        val json = adapter.toJson(dataClass)
+        Log.d("messageClassToJSON", json)
         return json
     }
 
     fun jsonToMessageClass(json: String): Message {
-        var jsonVerify = ""
-        if (json.first() != '{') { // se fez necessario esse if pois o parse class to Json estava dando falta ao {.  *Biblioteca GSON
-            jsonVerify += "{"
-            jsonVerify += json
-        } else {
-            jsonVerify = json
+        Log.d("jsonToMessageClass", json)
+        val moshi = Moshi.Builder().build()
+        val adapter = moshi.adapter(Message::class.java)
+        val fromJson  = adapter.fromJson(json)
+        if(fromJson != null){
+            return fromJson
         }
-        Log.e("toClass", json)
-        val jsonToClass = Gson().fromJson(jsonVerify, Message::class.java)
-        Log.e("toClass", jsonToClass.toString())
-        return jsonToClass
+        return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
     }
-
-
 
     fun createSocket(ip: String, port: Int, onResult: (Socket) -> Unit) {
         launch(Dispatchers.IO) {
@@ -212,7 +211,12 @@ object Utils : CoroutineScope {
         Toast.makeText(MainApplication.getContextInstance(), text, Toast.LENGTH_LONG).show()
     }
 
-
+    fun listJsonToProfiles(jsonList: String): List<Profile>? {
+        val listType = Types.newParameterizedType(List::class.java, Profile::class.java)
+        val adapter: JsonAdapter<List<Profile>> =
+            Moshi.Builder().add(KotlinJsonAdapterFactory()).build().adapter(listType)
+        return adapter.fromJson(jsonList)
+    }
 
     fun byteArrayToBitMap(byte: String): Bitmap {
         val base64 = Base64.decode(byte, Base64.NO_WRAP)

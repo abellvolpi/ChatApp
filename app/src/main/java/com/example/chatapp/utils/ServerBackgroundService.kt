@@ -16,6 +16,10 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -31,11 +35,14 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
+
     @Volatile
     private var id = 0
     private lateinit var password: String
+
     @Volatile
     private var sockets: HashMap<Int, Socket> = HashMap()
+
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
 
@@ -112,39 +119,37 @@ class ServerBackgroundService : Service(), CoroutineScope {
             while (true) {
                 val sock = serverSocket.accept()
                 readMessageAndSendToAllSockets(sock)
-                Log.e("service", "accepted new user ${sock.getAddressFromSocket()}")
+                Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
             }
         }
     }
 
     @Synchronized
-    private fun sendMessageToAllSockets(message: Message) {
-        launch(Dispatchers.IO) {
+    private suspend fun sendMessageToAllSockets(message: Message) = withContext(Dispatchers.IO){
             sockets.forEach {
                 val bw = DataOutputStream(it.value.getOutputStream())
-                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
                 bw.flush()
-                Log.e("service", "Sent Message")
-            }
+                Log.d("service", "Sent Message")
         }
     }
 
     private fun readMessageAndSendToAllSockets(socket: Socket) {
         launch(Dispatchers.IO) {
             while (true) {
-                Log.e("service", "readingMessage")
+                Log.d("service", "readingMessage")
                 val reader = Scanner(socket.getInputStream().bufferedReader())
                 val line: String
                 if (reader.hasNextLine()) {
                     line = reader.nextLine()
+                    Log.d("before moshi", line)
                     val classMessage = Utils.jsonToMessageClass(line)
+                    Log.d("after moshi", line)
                     if (classMessage.type == Message.MessageType.JOIN.code) {
                         if (password != "") {
                             if (classMessage.join?.password == password) {
-                                sendIdToSocket(socket) {
-                                    saveProfile(classMessage, it)
-                                    notifyProfileConnected(classMessage, it)
-                                }
+                                sendIdToSocket(socket, classMessage)
+                                observerWhenSocketClose(socket)
                             } else {
                                 val message = Message(
                                     Message.MessageType.REVOKED.code,
@@ -156,10 +161,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                 sendMessageToASocket(socket, message)
                             }
                         } else {
-                            sendIdToSocket(socket) {
-                                saveProfile(classMessage, it)
-                                notifyProfileConnected(classMessage, it)
-                            }
+                            sendIdToSocket(socket, classMessage)
+                            observerWhenSocketClose(socket)
                         }
                     } else {
                         sendMessageToAllSockets(classMessage)
@@ -175,7 +178,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             while (true) {
                 if (socket.isConnected) {
                     try {
-                        if (socket.getInputStream().read() == -1) {
+                        if (socket.getInputStream().available() == -1) {
                             Log.e("service", "observer when disconnected triggered")
                             removeSocket(socket)
                             break
@@ -192,28 +195,35 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun removeSocket(socket: Socket) {
         launch(Dispatchers.Default) {
             var idSocket: Int? = null
-            sockets.forEach {
-                if (it.value == socket) {
-                    idSocket = it.key
-                }
-            }
+            var message: Message
             mutex.withLock {
+                sockets.forEach {
+                    if (it.value == socket) {
+                        idSocket = it.key
+                    }
+                }
                 if (idSocket != null) {
                     sockets.remove(idSocket)
+                    profiles.forEach {
+                        if (it.id == idSocket) {
+                            message = Message(
+                                Message.MessageType.LEAVE.code,
+                                text = null,
+                                id = idSocket,
+                                base64Data = null,
+                                username = it.name
+                            )
+                            idSocket?.let { notifyWhenProfileDisconnected(message, it) }
+                                ?: Log.e("server", "error when notify user disconnect")
+                            Log.d("service", socket.getAddressFromSocket() + "disconnect")
+                            profiles.remove(it)
+                            return@forEach
+                        }
+                    }
                 } else {
                     Log.e("server", "error when remove socket from socket")
                 }
             }
-            val message = Message(
-                Message.MessageType.LEAVE.code,
-                text = null,
-                id = idSocket,
-                base64Data = null,
-                username = null
-            )
-            Log.e("service", socket.getAddressFromSocket() + "disconnect")
-            idSocket?.let { notifyWhenProfileDisconnected(message, it) }
-                ?: Log.e("server", "error when notify user disconnect")
         }
     }
 
@@ -226,36 +236,32 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    private fun sendMessageToASocket(socket: Socket, message: Message) {
-        launch(Dispatchers.IO) {
+    @Synchronized
+    private suspend fun sendMessageToASocket(socket: Socket, message: Message) = withContext(Dispatchers.IO) {
             val bw = DataOutputStream(socket.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
             bw.flush()
-            Log.e("service", "Sent id to socket")
-        }
+            Log.d("service", "Sent message to a socket")
     }
 
-    private fun sendIdToSocket(socket: Socket, onResume: (Int) -> Unit) {
-        launch(Dispatchers.Default) {
+    @Synchronized
+    private suspend fun sendIdToSocket(socket: Socket, message: Message) = withContext(Dispatchers.IO){
             id++
-            observerWhenSocketClose(socket)
             sockets[id] = socket
-            val message = Message(
-                Message.MessageType.ACKNOWLEDGE.code,
+            val messageAkl = Message(
+                type = Message.MessageType.ACKNOWLEDGE.code,
                 username = null,
-                text = null,
+                text = shareProfilesToNewMember(),
                 base64Data = null,
                 id = id
             )
-            sendMessageToASocket(socket, message)
-            Log.e("service", "Sent id to socket")
-            withContext(Dispatchers.Main) {
-                onResume.invoke(id)
-            }
-        }
+            sendMessageToASocket(socket, messageAkl)
+            Log.d("service", "Sent id to socket")
+            notifyProfileConnected(message, id)
+            saveProfileOnService(message, id)
     }
 
-    private fun notifyProfileConnected(message: Message, idProfile: Int) {
+    private suspend fun notifyProfileConnected(message: Message, idProfile: Int) {
         val join = Message.Join(message.join?.avatar ?: "", "")
         val messageToSend = Message(
             id = idProfile,
@@ -268,12 +274,19 @@ class ServerBackgroundService : Service(), CoroutineScope {
         sendMessageToAllSockets(messageToSend)
     }
 
-    private fun notifyWhenProfileDisconnected(message: Message, idProfile: Int){
-        val messageToSend = Message(id = idProfile, type = Message.MessageType.LEAVE.code, username = message.username, join = null, base64Data = null, text = null)
+    private suspend fun notifyWhenProfileDisconnected(message: Message, idProfile: Int) {
+        val messageToSend = Message(
+            id = idProfile,
+            type = Message.MessageType.LEAVE.code,
+            username = message.username,
+            join = null,
+            base64Data = null,
+            text = null
+        )
         sendMessageToAllSockets(messageToSend)
     }
 
-    private fun saveProfile(messageJoin: Message, idSocket: Int) {
+    private fun saveProfileOnService(messageJoin: Message, idSocket: Int) {
         val profile = Profile(
             idSocket,
             messageJoin.username ?: "name error",
@@ -281,6 +294,13 @@ class ServerBackgroundService : Service(), CoroutineScope {
             0
         )
         profiles.add(profile)
+    }
+
+    private fun shareProfilesToNewMember(): String {
+        val listType = Types.newParameterizedType(List::class.java, Profile::class.java)
+        val adapter: JsonAdapter<List<Profile>> =
+            Moshi.Builder().add(KotlinJsonAdapterFactory()).build().adapter(listType)
+        return adapter.toJson(profiles.toList())
     }
 
     companion object {
