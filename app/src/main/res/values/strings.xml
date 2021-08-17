@@ -20,7 +20,9 @@
     <string name="joined_chat">Joined in the Chat</string>
     <string name="left_the_chat">Left the Chat</string>
 
+    <!--    ActionBar-->
 
+    <string name="chat" translatable="false">Chat</string>
 
 
     <!--   Warnings-->
@@ -68,6 +70,8 @@
     <string name="choose_port">Choose a port:</string>
 
     <!--    Profile Fragment-->
+
+
 
     <!--    ServerBackgroundService-->
 

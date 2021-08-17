@@ -4,11 +4,16 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentProfileBinding
 import com.example.chatapp.utils.ProfileSharedProfile
 import kotlinx.coroutines.*
@@ -19,13 +24,30 @@ class ProfileFragment : Fragment(), CoroutineScope {
 
     private lateinit var binding: FragmentProfileBinding
     override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
+    private lateinit var startActivityLaunch: ActivityResultLauncher<String>
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (activity as AppCompatActivity?)?.supportActionBar?.show()
 
+        (activity as AppCompatActivity?)?.supportActionBar?.hide()
+
+
+
+        startActivityLaunch = registerForActivityResult(
+            ActivityResultContracts.GetContent(),
+            ActivityResultCallback { uri ->
+                binding.photo.setImageURI(uri)
+            }
+        )
     }
+
+    override fun onResume() {
+        super.onResume()
+//        val actionBar = (activity as AppCompatActivity?)?.supportActionBar
+//        actionBar?.title = getString(R.string.profile)
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
@@ -36,35 +58,18 @@ class ProfileFragment : Fragment(), CoroutineScope {
         super.onViewCreated(view, savedInstanceState)
 
         binding.username.text = ProfileSharedProfile.getProfile()
-        if(ProfileSharedProfile.getProfilePhoto()!=null) {
+        if (ProfileSharedProfile.getProfilePhoto() != null) {
             binding.photo.setImageBitmap(ProfileSharedProfile.getProfilePhoto())
         }
 
         binding.floatingEditButton.setOnClickListener {
-
-            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            startActivityForResult(intent, PICK_IMAGE)
-
+            startActivityLaunch.launch("image/*")
         }
+
+
+
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
-            launch(Dispatchers.Default) {
-                val imageUri = data?.data
-                val imageBitmap = MediaStore.Images.Media.getBitmap(context?.contentResolver, imageUri)
-                launch(Dispatchers.Main) {
-                    binding.photo.setImageBitmap(imageBitmap)
-                }
-                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
-            }
-        }
-    }
-
-    companion object {
-        const val PICK_IMAGE = 1
-    }
 
 
 }

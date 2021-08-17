@@ -95,6 +95,26 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
+
+        binding.chatToolbar.inflateMenu(R.menu.chat_menu)
+        binding.chatToolbar.setOnMenuItemClickListener { item ->
+            when (item?.itemId) {
+                R.id.share_link -> {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                }
+                R.id.perfil -> {
+                    val ip = connectionFactory.getIpHost()
+                    val port = connectionFactory.getIpPort()
+                    val shareIntent = android.content.Intent().apply {
+                        action = android.content.Intent.ACTION_SEND
+                        putExtra(android.content.Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
+                        type = "text/plain"
+                    }
+                    startActivity(android.content.Intent.createChooser(shareIntent, ""))
+                }
+            }
+            true
+        }
     }
 
     private fun initView() {
