@@ -38,11 +38,11 @@ class HomeFragment : Fragment(), CoroutineScope {
     private val args: HomeFragmentArgs by navArgs()
     private val profileViewModel: ProfileViewModel by activityViewModels()
     private val connectionFactory: ConnectionFactory by activityViewModels()
+    private lateinit var startActivityLaunch: ActivityResultLauncher<String>
     private val navController by lazy {
         findNavController()
     }
-    private lateinit var startActivityLaunch: ActivityResultLauncher<String>
-//    private lateinit var startActivityLaunch:ActivityResultLauncher<Intent>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,9 +56,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                 binding.photo.setImageURI(uri)
             }
         )
-
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,

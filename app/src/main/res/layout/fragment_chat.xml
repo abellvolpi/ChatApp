@@ -19,54 +19,25 @@
             android:id="@+id/app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+
             app:layout_constraintBottom_toTopOf="@+id/messages_recyclerview"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-<!--            <androidx.appcompat.widget.Toolbar-->
-<!--                android:id="@+id/chat_toolbar"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:background="@color/blue_3"-->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/chat_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/blue_3"
+                app:title="Chat"
+                app:titleTextColor="@color/white"
+
+                >
 <!--                android:theme="@style/Theme.ChatApp"-->
-<!--                app:popupTheme="@style/ThemeOverlay.AppCompat.Light">-->
+<!--                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
 
-<!--                <androidx.constraintlayout.widget.ConstraintLayout-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content">-->
-
-
-
-<!--                    <com.google.android.material.imageview.ShapeableImageView-->
-<!--                        android:padding="1dp"-->
-<!--                        android:id="@+id/profile_photo"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        app:shapeAppearanceOverlay="@style/roundedImageViewRounded"-->
-<!--                        android:src="@drawable/ic_profile"-->
-<!--                        app:strokeColor="@color/blue_2"-->
-<!--                        app:strokeWidth="2dp"-->
-<!--                        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                        app:layout_constraintStart_toStartOf="parent"-->
-<!--                        app:layout_constraintTop_toTopOf="parent"/>-->
-
-<!--                    <TextView-->
-<!--                        android:layout_marginStart="20dp"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:text="@string/test"-->
-<!--                        android:textSize="20dp"-->
-<!--                        android:textAlignment="textStart"-->
-<!--                        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                        app:layout_constraintStart_toEndOf="@+id/profile_photo"-->
-<!--                        app:layout_constraintTop_toTopOf="parent" />-->
-
-
-<!--                </androidx.constraintlayout.widget.ConstraintLayout>-->
-
-<!--            </androidx.appcompat.widget.Toolbar>-->
+            </androidx.appcompat.widget.Toolbar>
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -157,7 +128,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:background="#00FFFFFF"
-                        android:src="@drawable/ic__5822901291574330930" />
+                        android:src="@drawable/ic_record" />
                 </LinearLayout>
 
                 <ProgressBar

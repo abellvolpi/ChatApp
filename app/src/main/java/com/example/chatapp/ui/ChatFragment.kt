@@ -13,7 +13,9 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toolbar
+
+
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -41,6 +43,8 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
 
 class ChatFragment : Fragment() {
     private lateinit var output: String
@@ -52,11 +56,11 @@ class ChatFragment : Fragment() {
     private val data = arrayListOf<Message>()
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var profileName: String
-    private val profileViewModel : ProfileViewModel by activityViewModels()
-    private val profileId : Int
-    get() {
-        return ProfileSharedProfile.getIdProfile()
-    }
+    private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val profileId: Int
+        get() {
+            return ProfileSharedProfile.getIdProfile()
+        }
     private val utilsViewModel: UtilsViewModel by activityViewModels()
     private val navController by lazy {
         findNavController()
@@ -74,10 +78,11 @@ class ChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (activity as AppCompatActivity?)?.supportActionBar?.show()
-        setHasOptionsMenu(true)
         profileName = ProfileSharedProfile.getProfile()
+        setHasOptionsMenu(true)
+
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -95,6 +100,26 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
+
+        binding.chatToolbar.inflateMenu(R.menu.chat_menu)
+        binding.chatToolbar.setOnMenuItemClickListener { item ->
+            when (item?.itemId) {
+                R.id.share_link -> {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                }
+                R.id.perfil -> {
+                    val ip = connectionFactory.getIpHost()
+                    val port = connectionFactory.getIpPort()
+                    val shareIntent = android.content.Intent().apply {
+                        action = android.content.Intent.ACTION_SEND
+                        putExtra(android.content.Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
+                        type = "text/plain"
+                    }
+                    startActivity(android.content.Intent.createChooser(shareIntent, ""))
+                }
+            }
+            true
+        }
     }
 
     private fun initView() {
@@ -115,8 +140,8 @@ class ChatFragment : Fragment() {
                     navController.navigate(action)
                 }
             }
-            connectionFactory.serverOnline.observe(viewLifecycleOwner){
-                if(it == false){
+            connectionFactory.serverOnline.observe(viewLifecycleOwner) {
+                if (it == false) {
                     val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
                     navController.navigate(action)
                 }
@@ -159,6 +184,7 @@ class ChatFragment : Fragment() {
                         buttonVoiceMessageRecord.visibility = View.GONE
                     }
                 }
+
                 override fun afterTextChanged(s: Editable?) {}
             })
 
@@ -174,7 +200,7 @@ class ChatFragment : Fragment() {
             buttonSend.setOnClickListener {
                 if (messageField.text.isNotBlank()) {
                     val message =
-                        Message(Message.MessageType.MESSAGE.code, username= profileName, text= messageField.text.toString(), id = profileId, base64Data = null)
+                        Message(Message.MessageType.MESSAGE.code, username = profileName, text = messageField.text.toString(), id = profileId, base64Data = null)
                     sendMessageSocket(message)
                     messageField.text.clear()
                 } else {
@@ -189,6 +215,8 @@ class ChatFragment : Fragment() {
             adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
             messagesRecyclerview.adapter = adapter
             messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
+
+
         }
     }
 
@@ -236,38 +264,38 @@ class ChatFragment : Fragment() {
                 return
             }
 
-            if(type == Message.MessageType.JOIN.code){
+            if (type == Message.MessageType.JOIN.code) {
                 refreshUIChat(this)
-                if(id!= null){
-                    saveAvatarToCacheDir(id, join?.avatar?: ""){
-                        val profile = Profile(id , it, join?.avatar, 0)
+                if (id != null) {
+                    saveAvatarToCacheDir(id, join?.avatar ?: "") {
+                        val profile = Profile(id, it, join?.avatar, 0)
                         profileViewModel.insert(profile)
                     }
-                }else{
+                } else {
                     Log.e("database", "error when insert profile")
                 }
                 return@with
             }
 
-            if(type == Message.MessageType.LEAVE.code){
+            if (type == Message.MessageType.LEAVE.code) {
                 refreshUIChat(this)
-                if(id!= null){
+                if (id != null) {
                     profileViewModel.deleteProfile(id)
-                }else{
+                } else {
                     Log.e("database", "error when insert profile")
                 }
                 return@with
             }
             if (id == profileId) {
-                if(status == Message.MessageStatus.RECEIVED.code){
+                if (status == Message.MessageStatus.RECEIVED.code) {
                     status = Message.MessageStatus.SENT.code
                 }
             }
 
-            when(status){
+            when (status) {
                 Message.MessageStatus.SENT.code -> {
-                    when (type){
-                        Message.MessageType.MESSAGE.code ->{
+                    when (type) {
+                        Message.MessageType.MESSAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
@@ -277,14 +305,14 @@ class ChatFragment : Fragment() {
                 }
 
                 Message.MessageStatus.RECEIVED.code -> {
-                    when(type){
+                    when (type) {
                         Message.MessageType.MESSAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
                             refreshUIChat(this)
                         }
-                        Message.MessageType.TICPLAY.code ->{
+                        Message.MessageType.TICPLAY.code -> {
                             Log.e("Received", "play")
                             val i = text?.split(",")?.get(0)?.toInt() ?: -1
                             val j = text?.split(",")?.get(1)?.toInt() ?: -1
@@ -297,7 +325,7 @@ class ChatFragment : Fragment() {
                             verifyIfHasWinner()
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            receiveInviteTicTacToe(username?: "Error username")
+                            receiveInviteTicTacToe(username ?: "Error username")
                         }
                     }
                 }
@@ -333,9 +361,9 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun saveAvatarToCacheDir(id: Int, string: String, onResult : (String) -> Unit){
+    private fun saveAvatarToCacheDir(id: Int, string: String, onResult: (String) -> Unit) {
         val context = MainApplication.getContextInstance()
-        val output = File(context.cacheDir.absolutePath+"/photosProfile","profilePhoto_${id}.jpg")
+        val output = File(context.cacheDir.absolutePath + "/photosProfile", "profilePhoto_${id}.jpg")
         val base64 = Base64.decode(string, Base64.NO_WRAP)
         output.parentFile?.mkdirs()
         val fos = FileOutputStream(output)
@@ -360,7 +388,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendInviteTicTacToe() {
-        val message = Message(Message.MessageType.TICINVITE.code, text =  null, id = profileId, base64Data = null, username = profileName)
+        val message = Message(Message.MessageType.TICINVITE.code, text = null, id = profileId, base64Data = null, username = profileName)
         sendMessageSocket(message)
         snackbar = Snackbar.make(
             requireView(),
@@ -376,7 +404,7 @@ class ChatFragment : Fragment() {
         canIPlay = false
         initViewTicTacToe()
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
-        val message = Message(Message.MessageType.TICINVITE.code, text =  "accepted", id = profileId, base64Data = null, username = profileName)
+        val message = Message(Message.MessageType.TICINVITE.code, text = "accepted", id = profileId, base64Data = null, username = profileName)
         sendMessageSocket(message)
     }
 
