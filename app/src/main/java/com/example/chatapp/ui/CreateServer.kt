@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
+import com.example.chatapp.utils.Extensions.toSHA256
 import com.example.chatapp.utils.ServerBackgroundService
 import com.example.chatapp.viewModel.ConnectionFactory
 
@@ -56,7 +57,7 @@ class   CreateServer : Fragment() {
                 with(it as RadioButton){
                     if(isChecked){
                         intent.putExtra("socketConfigs", text.toString().toInt())
-                        intent.putExtra("password", password.text.toString())
+                        intent.putExtra("password", password.text.toString().toSHA256())
                         intent.action = ServerBackgroundService.START_SERVER
                         requireContext().startService(intent)
                         findNavController().navigate(action)

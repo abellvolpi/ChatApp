@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="5dp"
-    android:paddingStart="30dp">
+    android:paddingStart="30dp"
+    android:paddingEnd="30dp">
 
     <LinearLayout
         android:id="@+id/ll_imageView"
@@ -19,10 +20,11 @@
 
         <ImageView
             android:id="@+id/imageProfile"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:scaleType="centerCrop"
-            tools:src="@drawable/ic_gold_medal" />
+            tools:src="@drawable/ic_profile" />
+
     </LinearLayout>
 
     <TextView
@@ -33,8 +35,21 @@
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/image_ranking"
         app:layout_constraintStart_toEndOf="@id/ll_imageView"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Hernani" />
+
+    <ImageView
+        android:id="@+id/image_ranking"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/name"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/ic_gold_medal" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

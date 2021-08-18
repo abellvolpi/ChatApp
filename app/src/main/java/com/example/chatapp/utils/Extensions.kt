@@ -7,6 +7,7 @@ import java.io.File
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.security.MessageDigest
 
 object Extensions {
 
@@ -28,7 +29,10 @@ object Extensions {
         val inet4Address = inetSocketAddress.address as Inet4Address
         return inet4Address.toString().replace("/", "")
     }
-
+    fun String.toSHA256(): String {
+        val messageDigest = MessageDigest.getInstance("SHA-256").digest(toByteArray())
+        return messageDigest.fold("", { str, it -> str + "%02x".format(it) })
+    }
 
 
 

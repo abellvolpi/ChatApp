@@ -18,6 +18,7 @@ import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentHomeBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
+import com.example.chatapp.utils.Extensions.toSHA256
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.viewModel.ConnectionFactory
@@ -183,7 +184,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     username = nameField.text.toString(),
                     text = null,
                     base64Data = null,
-                    join = Message.Join(avatar = image, password = password.text.toString()),
+                    join = Message.Join(avatar = image, password = password.text.toString().toSHA256()),
                     id = null
                 )
                 val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
