@@ -25,8 +25,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
 
     private fun readMessage() {
-        observerWhenSocketClose()
         val context = MainApplication.getContextInstance()
+        observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
             while (true) {
                 if (socket.isConnected) {
@@ -34,8 +34,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
-                        val message = Utils.jsonToMessageClass(line)
                         withContext(Dispatchers.Main) {
+                            val message = Utils.jsonToMessageClass(line)
                             if (MainApplication.applicationIsInBackground()) {
                                 backgroundMessages.add(message)
                                 when (message.type) {

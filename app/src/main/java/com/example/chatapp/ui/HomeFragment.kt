@@ -33,7 +33,7 @@ class HomeFragment : Fragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
     private val args: HomeFragmentArgs by navArgs()
-    private val profileViewModel : ProfileViewModel by activityViewModels()
+    private val profileViewModel: ProfileViewModel by activityViewModels()
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
     private val navController by lazy {
