@@ -61,7 +61,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
         if (intent?.action.equals(SEND_REPLY)){
             val message = intent?.getSerializableExtra("message") as Message
-            sendMessageToAllSockets(message)
+            launch(Dispatchers.IO){
+                sendMessageToAllSockets(message)
+            }
             return START_NOT_STICKY
         }
         return super.onStartCommand(intent, flags, startId)
