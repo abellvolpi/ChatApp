@@ -9,12 +9,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.chatapp.R
 import com.example.chatapp.adapters.ParticipantsAdapter
 import com.example.chatapp.databinding.FragmentParticipantsBinding
-import com.example.chatapp.databinding.ParticipantsItemBinding
-import com.example.chatapp.room.profile.controller.ProfileController
 import com.example.chatapp.viewModel.ProfileViewModel
 
 
@@ -23,22 +19,20 @@ class ParticipantsFragment : Fragment() {
     private lateinit var binding : FragmentParticipantsBinding
     private val profileController : ProfileViewModel by activityViewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         binding = FragmentParticipantsBinding.inflate(inflater, container, false)
+
         profileController.profiles.observe(viewLifecycleOwner) {
             if(it != null){
                 val adapter = ParticipantsAdapter(it)
-                with(binding.recycleView){
+                with(binding.recyclerView){
                     setAdapter(adapter)
                     layoutManager = LinearLayoutManager(requireContext())
-                    addItemDecoration(DividerItemDecoration(requireContext(), androidx.recyclerview.widget.LinearLayoutManager.VERTICAL))
+                    addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
 
                 }
             }else{
