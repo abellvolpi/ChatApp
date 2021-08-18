@@ -18,8 +18,7 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>) :
         abstract fun bind(profile: Profile)
     }
 
-    private inner class ProfileViewHolder(private val binding: ParticipantsItemBinding) :
-        BaseViewHolder(binding.root) {
+    private inner class ProfileViewHolder(private val binding: ParticipantsItemBinding) : BaseViewHolder(binding.root) {
         override fun bind(profile: Profile) {
             val file = File(profile.photoProfile)
             with(binding) {
