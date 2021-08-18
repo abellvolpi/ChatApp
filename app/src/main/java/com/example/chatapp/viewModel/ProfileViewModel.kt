@@ -3,7 +3,6 @@ package com.example.chatapp.viewModel
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Profile
 import com.example.chatapp.room.profile.controller.ProfileController
-
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -36,8 +35,4 @@ class ProfileViewModel : ViewModel(), CoroutineScope{
             controller.deleteAll()
         }
     }
-
-
-
-
 }

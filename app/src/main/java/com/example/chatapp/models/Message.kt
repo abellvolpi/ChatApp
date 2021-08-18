@@ -2,10 +2,14 @@ package com.example.chatapp.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.squareup.moshi.JsonClass
 import java.io.Serializable
+import java.lang.annotation.ElementType
+import java.lang.annotation.RetentionPolicy
 import java.util.*
 
 @Entity
+@JsonClass(generateAdapter = true)
 class Message(
     var type: Int,
     var status: Int = MessageStatus.SENT.code,
@@ -19,7 +23,8 @@ class Message(
     @PrimaryKey(autoGenerate = true)
     var messageId : Int? =null
 
-    data class Join(val avatar: String, val password: String): Serializable
+    @JsonClass(generateAdapter = true)
+    data class Join(val avatar: String?, val password: String?)
 
 
     companion object{

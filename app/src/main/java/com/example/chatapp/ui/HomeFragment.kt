@@ -1,9 +1,6 @@
 package com.example.chatapp.ui
 
-
-
 import android.os.Bundle
-
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,13 +33,13 @@ class HomeFragment : Fragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
     private val args: HomeFragmentArgs by navArgs()
+    private val profileViewModel : ProfileViewModel by activityViewModels()
     private val profileViewModel: ProfileViewModel by activityViewModels()
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
     private val navController by lazy {
         findNavController()
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,10 +67,10 @@ class HomeFragment : Fragment(), CoroutineScope {
 
     override fun onResume() {
         super.onResume()
-        var list = activity?.intent?.data?.path?.split('/')
-        var ipPort = list?.get(2)?.split(":")
-        var ip = ipPort?.get(0)
-        var port = ipPort?.get(1)
+        val list = activity?.intent?.data?.path?.split('/')
+        val ipPort = list?.get(2)?.split(":")
+        val ip = ipPort?.get(0)
+        val port = ipPort?.get(1)
 
 
         with(binding) {
@@ -88,7 +85,6 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
         }
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -178,14 +174,13 @@ class HomeFragment : Fragment(), CoroutineScope {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
                 profileViewModel.deleteAll()
-
                 var image = ""
                 val bitmap = ProfileSharedProfile.getProfilePhoto()
                 if (bitmap != null) {
                     image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
                 }
                 val message = Message(
-                    Message.MessageType.JOIN.code,
+                    type = Message.MessageType.JOIN.code,
                     username = nameField.text.toString(),
                     text = null,
                     base64Data = null,
@@ -197,39 +192,4 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
         }
     }
-
-
-//    fun openForResult(requestCode: Int, result: ActivityResult, intent: Intent?) {
-//        if (result.resultCode == RESULT_OK) {
-//            when (requestCode) {
-//                PICK_IMAGE -> {
-//                    launch(Dispatchers.Default) {
-//                        val imageUri = intent?.data
-//                        val imageBitmap = MediaStore.Images.Media.getBitmap(context?.contentResolver, imageUri)
-//                        launch(Dispatchers.Main) {
-//                            binding.photo.setImageBitmap(imageBitmap)
-//                        }
-//                        imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
-//                    }
-//                }
-//            }
-//        }
-//
-//    }
-
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
-//            launch(Dispatchers.Default) {
-//                val imageUri = data?.data
-//                val imageBitmap = MediaStore.Images.Media.getBitmap(context?.contentResolver, imageUri)
-//                launch(Dispatchers.Main) {
-//                    binding.photo.setImageBitmap(imageBitmap)
-//                }
-//                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
-//            }
-//        }
-//    }
-
-
 }

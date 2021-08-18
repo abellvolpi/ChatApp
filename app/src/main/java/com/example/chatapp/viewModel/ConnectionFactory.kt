@@ -20,13 +20,13 @@ import kotlin.coroutines.CoroutineContext
 class ConnectionFactory : CoroutineScope, ViewModel() {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
-    var line: MutableLiveData<String> = MutableLiveData()
+    var line: MutableLiveData<Message?> = MutableLiveData()
     private var backgroundMessages = arrayListOf<Message>()
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
 
     private fun readMessage() {
-        val context = MainApplication.getContextInstance()
         observerWhenSocketClose()
+        val context = MainApplication.getContextInstance()
         GlobalScope.launch(Dispatchers.IO) {
             while (true) {
                 if (socket.isConnected) {
@@ -34,22 +34,34 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
+                        val message = Utils.jsonToMessageClass(line)
                         withContext(Dispatchers.Main) {
                             if (MainApplication.applicationIsInBackground()) {
-                                val message = Utils.jsonToMessageClass(line)
                                 backgroundMessages.add(message)
                                 when (message.type) {
                                     Message.MessageType.AUDIO.code -> {
-                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.received_audio))
+                                        Utils.createNotification(
+                                            message.username ?: "Error user name",
+                                            context.getString(R.string.received_audio)
+                                        )
                                     }
                                     Message.MessageType.IMAGE.code -> {
-                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.received_photo))
+                                        Utils.createNotification(
+                                            message.username ?: "Error user name",
+                                            context.getString(R.string.received_photo)
+                                        )
                                     }
                                     Message.MessageType.JOIN.code -> {
-                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.joined_chat))
+                                        Utils.createNotification(
+                                            message.username ?: "Error user name",
+                                            context.getString(R.string.joined_chat)
+                                        )
                                     }
                                     Message.MessageType.LEAVE.code -> {
-                                        Utils.createNotification(message.username ?: "Error user name", context.getString(R.string.left_the_chat))
+                                        Utils.createNotification(
+                                            message.username ?: "Error user name",
+                                            context.getString(R.string.left_the_chat)
+                                        )
                                     }
                                     else -> {
                                         if (message.username != ProfileSharedProfile.getProfile()) {
@@ -60,19 +72,19 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                 }
                                 Utils.playBemTeVi()
                             } else {
-                                this@ConnectionFactory.line.postValue(line)
+                                this@ConnectionFactory.line.postValue(message)
                             }
                         }
                     } else {
                         withContext(Dispatchers.Main) {
-                            this@ConnectionFactory.line.postValue("error")
+                            this@ConnectionFactory.line.postValue(null)
                             this@ConnectionFactory.line = MutableLiveData()
                         }
                         break
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        this@ConnectionFactory.line.postValue("error")
+                        this@ConnectionFactory.line.postValue(null)
                         this@ConnectionFactory.line = MutableLiveData()
                     }
                 }
@@ -84,10 +96,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     fun sendMessageToSocket(message: Message, onResult: () -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
             val bw = DataOutputStream(socket.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray())
+            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
             bw.flush()
             withContext(Dispatchers.Main) {
-                Log.e("server", "Sent Message")
+                Log.d("server", "Sent Message")
                 onResult.invoke()
             }
         }
@@ -117,23 +129,21 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         return socket.getPortFromSocket()
     }
 
-    private fun observerWhenSocketClose() {
-        launch(Dispatchers.IO) {
-            while (true) {
-                if (socket.isConnected) {
-                    try {
-                        if (socket.getInputStream().read() == -1) {
-                            Log.e("connection factory", "Server has disconnected")
-                            serverOnline.postValue(false)
-                            break
-                        }
-                    } catch (e: Exception) {
+    private fun observerWhenSocketClose() = launch(Dispatchers.IO) {
+        while (true) {
+            if (socket.isConnected) {
+                try {
+                    if (socket.getInputStream().available() == -1) {
+                        Log.e("connection factory", "Server has disconnected")
                         serverOnline.postValue(false)
                         break
                     }
+                } catch (e: Exception) {
+                    serverOnline.postValue(false)
+                    break
                 }
-                delay(1)
             }
+            delay(1)
         }
     }
 }
