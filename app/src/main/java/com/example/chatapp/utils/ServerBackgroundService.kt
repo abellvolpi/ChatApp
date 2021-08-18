@@ -35,14 +35,11 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
-
     @Volatile
     private var id = 0
     private lateinit var password: String
-
     @Volatile
     private var sockets: HashMap<Int, Socket> = HashMap()
-
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
 
@@ -64,11 +61,11 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
         if (intent?.action.equals(SEND_REPLY)){
             val message = intent?.getSerializableExtra("message") as Message
-            sendMessage(message)
+            launch(Dispatchers.IO){
+                sendMessageToAllSockets(message)
+            }
             return START_NOT_STICKY
         }
-
-
         return super.onStartCommand(intent, flags, startId)
     }
 
