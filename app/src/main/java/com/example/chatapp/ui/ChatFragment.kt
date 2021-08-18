@@ -13,7 +13,7 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -41,7 +41,6 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import androidx.appcompat.content.res.AppCompatResources
 
 
 class ChatFragment : Fragment() {
@@ -86,7 +85,9 @@ class ChatFragment : Fragment() {
     ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
         joinMessage = arguments?.getSerializable("joinMessage") as Message
-        sendMessageSocket(joinMessage)
+        if (connectionFactory.isFirstAcessInThisFragment()) {
+            sendMessageSocket(joinMessage)
+        }
         initView()
         return binding.root
     }
@@ -103,7 +104,8 @@ class ChatFragment : Fragment() {
                     navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
                 }
 
-                overflowIcon = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+                overflowIcon =
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
                 inflateMenu(R.menu.chat_menu)
                 setOnMenuItemClickListener { item ->
                     when (item?.itemId) {
@@ -115,7 +117,10 @@ class ChatFragment : Fragment() {
                             val port = connectionFactory.getIpPort()
                             val shareIntent = android.content.Intent().apply {
                                 action = android.content.Intent.ACTION_SEND
-                                putExtra(android.content.Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
+                                putExtra(
+                                    android.content.Intent.EXTRA_TEXT,
+                                    "http://www.mychatapp.com/home/$ip:$port"
+                                )
                                 type = "text/plain"
                             }
                             startActivity(android.content.Intent.createChooser(shareIntent, ""))
@@ -132,6 +137,7 @@ class ChatFragment : Fragment() {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
                 if (it != null) {
+                    if(utilsViewModel.getLastMessageReceived() == null || utilsViewModel.getLastMessageReceived() != it)
                     validReceivedMessage(it)
                 } else {
                     val action =
@@ -228,7 +234,6 @@ class ChatFragment : Fragment() {
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-
         CoroutineScope(Dispatchers.IO).launch {
             MessageController.insert(message)
             MessageController.getAll().forEach {
@@ -297,31 +302,44 @@ class ChatFragment : Fragment() {
             }
 
             if (type == Message.MessageType.JOIN.code) {
-                refreshUIChat(this)
                 if (id != null) {
-                    if (join?.avatar != "" || join?.avatar != null) {
-                        saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                            val profile = Profile(id, username ?: "", it, 0, true)
-                            profileViewModel.insert(profile)
+                    if (id == profileId) {
+                        if (connectionFactory.isFirstAcessInThisFragment()) {
+                            saveAvatarToCacheDir(id, join?.avatar ?: "") {
+                                val profile = Profile(id, username ?: "", it, 0, true)
+                                profileViewModel.insert(profile)
+                                connectionFactory.setFirstAcessChatFragment(false)
+                            }
+                        }else{
+                            return
                         }
                     } else {
-                        val profile = Profile(id, username ?: "", "", 0, true)
-                        profileViewModel.insert(profile)
+                        if (join?.avatar != "" || join?.avatar != null) {
+                            saveAvatarToCacheDir(id, join?.avatar ?: "") {
+                                val profile = Profile(id, username ?: "", it, 0, true)
+                                profileViewModel.insert(profile)
+                            }
+                        } else {
+                            val profile = Profile(id, username ?: "", "", 0, true)
+                            profileViewModel.insert(profile)
+                        }
                     }
                 } else {
-                    Log.e("database", "error when insert profile")
+                    Log.e("chatNotRefresh", "an error occurred because id is null")
+                    Log.e("database", "error when insert profile, id is null")
                 }
+                refreshUIChat(this)
                 return@with
             }
 
             if (type == Message.MessageType.LEAVE.code) {
                 refreshUIChat(this)
                 if (id != null) {
-                    profileViewModel.getProfile(id.toString()){
-                        if(it != null){
+                    profileViewModel.getProfile(id.toString()) {
+                        if (it != null) {
                             it.isMemberYet = false
                             profileViewModel.updateProfile(it)
-                        }else{
+                        } else {
                             Log.e("database", "error when update profile because ID doesn't exists")
                         }
                     }
@@ -403,6 +421,7 @@ class ChatFragment : Fragment() {
 //                    refreshUIChat(this)
 //                }
 //            }
+            utilsViewModel.changeLastMessageReceived(this)
         }
     }
 
