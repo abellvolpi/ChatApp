@@ -28,7 +28,7 @@ class ChatDetailsFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_chat_details, container, false)
 
-        val fragmentList = arrayListOf<Fragment>(
+        val fragmentList = arrayListOf(
             ParticipantsFragment(),
             RankingFragment()
         )

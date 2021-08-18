@@ -1,40 +1,50 @@
 package com.example.chatapp.ui.toolbarfragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.adapters.ParticipantsAdapter
 import com.example.chatapp.databinding.FragmentParticipantsBinding
 import com.example.chatapp.databinding.ParticipantsItemBinding
+import com.example.chatapp.room.profile.controller.ProfileController
+import com.example.chatapp.viewModel.ProfileViewModel
 
 
 class ParticipantsFragment : Fragment() {
 
-    private lateinit var binding: FragmentParticipantsBinding
+    private lateinit var binding : FragmentParticipantsBinding
+    private val profileController : ProfileViewModel by activityViewModels()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentParticipantsBinding.inflate(inflater, container, false)
+        profileController.profiles.observe(viewLifecycleOwner) {
+            if(it != null){
+                val adapter = ParticipantsAdapter(it)
+                with(binding.recycleView){
+                    setAdapter(adapter)
+                    layoutManager = LinearLayoutManager(requireContext())
+                    addItemDecoration(DividerItemDecoration(requireContext(), androidx.recyclerview.widget.LinearLayoutManager.VERTICAL))
+
+                }
+            }else{
+                Log.e("participantsFragment", "Arraylist is empty")
+            }
+        }
         return binding.root
     }
-
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        with(binding){
-
-            recyclerView.adapter = ParticipantsAdapter()
-            recyclerView.layoutManager = LinearLayoutManager(requireContext())
-            recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
-        }
-    }
-
 }

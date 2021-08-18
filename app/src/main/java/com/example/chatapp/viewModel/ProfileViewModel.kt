@@ -1,19 +1,27 @@
 package com.example.chatapp.viewModel
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Profile
 import com.example.chatapp.room.profile.controller.ProfileController
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
-class ProfileViewModel : ViewModel(), CoroutineScope{
-    override val coroutineContext: CoroutineContext = Job()+Dispatchers.Main
+class ProfileViewModel : ViewModel(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private val controller = ProfileController()
+    lateinit var profiles: MutableLiveData<ArrayList<Profile>>
 
-    private fun allProfiles(onResult : (List<Profile>) -> Unit) {
-        launch(Dispatchers.IO){
+    init {
+        allProfiles {
+            profiles = MutableLiveData(it)
+        }
+    }
+
+    private fun allProfiles(onResult: (ArrayList<Profile>) -> Unit) {
+        launch(Dispatchers.IO) {
             val getAll = controller.getAll()
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 onResult.invoke(getAll)
             }
         }
@@ -23,14 +31,19 @@ class ProfileViewModel : ViewModel(), CoroutineScope{
         launch(Dispatchers.IO) {
             controller.delete(id)
         }
+        allProfiles {
+            profiles.postValue(it)
+        }
     }
 
     fun insert(profile: Profile) {
         launch(Dispatchers.IO) {
             controller.insert(profile)
+            profiles.postValue(arrayListOf(profile))
         }
     }
-    fun deleteAll(){
+
+    fun deleteAll() {
         launch(Dispatchers.IO) {
             controller.deleteAll()
         }
@@ -42,7 +55,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope{
         }
     }
 
-    fun updateProfile(profile: Profile){
+    fun updateProfile(profile: Profile) {
         launch(Dispatchers.IO) {
             controller.update(profile)
         }
