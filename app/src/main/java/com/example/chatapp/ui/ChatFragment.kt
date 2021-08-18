@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -40,7 +41,6 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import androidx.appcompat.content.res.AppCompatResources
 
 
@@ -76,9 +76,8 @@ class ChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        profileName = ProfileSharedProfile.getProfile()
         setHasOptionsMenu(true)
-
+        profileName = ProfileSharedProfile.getProfile()
     }
 
     override fun onCreateView(
@@ -99,23 +98,18 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig.peekHeight = 150
 
         with(binding) {
-
             chatToolbar.apply {
-
                 setOnClickListener {
                     navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
                 }
 
                 overflowIcon = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-
                 inflateMenu(R.menu.chat_menu)
-
                 setOnMenuItemClickListener { item ->
                     when (item?.itemId) {
                         R.id.perfil -> {
                             navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
                         }
-
                         R.id.share_link -> {
                             val ip = connectionFactory.getIpHost()
                             val port = connectionFactory.getIpPort()
@@ -124,7 +118,6 @@ class ChatFragment : Fragment() {
                                 putExtra(android.content.Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
                                 type = "text/plain"
                             }
-
                             startActivity(android.content.Intent.createChooser(shareIntent, ""))
                         }
                     }
