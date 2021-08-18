@@ -106,11 +106,11 @@ class ChatFragment : Fragment() {
                     val ip = connectionFactory.getIpHost()
                     val port = connectionFactory.getIpPort()
                     val shareIntent = android.content.Intent().apply {
-                        action = android.content.Intent.ACTION_SEND
-                        putExtra(android.content.Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
                         type = "text/plain"
                     }
-                    startActivity(android.content.Intent.createChooser(shareIntent, ""))
+                    startActivity(Intent.createChooser(shareIntent, ""))
                 }
             }
             true
@@ -291,11 +291,11 @@ class ChatFragment : Fragment() {
                 if (id != null) {
                     if (join?.avatar != "" || join?.avatar != null) {
                         saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                            val profile = Profile(id, username ?: "", it, 0)
+                            val profile = Profile(id, username ?: "", it, 0, true)
                             profileViewModel.insert(profile)
                         }
                     } else {
-                        val profile = Profile(id, username ?: "", "", 0)
+                        val profile = Profile(id, username ?: "", "", 0, true)
                         profileViewModel.insert(profile)
                     }
                 } else {
@@ -307,9 +307,16 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.LEAVE.code) {
                 refreshUIChat(this)
                 if (id != null) {
-                    profileViewModel.deleteProfile(id)
+                    profileViewModel.getProfile(id.toString()){
+                        if(it != null){
+                            it.isMemberYet = false
+                            profileViewModel.updateProfile(it)
+                        }else{
+                            Log.e("database", "error when update profile because ID doesn't exists")
+                        }
+                    }
                 } else {
-                    Log.e("database", "error when insert profile")
+                    Log.e("database", "error when delete profile because id from server is null")
                 }
                 return@with
             }

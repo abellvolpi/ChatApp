@@ -30,7 +30,7 @@ class ChatAdapter(
     private lateinit var mediaPlayer: MediaPlayer
     private var positionMessageAudioRunning: Int = -1
 
-    abstract class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    abstract inner class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(msg: Message)
     }
 

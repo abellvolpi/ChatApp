@@ -293,7 +293,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             idSocket,
             messageJoin.username ?: "name error",
             messageJoin.join?.avatar ?: "",
-            0
+            0, null
         )
         profiles.add(profile)
     }
