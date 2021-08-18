@@ -102,6 +102,7 @@ class ChatFragment : Fragment() {
                 setOnClickListener {
                     navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
                 }
+
                 overflowIcon = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
                 inflateMenu(R.menu.chat_menu)
                 setOnMenuItemClickListener { item ->
