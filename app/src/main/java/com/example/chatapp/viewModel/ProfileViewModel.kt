@@ -35,4 +35,17 @@ class ProfileViewModel : ViewModel(), CoroutineScope{
             controller.deleteAll()
         }
     }
+
+    fun getProfile(id: String, onResult: (Profile?) -> Unit) {
+        launch(Dispatchers.IO) {
+            onResult.invoke(controller.getById(id))
+        }
+    }
+
+    fun updateProfile(profile: Profile){
+        launch(Dispatchers.IO) {
+            controller.update(profile)
+        }
+    }
+
 }
