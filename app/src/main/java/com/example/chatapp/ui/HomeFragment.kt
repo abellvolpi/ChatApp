@@ -71,6 +71,7 @@ class HomeFragment : Fragment(), CoroutineScope {
         val ip = ipPort?.get(0)
         val port = ipPort?.get(1)
 
+
         with(binding) {
             ipField.setText(ip)
             radioGroupPort.forEach {

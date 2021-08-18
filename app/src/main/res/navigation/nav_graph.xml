@@ -70,6 +70,9 @@
             android:name="joinMessage"
             app:nullable="false"
             app:argType=".models.Message"/>
+        <action
+            android:id="@+id/action_chatFragment_to_chatDetailsFragment"
+            app:destination="@id/chatDetailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -127,5 +130,10 @@
         android:name="com.example.chatapp.ui.ProfileFragment"
         android:label="fragment_profile"
         tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/chatDetailsFragment"
+        android:name="com.example.chatapp.ui.toolbarfragments.ChatDetailsFragment"
+        android:label="fragment_chat_details"
+        tools:layout="@layout/fragment_chat_details" />
 
 </navigation>

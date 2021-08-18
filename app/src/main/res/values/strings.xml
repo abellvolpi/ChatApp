@@ -1,13 +1,14 @@
 <resources>
     <string name="app_name" translatable="false">ChatApp</string>
-
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="test" translatable="false">test</string>
+
 
     <!--    Adapters Strings-->
 
     <string name="audio">Audio (%s)</string>
     <string name="you">You</string>
+
 
     <!--    Notifications-->
 
@@ -20,6 +21,7 @@
     <string name="joined_chat">Joined in the Chat</string>
     <string name="left_the_chat">Left the Chat</string>
 
+
     <!--    ActionBar-->
 
     <string name="chat" translatable="false">Chat</string>
@@ -31,9 +33,11 @@
     <string name="name_error">Please, insert a name</string>
     <string name="ip_error">Please, insert a ip</string>
 
+
     <!--    QRCode Fragment-->
 
     <string name="error_name" translatable="false">ERROR NAME</string>
+
 
     <!--    Chat Fragment-->
 
@@ -64,18 +68,17 @@
     <string name="connect">Connect</string>
     <string name="create_server">Create server</string>
 
+
     <!--    CreateServer Fragment-->
 
     <string name="create">Create</string>
     <string name="choose_port">Choose a port:</string>
 
-    <!--    Profile Fragment-->
-
-
 
     <!--    ServerBackgroundService-->
 
     <string name="player_disconnected">%s has disconnected</string>
+
 
     <!--    Menu Fragment-->
 
@@ -86,4 +89,7 @@
     <string name="recording_audio">Recording…</string>
 
 
+    <!--    ChatDetails Fragment-->
+    <string name="participants">Participants</string>
+    <string name="ranking" translatable="false">Ranking</string>
 </resources>
