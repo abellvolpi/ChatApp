@@ -39,4 +39,5 @@
     <string name="received_photo">Imagem Recebida</string>
     <string name="joined_chat">Entrou no chat</string>
     <string name="left_the_chat">Saiu do chat</string>
+    <string name="participants">Participantes</string>
 </resources>

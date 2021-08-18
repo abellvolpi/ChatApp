@@ -42,6 +42,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import androidx.appcompat.content.res.AppCompatResources
 
 
 class ChatFragment : Fragment() {
@@ -98,24 +99,39 @@ class ChatFragment : Fragment() {
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
 
-        binding.chatToolbar.inflateMenu(R.menu.chat_menu)
-        binding.chatToolbar.setOnMenuItemClickListener { item ->
-            when (item?.itemId) {
-                R.id.share_link -> {
-                    navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+        with(binding) {
+
+            chatToolbar.apply {
+
+                setOnClickListener {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
                 }
-                R.id.perfil -> {
-                    val ip = connectionFactory.getIpHost()
-                    val port = connectionFactory.getIpPort()
-                    val shareIntent = android.content.Intent().apply {
-                        action = android.content.Intent.ACTION_SEND
-                        putExtra(android.content.Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
-                        type = "text/plain"
+
+                overflowIcon = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+
+                inflateMenu(R.menu.chat_menu)
+
+                setOnMenuItemClickListener { item ->
+                    when (item?.itemId) {
+                        R.id.perfil -> {
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                        }
+
+                        R.id.share_link -> {
+                            val ip = connectionFactory.getIpHost()
+                            val port = connectionFactory.getIpPort()
+                            val shareIntent = android.content.Intent().apply {
+                                action = android.content.Intent.ACTION_SEND
+                                putExtra(android.content.Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
+                                type = "text/plain"
+                            }
+
+                            startActivity(android.content.Intent.createChooser(shareIntent, ""))
+                        }
                     }
-                    startActivity(android.content.Intent.createChooser(shareIntent, ""))
+                    true
                 }
             }
-            true
         }
     }
 
@@ -178,6 +194,7 @@ class ChatFragment : Fragment() {
                         buttonVoiceMessageRecord.visibility = View.GONE
                     }
                 }
+
                 override fun afterTextChanged(s: Editable?) {}
             })
 
