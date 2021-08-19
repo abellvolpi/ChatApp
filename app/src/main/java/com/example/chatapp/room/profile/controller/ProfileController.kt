@@ -12,8 +12,10 @@ class ProfileController {
         .build()
         .profileDAO()
 
-    fun getAll(): List<Profile>{
-        return  profileController.getAll()
+    fun getAll(): ArrayList<Profile>{
+        val arrayList = arrayListOf<Profile>()
+        arrayList.addAll(profileController.getAll())
+        return arrayList
     }
     fun insert(profile: Profile){
         profileController.insert(profile)

@@ -73,8 +73,7 @@
             app:argType=".models.Message"/>
         <action
             android:id="@+id/action_chatFragment_to_chatDetailsFragment"
-            app:destination="@id/chatDetailsFragment"
-            app:popUpToInclusive="true"/>
+            app:destination="@id/chatDetailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/createServer"

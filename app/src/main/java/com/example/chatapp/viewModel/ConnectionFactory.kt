@@ -18,11 +18,20 @@ import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class ConnectionFactory : CoroutineScope, ViewModel() {
+    private var isFirstAcessInThisFragment = true
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
     var line: MutableLiveData<Message?> = MutableLiveData()
     private var backgroundMessages = arrayListOf<Message>()
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
+
+    fun setFirstAcessChatFragment(boolean: Boolean){
+        isFirstAcessInThisFragment = boolean
+    }
+
+    fun isFirstAcessInThisFragment(): Boolean{
+        return isFirstAcessInThisFragment
+    }
 
     private fun readMessage() {
         val context = MainApplication.getContextInstance()
