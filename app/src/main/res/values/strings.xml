@@ -7,7 +7,7 @@
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="test" translatable="false">test</string>
     <string name="test_name" translatable="false">Test Name</string>
-    <string name="points" translatable="false">20 pts</string>
+    <string name="points" translatable="false">%d pts</string>
 
     <!--    Adapters Strings-->
 

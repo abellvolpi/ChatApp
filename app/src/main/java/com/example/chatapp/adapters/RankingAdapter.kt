@@ -7,7 +7,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
-import com.example.chatapp.databinding.ParticipantsItemBinding
 import com.example.chatapp.databinding.RankingItemBinding
 import com.example.chatapp.models.Profile
 import com.example.chatapp.utils.MainApplication
@@ -24,24 +23,33 @@ class RankingAdapter(private val profiles: ArrayList<Profile>) : RecyclerView.Ad
     inner class RankingViewHolder(private val binding: RankingItemBinding) :
         RankingBaseViewHolder(binding.root) {
         override fun bind(profile: Profile) {
-            val file = File(profile.photoProfile)
+
             with(binding) {
-                if (file.exists()) {
+
+                val photo = profile.photoProfile
+
+                if (photo != null) {
+                    val file = File(photo)
                     imageProfile.setImageURI(file.toUri())
                 } else {
                     imageProfile.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
                 }
-                imageProfile.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
 
                 name.text = profile.name
-                imageRanking.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_gold_medal))
+                points.text = context.getString(R.string.points, profile.scoreTicTacToe)
+
+                when (layoutPosition) {
+                    0 -> imageRanking.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_gold_medal))
+                    1 -> imageRanking.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_silver_medal))
+                    2 -> imageRanking.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_bronze_medal))
+                }
             }
         }
     }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RankingViewHolder {
-        return RankingViewHolder(RankingItemBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+        return RankingViewHolder(RankingItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     }
 

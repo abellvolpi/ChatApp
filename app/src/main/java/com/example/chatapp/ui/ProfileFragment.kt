@@ -26,7 +26,6 @@ class ProfileFragment : Fragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,6 +36,7 @@ class ProfileFragment : Fragment(), CoroutineScope {
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
                 binding.photo.setImageURI(uri)
+
             }
         )
     }
@@ -64,6 +64,9 @@ class ProfileFragment : Fragment(), CoroutineScope {
 
             floatingEditButton.setOnClickListener {
                 startActivityLaunch.launch("image/*")
+
+
+
             }
 
             profileToolbar.setNavigationOnClickListener {

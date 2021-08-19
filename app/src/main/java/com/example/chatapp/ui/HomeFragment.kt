@@ -1,6 +1,7 @@
 package com.example.chatapp.ui
 
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,13 +21,16 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.Extensions.toSHA256
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.squareup.moshi.internal.Util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 class HomeFragment : Fragment(), CoroutineScope {
@@ -50,7 +54,13 @@ class HomeFragment : Fragment(), CoroutineScope {
         startActivityLaunch = registerForActivityResult(
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
-                binding.photo.setImageURI(uri)
+                launch(Dispatchers.Default) {
+                    val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+                    imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+                }
+                launch(Dispatchers.Main) {
+                    binding.photo.setImageURI(uri)
+                }
             }
         )
     }
@@ -101,7 +111,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     }
                 }
             }
-            binding.constraintLayoutHome.setOnClickListener {
+            constraintLayoutHome.setOnClickListener {
                 activity?.hideSoftKeyboard()
             }
             val message = arguments?.getString("messageIfError")

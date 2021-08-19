@@ -1,15 +1,14 @@
 package com.example.chatapp.utils
 
 import android.app.*
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
+import android.content.*
 import android.content.Context.AUDIO_SERVICE
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
@@ -33,6 +32,7 @@ import net.glxn.qrgen.android.QRCode
 import java.io.File
 import java.io.FileOutputStream
 import java.net.Socket
+import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
@@ -60,8 +60,8 @@ object Utils : CoroutineScope {
         Log.d("jsonToMessageClass", json)
         val moshi = Moshi.Builder().build()
         val adapter = moshi.adapter(Message::class.java)
-        val fromJson  = adapter.fromJson(json)
-        if(fromJson != null){
+        val fromJson = adapter.fromJson(json)
+        if (fromJson != null) {
             return fromJson
         }
         return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
@@ -124,7 +124,7 @@ object Utils : CoroutineScope {
         val context = MainApplication.getContextInstance()
         val intent = Intent(context, ReplyReceiver::class.java)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES. O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, tittle, importance).apply {
                 description = text
@@ -222,4 +222,13 @@ object Utils : CoroutineScope {
         return BitmapFactory.decodeByteArray(base64, 0, base64.size)
     }
 
+    fun uriToBitmap(uri: Uri?, contentResolver: ContentResolver): Bitmap {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && uri != null) {
+            ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
+        } else {
+            BitmapFactory.decodeFileDescriptor(uri?.let {
+                contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
+            })
+        }
+    }
 }
