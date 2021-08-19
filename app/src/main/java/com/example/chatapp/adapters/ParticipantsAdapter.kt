@@ -49,8 +49,7 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>) :
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        val msg = profiles[position]
-        holder.bind(msg)
+        holder.bind(profiles[position])
     }
 
     override fun getItemCount(): Int {

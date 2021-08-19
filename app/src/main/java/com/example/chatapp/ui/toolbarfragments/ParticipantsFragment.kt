@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
@@ -22,14 +23,11 @@ class ParticipantsFragment : Fragment() {
     private lateinit var binding : FragmentParticipantsBinding
     private val profileController : ProfileViewModel by activityViewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         binding = FragmentParticipantsBinding.inflate(inflater, container, false)
         var adapter : ParticipantsAdapter
         binding.recycleView.layoutManager = LinearLayoutManager(requireContext())

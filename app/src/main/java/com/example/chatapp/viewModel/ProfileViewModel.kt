@@ -22,7 +22,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         launch(Dispatchers.IO) {
             val getAll = controller.getAll()
             withContext(Dispatchers.Main) {
-                onResult.invoke(getAll)
+                onResult.invoke(getAll as ArrayList<Profile>)
             }
         }
     }
