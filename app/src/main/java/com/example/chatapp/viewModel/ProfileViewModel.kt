@@ -44,13 +44,18 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
     fun insert(profile: Profile) {
         launch(Dispatchers.IO) {
             controller.insert(profile)
-            profiles.postValue(arrayListOf(profile))
+            val list = profiles.value
+            list?.add(profile)
+            profiles.postValue(list)
         }
     }
 
-    fun deleteAll() {
+    fun deleteAll(onResult: () -> Unit) {
         launch(Dispatchers.IO) {
             controller.deleteAll()
+            withContext(Dispatchers.Main){
+                onResult.invoke()
+            }
         }
     }
 

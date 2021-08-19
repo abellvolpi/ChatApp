@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.chatapp.R
@@ -24,6 +25,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
@@ -47,6 +49,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return null
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(START_SERVER)) {
             port = intent?.getIntExtra("socketConfigs", 0) ?: 0
@@ -57,6 +60,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
         if (intent?.action.equals(STOP_SERVER)) {
             stopForeground(true)
             stopSelf()
+            stopSelfResult(startId)
             return START_NOT_STICKY
         }
         if (intent?.action.equals(SEND_REPLY)){
