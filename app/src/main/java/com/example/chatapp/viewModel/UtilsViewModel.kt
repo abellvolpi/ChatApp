@@ -13,15 +13,6 @@ class UtilsViewModel : ViewModel() {
             isRunningAudio
         }
     }
-    private var lastMessageReceived : Message? = null
-
-    fun changeLastMessageReceived(message: Message){
-        lastMessageReceived = message
-    }
-
-    fun getLastMessageReceived(): Message? {
-        return lastMessageReceived
-    }
 
     fun changeAudioRunning(boolean: Boolean, position: Int){
         isRunningAudio = Pair(position, boolean)

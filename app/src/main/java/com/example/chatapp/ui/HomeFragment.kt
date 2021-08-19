@@ -194,7 +194,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                         username = nameField.text.toString(),
                         text = null,
                         base64Data = null,
-                        join = Message.Join(avatar = image, password = password.text.toString()),
+                        join = Message.Join(avatar = image, password = password.text.toString().toSHA256()),
                         id = null
                     )
                     val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(message)

@@ -13,6 +13,8 @@ import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import java.io.DataOutputStream
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.net.Socket
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -21,7 +23,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     private var isFirstAccessInThisFragment = true
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
-    var line: MutableLiveData<Message?> = MutableLiveData()
+    var line: MutableLiveData<Pair<Message, String>> = MutableLiveData()
+    var lastLine: String = ""
     private var backgroundMessages = arrayListOf<Message>()
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
 
@@ -44,44 +47,50 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
-                            val message = Utils.jsonToMessageClass(line)
-                            if (MainApplication.applicationIsInBackground()) {
-                                backgroundMessages.add(message)
-                                when (message.type) {
-                                    Message.MessageType.AUDIO.code -> {
-                                        Utils.createNotification(
-                                            message.username ?: "Error user name",
-                                            context.getString(R.string.received_audio)
-                                        )
-                                    }
-                                    Message.MessageType.IMAGE.code -> {
-                                        Utils.createNotification(
-                                            message.username ?: "Error user name",
-                                            context.getString(R.string.received_photo)
-                                        )
-                                    }
-                                    Message.MessageType.JOIN.code -> {
-                                        Utils.createNotification(
-                                            message.username ?: "Error user name",
-                                            context.getString(R.string.joined_chat)
-                                        )
-                                    }
-                                    Message.MessageType.LEAVE.code -> {
-                                        Utils.createNotification(
-                                            message.username ?: "Error user name",
-                                            context.getString(R.string.left_the_chat)
-                                        )
-                                    }
-                                    else -> {
-                                        if (message.username != ProfileSharedProfile.getProfile()) {
-                                            Utils.createReplyableNotification(message.username ?: "Error user name", message.text ?: "Error text")
+                            if(line == "ping"){
+                                Log.d("ConnectionFactory", "received ping from server")
+                            }else {
+                                val message = Utils.jsonToMessageClass(line)
+                                if (MainApplication.applicationIsInBackground()) {
+                                    backgroundMessages.add(message)
+                                    when (message.type) {
+                                        Message.MessageType.AUDIO.code -> {
+                                            Utils.createNotification(
+                                                message.username ?: "Error user name",
+                                                context.getString(R.string.received_audio)
+                                            )
                                         }
-                                        else return@withContext
+                                        Message.MessageType.IMAGE.code -> {
+                                            Utils.createNotification(
+                                                message.username ?: "Error user name",
+                                                context.getString(R.string.received_photo)
+                                            )
+                                        }
+                                        Message.MessageType.JOIN.code -> {
+                                            Utils.createNotification(
+                                                message.username ?: "Error user name",
+                                                context.getString(R.string.joined_chat)
+                                            )
+                                        }
+                                        Message.MessageType.LEAVE.code -> {
+                                            Utils.createNotification(
+                                                message.username ?: "Error user name",
+                                                context.getString(R.string.left_the_chat)
+                                            )
+                                        }
+                                        else -> {
+                                            if (message.username != ProfileSharedProfile.getProfile()) {
+                                                Utils.createReplyableNotification(
+                                                    message.username ?: "Error user name",
+                                                    message.text ?: "Error text"
+                                                )
+                                            } else return@withContext
+                                        }
                                     }
+                                    Utils.playBemTeVi()
+                                } else {
+                                    this@ConnectionFactory.line.postValue(Pair(message, line))
                                 }
-                                Utils.playBemTeVi()
-                            } else {
-                                this@ConnectionFactory.line.postValue(message)
                             }
                         }
                     } else {
@@ -96,6 +105,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                         this@ConnectionFactory.line.postValue(null)
                         this@ConnectionFactory.line = MutableLiveData()
                     }
+
                 }
             }
         }
@@ -142,17 +152,20 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         while (true) {
             if (socket.isConnected) {
                 try {
-                    if (socket.getInputStream().available() == -1) {
-                        Log.e("connection factory", "Server has disconnected")
-                        serverOnline.postValue(false)
-                        break
-                    }
+                       socket.getOutputStream().bufferedWriter(Charsets.UTF_8).apply {
+                            write("ping\n")
+                            flush()
+                       }
                 } catch (e: Exception) {
                     serverOnline.postValue(false)
+                    Log.e("ConnectionFactory",e.toString())
                     break
                 }
             }
-            delay(1)
+            delay(2000)
         }
+    }
+    fun closeSocket(){
+        socket.close()
     }
 }

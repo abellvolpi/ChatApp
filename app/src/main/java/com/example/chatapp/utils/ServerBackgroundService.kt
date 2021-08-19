@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.net.InetAddresses
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -24,8 +25,11 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import okio.sink
+import okio.source
 import java.io.DataOutputStream
 import java.net.InetSocketAddress
+import java.net.Proxy
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
@@ -150,28 +154,32 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 val line: String
                 if (reader.hasNextLine()) {
                     line = reader.nextLine()
-                    val classMessage = Utils.jsonToMessageClass(line)
-                    if (classMessage.type == Message.MessageType.JOIN.code) {
-                        if (password != "") {
-                            if (classMessage.join?.password == password) {
+                    if (line == "ping") {
+                        Log.d("server", "received Ping")
+                    } else {
+                        val classMessage = Utils.jsonToMessageClass(line)
+                        if (classMessage.type == Message.MessageType.JOIN.code) {
+                            if (password != "") {
+                                if (classMessage.join?.password == password) {
+                                    sendIdToSocket(socket, classMessage)
+                                    observerWhenSocketClose(socket)
+                                } else {
+                                    val message = Message(
+                                        Message.MessageType.REVOKED.code,
+                                        username = null,
+                                        text = null,
+                                        base64Data = null,
+                                        id = 1
+                                    )
+                                    sendMessageToASocket(socket, message)
+                                }
+                            } else {
                                 sendIdToSocket(socket, classMessage)
                                 observerWhenSocketClose(socket)
-                            } else {
-                                val message = Message(
-                                    Message.MessageType.REVOKED.code,
-                                    username = null,
-                                    text = null,
-                                    base64Data = null,
-                                    id = 1
-                                )
-                                sendMessageToASocket(socket, message)
                             }
                         } else {
-                            sendIdToSocket(socket, classMessage)
-                            observerWhenSocketClose(socket)
+                            sendMessageToAllSockets(classMessage)
                         }
-                    } else {
-                        sendMessageToAllSockets(classMessage)
                     }
                 }
                 delay(1)
@@ -184,16 +192,17 @@ class ServerBackgroundService : Service(), CoroutineScope {
             while (true) {
                 if (socket.isConnected) {
                     try {
-                        if (socket.getInputStream().available() == -1) {
-                            Log.e("service", "observer when disconnected triggered")
-                            removeSocket(socket)
-                            break
+                        socket.getOutputStream().bufferedWriter(Charsets.UTF_8).apply {
+                            write("ping\n")
+                            flush()
                         }
                     } catch (e: Exception) {
+                        Log.e("service", "observer when disconnected triggered")
+                        removeSocket(socket)
                         break
                     }
                 }
-                delay(1)
+                delay(2000)
             }
         }
     }

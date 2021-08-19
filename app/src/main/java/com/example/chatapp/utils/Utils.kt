@@ -57,13 +57,13 @@ object Utils : CoroutineScope {
     }
 
     fun jsonToMessageClass(json: String): Message {
-        Log.d("jsonToMessageClass", json)
-        val moshi = Moshi.Builder().build()
-        val adapter = moshi.adapter(Message::class.java)
-        val fromJson = adapter.fromJson(json)
-        if (fromJson != null) {
-            return fromJson
-        }
+            Log.d("jsonToMessageClass", json)
+            val moshi = Moshi.Builder().build()
+            val adapter = moshi.adapter(Message::class.java)
+            val fromJson = adapter.fromJson(json)
+            if (fromJson != null) {
+                return fromJson
+            }
         return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
     }
 
