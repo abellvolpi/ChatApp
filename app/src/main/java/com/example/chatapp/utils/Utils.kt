@@ -57,13 +57,13 @@ object Utils : CoroutineScope {
     }
 
     fun jsonToMessageClass(json: String): Message {
-        Log.d("jsonToMessageClass", json)
-        val moshi = Moshi.Builder().build()
-        val adapter = moshi.adapter(Message::class.java)
-        val fromJson  = adapter.fromJson(json)
-        if(fromJson != null){
-            return fromJson
-        }
+            Log.d("jsonToMessageClass", json)
+            val moshi = Moshi.Builder().build()
+            val adapter = moshi.adapter(Message::class.java)
+            val fromJson = adapter.fromJson(json)
+            if (fromJson != null) {
+                return fromJson
+            }
         return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
     }
 
@@ -221,5 +221,7 @@ object Utils : CoroutineScope {
         val base64 = Base64.decode(byte, Base64.NO_WRAP)
         return BitmapFactory.decodeByteArray(base64, 0, base64.size)
     }
+
+
 
 }

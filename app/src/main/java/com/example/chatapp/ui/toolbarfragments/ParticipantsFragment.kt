@@ -7,14 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.chatapp.R
 import com.example.chatapp.adapters.ParticipantsAdapter
 import com.example.chatapp.databinding.FragmentParticipantsBinding
-import com.example.chatapp.databinding.ParticipantsItemBinding
-import com.example.chatapp.room.profile.controller.ProfileController
 import com.example.chatapp.viewModel.ProfileViewModel
 
 
@@ -30,11 +25,11 @@ class ParticipantsFragment : Fragment() {
 
         binding = FragmentParticipantsBinding.inflate(inflater, container, false)
         var adapter : ParticipantsAdapter
-        binding.recycleView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         profileController.profiles.observe(viewLifecycleOwner) {
             if(it != null){
                 adapter = ParticipantsAdapter(it)
-                with(binding.recycleView){
+                with(binding.recyclerView){
                     setAdapter(adapter)
                     adapter.notifyDataSetChanged()
                     Log.d("participantsFragment", "updated list")

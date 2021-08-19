@@ -137,8 +137,10 @@ class ChatFragment : Fragment() {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
                 if (it != null) {
-                    if(utilsViewModel.getLastMessageReceived() == null || utilsViewModel.getLastMessageReceived() != it)
-                    validReceivedMessage(it)
+                    if(connectionFactory.lastLine != it.second) {
+                        validReceivedMessage(it.first)
+                        connectionFactory.lastLine = it.second
+                    }
                 } else {
                     val action =
                         com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
@@ -149,9 +151,10 @@ class ChatFragment : Fragment() {
             }
             connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                 if (it == false) {
-                    val action =
-                        ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
-                    navController.navigate(action)
+                    Log.e("Chat desconnected", "server down")
+//                    val action =
+//                        ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
+//                    navController.navigate(action)
                 }
             }
             constraintLayout.setOnClickListener {
@@ -236,11 +239,7 @@ class ChatFragment : Fragment() {
         connectionFactory.sendMessageToSocket(message) {}
         CoroutineScope(Dispatchers.IO).launch {
             MessageController.insert(message)
-            MessageController.getAll().forEach {
-                Log.d("test", it.toString())
-            }
         }
-
     }
 
     private fun refreshUIChat(message: Message) {
@@ -258,7 +257,6 @@ class ChatFragment : Fragment() {
 
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
-            utilsViewModel.changeLastMessageReceived(this)
             if (type == Message.MessageType.REVOKED.code) {
                 var message = ""
                 when (id) {
