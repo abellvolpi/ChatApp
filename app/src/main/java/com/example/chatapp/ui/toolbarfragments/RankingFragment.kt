@@ -30,7 +30,7 @@ class RankingFragment : Fragment() {
         binding = FragmentRankingBinding.inflate(inflater, container, false)
 
 
-        profileController.profiles.observe(viewLifecycleOwner) {
+        profileController.ranking.observe(viewLifecycleOwner) {
             if(it != null){
                 val adapter = RankingAdapter(it)
                 with(binding.recyclerView){

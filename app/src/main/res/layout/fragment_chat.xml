@@ -31,9 +31,8 @@
                 android:layout_height="wrap_content"
                 android:background="@color/blue_3"
                 app:title="Chat"
-                app:titleTextColor="@color/white"
+                app:titleTextColor="@color/white">
 
-                >
 <!--                android:theme="@style/Theme.ChatApp"-->
 <!--                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
 

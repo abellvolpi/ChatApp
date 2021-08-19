@@ -32,4 +32,9 @@ class ProfileController {
     fun deleteAll(){
         profileController.deleteAll()
     }
+    fun getRanking(): ArrayList<Profile>{
+        val arrayList = arrayListOf<Profile>()
+        arrayList.addAll(profileController.getRanking())
+        return arrayList
+    }
 }

@@ -11,12 +11,17 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private val controller = ProfileController()
     lateinit var profiles: MutableLiveData<ArrayList<Profile>>
+    lateinit var ranking: MutableLiveData<ArrayList<Profile>>
 
     init {
         allProfiles {
             profiles = MutableLiveData(it)
         }
+        getRanking {
+            ranking = MutableLiveData(it)
+        }
     }
+
 
     private fun allProfiles(onResult: (ArrayList<Profile>) -> Unit) {
         launch(Dispatchers.IO) {
@@ -60,5 +65,15 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
             controller.update(profile)
         }
     }
+
+    fun getRanking(onResult: (ArrayList<Profile>) -> Unit){
+        launch(Dispatchers.IO) {
+            val ranking = controller.getRanking()
+            withContext(Dispatchers.Main) {
+                onResult.invoke(ranking as ArrayList<Profile>)
+            }
+        }
+    }
+
 
 }

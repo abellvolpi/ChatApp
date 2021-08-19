@@ -33,7 +33,6 @@ class ProfileFragment : Fragment(), CoroutineScope {
         (activity as AppCompatActivity?)?.supportActionBar?.hide()
 
 
-
         startActivityLaunch = registerForActivityResult(
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
@@ -44,8 +43,7 @@ class ProfileFragment : Fragment(), CoroutineScope {
 
     override fun onResume() {
         super.onResume()
-//        val actionBar = (activity as AppCompatActivity?)?.supportActionBar
-//        actionBar?.title = getString(R.string.profile)
+
     }
 
 
@@ -57,14 +55,28 @@ class ProfileFragment : Fragment(), CoroutineScope {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.username.text = ProfileSharedProfile.getProfile()
-        if (ProfileSharedProfile.getProfilePhoto() != null) {
-            binding.photo.setImageBitmap(ProfileSharedProfile.getProfilePhoto())
+        with(binding){
+
+            username.text = ProfileSharedProfile.getProfile()
+            if (ProfileSharedProfile.getProfilePhoto() != null) {
+                binding.photo.setImageBitmap(ProfileSharedProfile.getProfilePhoto())
+            }
+
+            floatingEditButton.setOnClickListener {
+                startActivityLaunch.launch("image/*")
+            }
+
+            profileToolbar.setNavigationOnClickListener {
+
+
+                activity?.onBackPressed()
+            }
+
+
         }
 
-        binding.floatingEditButton.setOnClickListener {
-            startActivityLaunch.launch("image/*")
-        }
+
+
 
 
 

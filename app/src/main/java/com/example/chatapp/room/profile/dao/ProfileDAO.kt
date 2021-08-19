@@ -22,4 +22,8 @@ interface ProfileDAO {
 
     @Query("Delete From Profile")
     fun deleteAll()
+
+    @Query("Select * from Profile order by scoreTicTacToe desc")
+    fun getRanking(): List<Profile>
+
 }

@@ -85,7 +85,7 @@ class ChatFragment : Fragment() {
     ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
         joinMessage = arguments?.getSerializable("joinMessage") as Message
-        if (connectionFactory.isFirstAcessInThisFragment()) {
+        if (connectionFactory.isFirstAccessInThisFragment()) {
             sendMessageSocket(joinMessage)
         }
         initView()
@@ -304,11 +304,11 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.JOIN.code) {
                 if (id != null) {
                     if (id == profileId) {
-                        if (connectionFactory.isFirstAcessInThisFragment()) {
+                        if (connectionFactory.isFirstAccessInThisFragment()) {
                             saveAvatarToCacheDir(id, join?.avatar ?: "") {
                                 val profile = Profile(id, username ?: "", it, 0, true)
                                 profileViewModel.insert(profile)
-                                connectionFactory.setFirstAcessChatFragment(false)
+                                connectionFactory.setFirstAccessChatFragment(false)
                             }
                         }else{
                             return
@@ -678,32 +678,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.chat_menu, menu)
-        super.onCreateOptionsMenu(menu, menuInflater)
-
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.perfil -> {
-                findNavController().navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                return true
-            }
-            R.id.share_link -> {
-                val ip = connectionFactory.getIpHost()
-                val port = connectionFactory.getIpPort()
-                val shareIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "http://www.mychatapp.com/home/$ip:$port")
-                    type = "text/plain"
-                }
-                startActivity(Intent.createChooser(shareIntent, ""))
-                return true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 
     companion object {
         private const val RECORD_PERMISSION = 102

@@ -31,7 +31,10 @@ class RankingAdapter(private val profiles: ArrayList<Profile>) : RecyclerView.Ad
                 } else {
                     imageProfile.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
                 }
+                imageProfile.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
+
                 name.text = profile.name
+                imageRanking.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_gold_medal))
             }
         }
     }
