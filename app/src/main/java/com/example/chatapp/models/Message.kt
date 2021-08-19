@@ -24,7 +24,7 @@ class Message(
     var messageId : Int? =null
 
     @JsonClass(generateAdapter = true)
-    data class Join(val avatar: String?, val password: String?)
+    data class Join(val avatar: String?, val password: String?): Serializable
 
 
     companion object{

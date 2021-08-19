@@ -31,12 +31,15 @@ class ParticipantsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentParticipantsBinding.inflate(inflater, container, false)
+        var adapter : ParticipantsAdapter
+        binding.recycleView.layoutManager = LinearLayoutManager(requireContext())
         profileController.profiles.observe(viewLifecycleOwner) {
             if(it != null){
-                val adapter = ParticipantsAdapter(it)
+                adapter = ParticipantsAdapter(it)
                 with(binding.recycleView){
                     setAdapter(adapter)
-                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter.notifyDataSetChanged()
+                    Log.d("participantsFragment", "updated list")
                 }
             }else{
                 Log.e("participantsFragment", "Arraylist is empty")

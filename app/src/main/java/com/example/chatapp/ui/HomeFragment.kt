@@ -172,22 +172,23 @@ class HomeFragment : Fragment(), CoroutineScope {
             createSocket(ipField.text.toString(), port) {
                 ProfileSharedProfile.saveProfile(nameField.text.toString())
                 connectionFactory.setSocket(it)
-                profileViewModel.deleteAll()
-                var image = ""
-                val bitmap = ProfileSharedProfile.getProfilePhoto()
-                if (bitmap != null) {
-                    image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                profileViewModel.deleteAll {
+                    var image = ""
+                    val bitmap = ProfileSharedProfile.getProfilePhoto()
+                    if (bitmap != null) {
+                        image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                    }
+                    val message = Message(
+                        type = Message.MessageType.JOIN.code,
+                        username = nameField.text.toString(),
+                        text = null,
+                        base64Data = null,
+                        join = Message.Join(avatar = image, password = password.text.toString()),
+                        id = null
+                    )
+                    val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
+                    findNavController().navigate(action)
                 }
-                val message = Message(
-                    type = Message.MessageType.JOIN.code,
-                    username = nameField.text.toString(),
-                    text = null,
-                    base64Data = null,
-                    join = Message.Join(avatar = image, password = password.text.toString()),
-                    id = null
-                )
-                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
-                findNavController().navigate(action)
             }
         }
     }

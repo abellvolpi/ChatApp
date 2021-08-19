@@ -115,15 +115,15 @@ class ChatFragment : Fragment() {
                         R.id.share_link -> {
                             val ip = connectionFactory.getIpHost()
                             val port = connectionFactory.getIpPort()
-                            val shareIntent = android.content.Intent().apply {
-                                action = android.content.Intent.ACTION_SEND
+                            val shareIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
                                 putExtra(
-                                    android.content.Intent.EXTRA_TEXT,
+                                    Intent.EXTRA_TEXT,
                                     "http://www.mychatapp.com/home/$ip:$port"
                                 )
                                 type = "text/plain"
                             }
-                            startActivity(android.content.Intent.createChooser(shareIntent, ""))
+                            startActivity(Intent.createChooser(shareIntent, ""))
                         }
                     }
                     true
@@ -258,6 +258,7 @@ class ChatFragment : Fragment() {
 
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
+            utilsViewModel.changeLastMessageReceived(this)
             if (type == Message.MessageType.REVOKED.code) {
                 var message = ""
                 when (id) {
@@ -284,16 +285,18 @@ class ChatFragment : Fragment() {
                     }
 
                     if (text != null) {
-                        profileViewModel.deleteAll()
-                        Utils.listJsonToProfiles(text)?.forEach { profile ->
-                            if (profile.photoProfile != "" || profile.photoProfile != null) {
-                                saveAvatarToCacheDir(profile.id, profile.photoProfile ?: "") {
-                                    profile.photoProfile = it
+                        profileViewModel.deleteAll {
+                            Utils.listJsonToProfiles(text)?.forEach { profile ->
+                                if (profile.photoProfile != "" || profile.photoProfile != null) {
+                                    saveAvatarToCacheDir(profile.id, profile.photoProfile ?: "") {
+                                        profile.photoProfile = it
+                                        profile.isMemberYet = true
+                                        profileViewModel.insert(profile)
+                                    }
+                                } else {
+                                    profile.photoProfile = ""
                                     profileViewModel.insert(profile)
                                 }
-                            } else {
-                                profile.photoProfile = ""
-                                profileViewModel.insert(profile)
                             }
                         }
                     }
@@ -317,11 +320,11 @@ class ChatFragment : Fragment() {
                         if (join?.avatar != "" || join?.avatar != null) {
                             saveAvatarToCacheDir(id, join?.avatar ?: "") {
                                 val profile = Profile(id, username ?: "", it, 0, true)
-                                profileViewModel.insert(profile)
+                                profileViewModel.insert(profile)///errrorr aqui
                             }
                         } else {
                             val profile = Profile(id, username ?: "", "", 0, true)
-                            profileViewModel.insert(profile)
+                            profileViewModel.insert(profile)///errrorr aqui
                         }
                     }
                 } else {
@@ -421,7 +424,6 @@ class ChatFragment : Fragment() {
 //                    refreshUIChat(this)
 //                }
 //            }
-            utilsViewModel.changeLastMessageReceived(this)
         }
     }
 
