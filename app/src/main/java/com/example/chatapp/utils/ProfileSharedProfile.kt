@@ -67,6 +67,11 @@ object ProfileSharedProfile {
         return BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
     }
 
+    fun getProfilePhotoBase64(): String?{
+        val sharedPreferences = getSharedProfile()
+        return sharedPreferences.getString("image", null)
+    }
+
 
     fun bitmapToByteArrayToString(bitmap: Bitmap): String {
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)

@@ -125,6 +125,8 @@ class ChatFragment : Fragment() {
                                 )
                                 type = "text/plain"
                             }
+                            val action = ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(ip, port.toInt())
+                            navController.navigate(action)
                             startActivity(Intent.createChooser(shareIntent, ""))
                         }
                     }
@@ -286,18 +288,27 @@ class ChatFragment : Fragment() {
         }
     }
 
+    private fun returnToHomeFragmentWithMessage(message: String){
+        val action =
+            ChatFragmentDirections.actionChatFragmentToHomeFragment(message)
+        navController.navigate(action)
+    }
+
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
             if (type == Message.MessageType.REVOKED.code) {
                 var message = ""
                 when (id) {
-                    1 -> message = "Wrong Password"
-                    2 -> message = "Server Security Kick"
-                    3 -> message = "Admin kicked you"
+                    1 -> {
+                        message = "Wrong Password"
+                        val action = ChatFragmentDirections.actionChatFragmentToWritePasswordDialog()
+                        navController.navigate(action)
+                    }
+                    2 ->{
+                        returnToHomeFragmentWithMessage("Server Security Kick")
+                    }
+                    3 -> returnToHomeFragmentWithMessage("Admin kicked you")
                 }
-                val action =
-                    ChatFragmentDirections.actionChatFragmentToHomeFragment(message)
-                navController.navigate(action)
                 return@with
             }
             if (type == Message.MessageType.ACKNOWLEDGE.code) {

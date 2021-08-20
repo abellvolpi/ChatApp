@@ -55,8 +55,11 @@ class HomeFragment : Fragment(), CoroutineScope {
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
                 launch(Dispatchers.Default) {
-                    val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
-                    imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+                    if(uri != null) {
+                        val imageBitmap =
+                            context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+                        imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+                    }
                 }
                 launch(Dispatchers.Main) {
                     binding.photo.setImageURI(uri)
@@ -137,9 +140,10 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
             openCameraButton.setOnClickListener {
                 if (nameField.text.toString().isNotBlank()) {
+                    ProfileSharedProfile.saveProfile(nameField.text.toString())
                     val action =
-                        HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan(nameField.text.toString())
-                    navController.navigate(action)
+                        HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan()
+                        navController.navigate(action)
                 } else {
                     nameField.error = "Please, insert your name"
                 }
@@ -181,24 +185,33 @@ class HomeFragment : Fragment(), CoroutineScope {
         val port = radioGroupSelected().toInt()
         with(binding) {
             createSocket(ipField.text.toString(), port) {
-                ProfileSharedProfile.saveProfile(nameField.text.toString())
-                connectionFactory.setSocket(it)
-                profileViewModel.deleteAll {
-                    var image = ""
-                    val bitmap = ProfileSharedProfile.getProfilePhoto()
-                    if (bitmap != null) {
-                        image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                if (it != null) {
+                    ProfileSharedProfile.saveProfile(nameField.text.toString())
+                    connectionFactory.setSocket(it)
+                    profileViewModel.deleteAll {
+                        var image = ""
+                        val bitmap = ProfileSharedProfile.getProfilePhoto()
+                        if (bitmap != null) {
+                            image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                        }
+                        val message = Message(
+                            type = Message.MessageType.JOIN.code,
+                            username = nameField.text.toString(),
+                            text = null,
+                            base64Data = null,
+                            join = Message.Join(
+                                avatar = image,
+                                password = password.text.toString().toSHA256()
+                            ),
+                            id = null
+                        )
+                        val action =
+                            HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
+                        findNavController().navigate(action)
                     }
-                    val message = Message(
-                        type = Message.MessageType.JOIN.code,
-                        username = nameField.text.toString(),
-                        text = null,
-                        base64Data = null,
-                        join = Message.Join(avatar = image, password = password.text.toString().toSHA256()),
-                        id = null
-                    )
-                    val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
-                    findNavController().navigate(action)
+                }else{
+                    val snackbar = Snackbar.make(requireView(), "Server doest exists", Snackbar.LENGTH_LONG)
+                    snackbar.show()
                 }
             }
         }

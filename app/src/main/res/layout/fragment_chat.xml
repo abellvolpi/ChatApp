@@ -7,13 +7,11 @@
     android:layout_height="match_parent"
     tools:context=".ui.ChatFragment">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.ChatFragment">
-
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
@@ -64,7 +62,8 @@
             app:layout_constraintTop_toBottomOf="@+id/messages_recyclerview">
 
             <ImageView
-                tools:src="@drawable/sent_image"
+                android:id="@+id/sent_image"
+                tools:src="@drawable/ic_profile"
                 android:scaleType="fitXY"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/frame_layout"
@@ -100,8 +99,8 @@
                     android:layout_marginHorizontal="5dp"
                     android:background="@drawable/notify_shape"
                     android:hint="@string/message"
+                    android:inputType="text"
                     android:maxLines="3" />
-
 
                 <ImageView
                     android:id="@+id/button_clip"
