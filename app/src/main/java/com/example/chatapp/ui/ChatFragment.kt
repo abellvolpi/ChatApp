@@ -39,6 +39,7 @@ import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -133,14 +134,34 @@ class ChatFragment : Fragment() {
         }
     }
 
+    private fun readMessageMissed() {
+        val messagesClass = arrayListOf<Pair<Message, String>>()
+        val messages = connectionFactory.isRead.iterator()
+
+        while(messages.hasNext()){
+            val message = messages.next()
+            if (connectionFactory.lastLine != message) {
+                messagesClass.add(Pair(Utils.jsonToMessageClass(message), message))
+                messages.remove()
+            }
+        }
+        messagesClass.sortedBy { it.first.time }.forEach {
+            validReceivedMessage(it.first)
+            connectionFactory.lastLine = it.second
+        }
+
+    }
+
     private fun initView() {
+        readMessageMissed()
         with(binding) {
             connectionFactory.startListenerMessages()
             connectionFactory.line.observe(viewLifecycleOwner) {
                 if (it != null) {
-                    if(connectionFactory.lastLine != it.second) {
+                    if (connectionFactory.lastLine != it.second) {
                         validReceivedMessage(it.first)
                         connectionFactory.lastLine = it.second
+                        connectionFactory.isRead.remove(it.second)
                     }
                 } else {
                     val action =
@@ -303,6 +324,7 @@ class ChatFragment : Fragment() {
                                     }
                                 } else {
                                     profile.photoProfile = ""
+                                    profile.isMemberYet = true
                                     profileViewModel.insert(profile)
                                 }
                             }
@@ -321,18 +343,18 @@ class ChatFragment : Fragment() {
                                 profileViewModel.insert(profile)
                                 connectionFactory.setFirstAccessChatFragment(false)
                             }
-                        }else{
+                        } else {
                             return
                         }
                     } else {
                         if (join?.avatar != "" || join?.avatar != null) {
                             saveAvatarToCacheDir(id, join?.avatar ?: "") {
                                 val profile = Profile(id, username ?: "", it, 0, true)
-                                profileViewModel.insert(profile)///errrorr aqui
+                                profileViewModel.insert(profile)
                             }
                         } else {
                             val profile = Profile(id, username ?: "", "", 0, true)
-                            profileViewModel.insert(profile)///errrorr aqui
+                            profileViewModel.insert(profile)
                         }
                     }
                 } else {
@@ -363,6 +385,8 @@ class ChatFragment : Fragment() {
                 if (status == Message.MessageStatus.RECEIVED.code) {
                     status = Message.MessageStatus.SENT.code
                 }
+            }else{
+                status = Message.MessageStatus.RECEIVED.code
             }
 
             when (status) {

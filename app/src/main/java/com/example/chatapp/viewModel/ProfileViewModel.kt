@@ -14,7 +14,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
     lateinit var ranking: MutableLiveData<ArrayList<Profile>>
 
     init {
-        allProfiles {
+        allProfilesWhereIsMemberYet {
             profiles = MutableLiveData(it)
         }
         getRanking {
@@ -23,11 +23,12 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
     }
 
 
-    private fun allProfiles(onResult: (ArrayList<Profile>) -> Unit) {
+    private fun allProfilesWhereIsMemberYet(onResult: (ArrayList<Profile>) -> Unit) {
         launch(Dispatchers.IO) {
-            val getAll = controller.getAll()
+            profiles = MutableLiveData()
+            val getAll = controller.getProfileWhereIsMemberYet()
             withContext(Dispatchers.Main) {
-                onResult.invoke(getAll as ArrayList<Profile>)
+                onResult.invoke(getAll)
             }
         }
     }
@@ -36,7 +37,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         launch(Dispatchers.IO) {
             controller.delete(id)
         }
-        allProfiles {
+        allProfilesWhereIsMemberYet {
             profiles.postValue(it)
         }
     }
@@ -57,6 +58,9 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
                 onResult.invoke()
             }
         }
+        allProfilesWhereIsMemberYet {
+            profiles.postValue(it)
+        }
     }
 
     fun getProfile(id: String, onResult: (Profile?) -> Unit) {
@@ -69,9 +73,13 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         launch(Dispatchers.IO) {
             controller.update(profile)
         }
+        allProfilesWhereIsMemberYet {
+            profiles.postValue(it)
+        }
     }
 
     fun getRanking(onResult: (ArrayList<Profile>) -> Unit){
+        ranking = MutableLiveData()
         launch(Dispatchers.IO) {
             val ranking = controller.getRanking()
             withContext(Dispatchers.Main) {

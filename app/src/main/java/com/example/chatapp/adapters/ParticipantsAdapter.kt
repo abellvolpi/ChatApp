@@ -1,5 +1,9 @@
 package com.example.chatapp.adapters
 
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,11 +24,20 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>) :
 
     private inner class ProfileViewHolder(private val binding: ParticipantsItemBinding) : BaseViewHolder(binding.root) {
         override fun bind(profile: Profile) {
-            val file = File(profile.photoProfile)
+            val file = File(profile.photoProfile?: "")
             with(binding) {
-                if (file.exists()) {
-                    imageProfile.setImageURI(file.toUri())
-                } else {
+//                if (file.exists() && profile.photoProfile != "" && file.isFile) {
+                try{
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        val bitMap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(MainApplication.getContextInstance().contentResolver,file.toUri()))
+                        imageProfile.setImageBitmap(bitMap)
+                    }else{
+                        BitmapFactory.decodeFileDescriptor(file.toUri().let {
+                            MainApplication.getContextInstance().contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
+                        })
+                    }
+                } catch (e: Exception) {
+                    Log.e("ParticipantsAdapter", "Error set drawable profile image $e")
                     val context = MainApplication.getContextInstance()
                     imageProfile.setImageDrawable(
                         ContextCompat.getDrawable(

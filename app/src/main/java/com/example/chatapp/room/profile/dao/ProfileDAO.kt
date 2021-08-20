@@ -26,4 +26,8 @@ interface ProfileDAO {
     @Query("Select * from Profile order by scoreTicTacToe desc")
     fun getRanking(): List<Profile>
 
+    @Query("Select * from profile where isMemberYet = 1")
+    fun getProfileWhereIsMemberYet(): List<Profile>
+
+
 }

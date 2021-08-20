@@ -12,11 +12,14 @@ import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.Socket
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
 
 class ConnectionFactory : CoroutineScope, ViewModel() {
@@ -24,9 +27,28 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
     var line: MutableLiveData<Pair<Message, String>> = MutableLiveData()
+    @Volatile
+    var isRead: ArrayList<String> = arrayListOf()
+    private val mutex = Mutex()
     var lastLine: String = ""
     private var backgroundMessages = arrayListOf<Message>()
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
+
+//    fun readMessageNotReads(onResult: (ArrayList<String>) -> Unit){
+//        launch(Dispatchers.Default) {
+//            mutex.withLock {
+//                onResult
+//            }
+//        }
+//    }
+
+    fun removeIsNotReadMessages(position: Int){
+        launch(Dispatchers.Default){
+            mutex.withLock {
+                isRead.removeAt(position)
+            }
+        }
+    }
 
     fun setFirstAccessChatFragment(boolean: Boolean){
         isFirstAccessInThisFragment = boolean
@@ -89,6 +111,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                     }
                                     Utils.playBemTeVi()
                                 } else {
+                                    isRead.add(line)
                                     this@ConnectionFactory.line.postValue(Pair(message, line))
                                 }
                             }
