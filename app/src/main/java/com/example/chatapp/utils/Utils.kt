@@ -199,10 +199,10 @@ object Utils : CoroutineScope {
         }
     }
 
-    fun copyToClipBoard(context: Context?, text: String) {
-        val clipBoard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clipData = ClipData.newPlainText("label", text)
-        clipBoard.setPrimaryClip(clipData)
+    fun copyTobuttonClipBoard(context: Context?, text: String) {
+        val buttonClipBoard = context?.getSystemService(Context.buttonClipBOARD_SERVICE) as buttonClipboardManager
+        val buttonClipData = buttonClipData.newPlainText("label", text)
+        buttonClipBoard.setPrimarybuttonClip(buttonClipData)
     }
 
 

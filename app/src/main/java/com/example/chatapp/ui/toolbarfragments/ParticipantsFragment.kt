@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatapp.adapters.ParticipantsAdapter
 import com.example.chatapp.databinding.FragmentParticipantsBinding
@@ -25,8 +26,13 @@ class ParticipantsFragment : Fragment() {
 
         binding = FragmentParticipantsBinding.inflate(inflater, container, false)
 
+        with(binding.recyclerView) {
+            layoutManager = LinearLayoutManager(requireContext())
+            addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
+        }
+
         var adapter : ParticipantsAdapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
         profileController.profiles.observe(viewLifecycleOwner) {
             if(it != null){
                 adapter = ParticipantsAdapter(it)

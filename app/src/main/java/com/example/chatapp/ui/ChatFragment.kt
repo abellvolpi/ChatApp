@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
+import android.opengl.Visibility
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -151,7 +152,7 @@ class ChatFragment : Fragment() {
             }
             connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                 if (it == false) {
-                    Log.e("Chat desconnected", "server down")
+                    Log.e("Chat disconnected", "server down")
 //                    val action =
 //                        ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
 //                    navController.navigate(action)
@@ -162,6 +163,7 @@ class ChatFragment : Fragment() {
             }
             tictactoe.setOnClickListener {
                 sendInviteTicTacToe()
+                bottomSheet.whoPlay.visibility = View.VISIBLE
                 if (!isTicTacToePlayRunning) {
                     sendInviteTicTacToe()
                 } else {
@@ -190,9 +192,12 @@ class ChatFragment : Fragment() {
                     if (s != null && s.isEmpty()) {
                         buttonSend.visibility = View.GONE
                         buttonVoiceMessageRecord.visibility = View.VISIBLE
+                        buttonClip.visibility = View.VISIBLE
                     } else {
                         buttonSend.visibility = View.VISIBLE
                         buttonVoiceMessageRecord.visibility = View.GONE
+                        buttonClip.visibility = View.GONE
+
                     }
                 }
 
@@ -206,6 +211,10 @@ class ChatFragment : Fragment() {
                 } else {
                     stopRecording()
                 }
+            }
+
+            buttonClip.setOnClickListener {
+
             }
 
             buttonSend.setOnClickListener {
@@ -241,6 +250,7 @@ class ChatFragment : Fragment() {
             MessageController.insert(message)
         }
     }
+
 
     private fun refreshUIChat(message: Message) {
         adapter.addData(message)
