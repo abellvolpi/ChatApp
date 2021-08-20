@@ -37,4 +37,10 @@ class ProfileController {
         arrayList.addAll(profileController.getRanking())
         return arrayList
     }
+
+    fun getProfileWhereIsMemberYet(): ArrayList<Profile> {
+        val arrayList = arrayListOf<Profile>()
+        arrayList.addAll(profileController.getProfileWhereIsMemberYet())
+        return arrayList
+    }
 }

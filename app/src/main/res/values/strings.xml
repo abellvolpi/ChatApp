@@ -67,7 +67,7 @@
     <string name="name">Name</string>
     <string name="port">Port:</string>
     <string name="ip" translatable="false">IP</string>
-    <string name="port_1025" translatable="false">1025</string>
+    <string name="port_1027" translatable="false">1027</string>
     <string name="port_1087" translatable="false">1087</string>
     <string name="port_1998" translatable="false">1998</string>
     <string name="connect">Connect</string>

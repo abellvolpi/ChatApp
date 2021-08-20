@@ -18,4 +18,6 @@ interface MessageDao {
     @Update
     fun update(vararg message: Message)
 
+
+
 }
