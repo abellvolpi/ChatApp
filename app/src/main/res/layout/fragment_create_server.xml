@@ -45,14 +45,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
-                android:text="@string/port_1087"
+                android:text="@string/port_1028"
                 android:textSize="15dp" />
 
             <RadioButton
                 android:id="@+id/radioPort1998"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/port_1998"
+                android:text="@string/port_1029"
                 android:textSize="15dp" />
         </RadioGroup>
         <EditText

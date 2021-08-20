@@ -77,12 +77,13 @@ object ProfileSharedProfile {
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 
-
     fun clearSharedPreferences() {
         getSharedProfile().edit().apply {
             clear()
             apply()
         }
     }
+
+
 
 }

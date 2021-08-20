@@ -33,8 +33,8 @@
                 app:title="Chat"
                 app:titleTextColor="@color/white">
 
-<!--                android:theme="@style/Theme.ChatApp"-->
-<!--                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
+                <!--                android:theme="@style/Theme.ChatApp"-->
+                <!--                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
 
             </androidx.appcompat.widget.Toolbar>
 
@@ -64,27 +64,54 @@
             app:layout_constraintTop_toBottomOf="@+id/messages_recyclerview">
 
             <ImageView
+                tools:src="@drawable/sent_image"
+                android:scaleType="fitXY"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/frame_layout"
+                android:layout_width="300dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_height="300dp"
+                android:visibility="gone"/>
+
+            <ImageView
                 android:id="@+id/tictactoe"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginStart="5dp"
                 android:src="@drawable/ic_tictactoe"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/message_field"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintEnd_toStartOf="@id/frame_layout"
+                app:layout_constraintStart_toStartOf="parent"/>
 
-            <EditText
-                android:id="@+id/message_field"
+            <FrameLayout
+                android:id="@+id/frame_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
-                android:background="@drawable/notify_shape"
-                android:hint="@string/message"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/layoutButtons"
-                app:layout_constraintStart_toEndOf="@id/tictactoe"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toEndOf="@id/tictactoe">
+
+
+                <EditText
+                    android:id="@+id/message_field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/notify_shape"
+                    android:hint="@string/message"
+                    android:maxLines="3" />
+
+
+                <ImageView
+                    android:id="@+id/button_clip"
+                    android:layout_width="20dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="end|center"
+                    android:layout_marginEnd="20dp"
+                    android:src="@drawable/ic_clip" />
+
+            </FrameLayout>
 
             <FrameLayout
                 android:id="@+id/layoutButtons"
@@ -94,8 +121,7 @@
                 android:layout_marginBottom="5dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/message_field"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintStart_toEndOf="@id/frame_layout">
 
                 <LinearLayout
                     android:id="@+id/button_send"

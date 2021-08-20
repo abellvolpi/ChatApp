@@ -1,10 +1,8 @@
 package com.example.chatapp.ui
 
-import android.app.Activity.RESULT_OK
-import android.content.Intent
+
 import android.os.Bundle
-import android.provider.MediaStore
-import android.util.Log
+
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,9 +11,9 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentProfileBinding
 import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -35,17 +33,16 @@ class ProfileFragment : Fragment(), CoroutineScope {
         startActivityLaunch = registerForActivityResult(
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
-                binding.photo.setImageURI(uri)
-
+                launch(Dispatchers.Default) {
+                    val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+                    imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+                }
+                launch(Dispatchers.Main) {
+                    binding.photo.setImageURI(uri)
+                }
             }
         )
     }
-
-    override fun onResume() {
-        super.onResume()
-
-    }
-
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
@@ -64,27 +61,11 @@ class ProfileFragment : Fragment(), CoroutineScope {
 
             floatingEditButton.setOnClickListener {
                 startActivityLaunch.launch("image/*")
-
-
-
             }
 
             profileToolbar.setNavigationOnClickListener {
-
-
                 activity?.onBackPressed()
             }
-
-
         }
-
-
-
-
-
-
     }
-
-
-
 }

@@ -7,6 +7,8 @@
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/background_menu.xml" value="0.3828125" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic__5822901291574330930.xml" value="0.3828125" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic_bronze_medal.xml" value="0.23489583333333333" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic_clip.xml" value="0.22135416666666666" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic_clip2.xml" value="0.2390625" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic_edit.xml" value="0.3828125" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic_more_vert.xml" value="0.24739583333333334" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/drawable/ic_profile.xml" value="0.22592592592592592" />
@@ -24,9 +26,9 @@
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_chat_details.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_create_server.xml" value="0.33" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_home.xml" value="0.33" />
-        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_participants.xml" value="0.35260416666666666" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_participants.xml" value="0.33" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_profile.xml" value="0.36666666666666664" />
-        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_ranking.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_ranking.xml" value="0.33" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/fragment_splash.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/invite_member_to_entry_chat.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_notify_item.xml" value="0.20092592592592592" />
@@ -36,7 +38,7 @@
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/message_sent_item.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/my_toolbar.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/mytoolbar.xml" value="0.36666666666666664" />
-        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/participants_item.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/participants_item.xml" value="0.33" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/ranking_item.xml" value="0.33" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/layout/toolbar_layout.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/PremierSoft/Documents/GitHub/ChatApp/app/src/main/res/menu/chat_menu.xml" value="0.33" />
