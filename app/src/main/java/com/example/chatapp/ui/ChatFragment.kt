@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.media.MediaRecorder
 import android.opengl.Visibility
 import android.os.Bundle
@@ -14,9 +15,13 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -54,6 +59,7 @@ class ChatFragment : Fragment() {
     private lateinit var adapter: ChatAdapter
     private val data = arrayListOf<Message>()
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
+    private lateinit var startActivityLaunch: ActivityResultLauncher<String>
     private lateinit var profileName: String
     private val profileViewModel: ProfileViewModel by activityViewModels()
     private val profileId: Int
@@ -79,12 +85,19 @@ class ChatFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         profileName = ProfileSharedProfile.getProfile()
+        startActivityLaunch = registerForActivityResult(
+            ActivityResultContracts.GetContent(),
+            ActivityResultCallback { uri ->
+                with(binding) {
+                    sentImageFrameLayout.visibility = View.VISIBLE
+                    buttonClip.visibility = View.GONE
+                    sentImage.setImageURI(uri)
+                }
+            }
+        )
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
         joinMessage = arguments?.getSerializable("joinMessage") as Message
         if (connectionFactory.isFirstAccessInThisFragment()) {
@@ -138,7 +151,7 @@ class ChatFragment : Fragment() {
         val messagesClass = arrayListOf<Pair<Message, String>>()
         val messages = connectionFactory.isRead.iterator()
 
-        while(messages.hasNext()){
+        while (messages.hasNext()) {
             val message = messages.next()
             if (connectionFactory.lastLine != message) {
                 messagesClass.add(Pair(Utils.jsonToMessageClass(message), message))
@@ -215,6 +228,7 @@ class ChatFragment : Fragment() {
                         buttonVoiceMessageRecord.visibility = View.VISIBLE
                         buttonClip.visibility = View.VISIBLE
                     } else {
+                        sentImageFrameLayout.visibility = View.GONE
                         buttonSend.visibility = View.VISIBLE
                         buttonVoiceMessageRecord.visibility = View.GONE
                         buttonClip.visibility = View.GONE
@@ -235,11 +249,30 @@ class ChatFragment : Fragment() {
             }
 
             buttonClip.setOnClickListener {
-
+                startActivityLaunch.launch("image/*")
+                buttonSend.visibility = View.VISIBLE
+                buttonVoiceMessageRecord.visibility = View.GONE
+            }
+            closeImageButton.setOnClickListener {
+                restartUI()
             }
 
+
             buttonSend.setOnClickListener {
-                if (messageField.text.isNotBlank()) {
+                if (sentImageFrameLayout.visibility == View.VISIBLE) {
+                    val bitmap = sentImage.drawable.toBitmap()
+                    val base64 = Utils.bitmapToByteArrayToString(bitmap)
+                    val message = Message(
+                        Message.MessageType.IMAGE.code,
+                        id = profileId,
+                        base64Data = base64,
+                        text = null,
+                        username = profileName
+                    )
+                    sendMessageSocket(message)
+                    restartUI()
+
+                } else if (messageField.text.isNotBlank()) {
                     val message =
                         Message(
                             Message.MessageType.MESSAGE.code,
@@ -385,7 +418,7 @@ class ChatFragment : Fragment() {
                 if (status == Message.MessageStatus.RECEIVED.code) {
                     status = Message.MessageStatus.SENT.code
                 }
-            }else{
+            } else {
                 status = Message.MessageStatus.RECEIVED.code
             }
 
@@ -712,6 +745,15 @@ class ChatFragment : Fragment() {
         }
     }
 
+    private fun restartUI() {
+        with(binding) {
+            buttonClip.visibility = View.VISIBLE
+            sentImageFrameLayout.visibility = View.GONE
+            buttonSend.visibility = View.GONE
+            buttonVoiceMessageRecord.visibility = View.VISIBLE
+            buttonClip.visibility = View.VISIBLE
+        }
+    }
 
     companion object {
         private const val RECORD_PERMISSION = 102

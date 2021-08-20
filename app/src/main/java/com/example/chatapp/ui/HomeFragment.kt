@@ -187,7 +187,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     var image = ""
                     val bitmap = ProfileSharedProfile.getProfilePhoto()
                     if (bitmap != null) {
-                        image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                        image = Utils.bitmapToByteArrayToString(bitmap)
                     }
                     val message = Message(
                         type = Message.MessageType.JOIN.code,

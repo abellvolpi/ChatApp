@@ -63,16 +63,35 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/messages_recyclerview">
 
-            <ImageView
-                tools:src="@drawable/sent_image"
-                android:scaleType="fitXY"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/frame_layout"
-                android:layout_width="300dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+            <FrameLayout
+                android:id="@+id/sent_image_frame_layout"
+                android:layout_width="match_parent"
                 android:layout_height="300dp"
-                android:visibility="gone"/>
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/frame_layout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/sent_image"
+                    android:layout_width="300dp"
+                    android:layout_height="300dp"
+                    android:layout_gravity="center"
+                    android:scaleType="fitXY"
+                    tools:src="@drawable/ic_profile" />
+
+                <ImageButton
+                    android:id="@+id/close_image_button"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="end|top"
+                    android:layout_marginEnd="5dp"
+                    android:background="@drawable/background_close"
+                    android:gravity="center"
+                    android:src="@drawable/ic_x_white" />
+
+            </FrameLayout>
 
             <ImageView
                 android:id="@+id/tictactoe"
@@ -82,7 +101,7 @@
                 android:src="@drawable/ic_tictactoe"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/frame_layout"
-                app:layout_constraintStart_toStartOf="parent"/>
+                app:layout_constraintStart_toStartOf="parent" />
 
             <FrameLayout
                 android:id="@+id/frame_layout"
@@ -137,6 +156,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/ic_send_icon" />
+
                 </LinearLayout>
 
                 <LinearLayout

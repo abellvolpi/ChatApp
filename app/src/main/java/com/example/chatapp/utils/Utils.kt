@@ -29,6 +29,7 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.*
 import net.glxn.qrgen.android.QRCode
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.net.Socket
@@ -199,11 +200,11 @@ object Utils : CoroutineScope {
         }
     }
 
-    fun copyTobuttonClipBoard(context: Context?, text: String) {
-        val buttonClipBoard = context?.getSystemService(Context.buttonClipBOARD_SERVICE) as buttonClipboardManager
-        val buttonClipData = buttonClipData.newPlainText("label", text)
-        buttonClipBoard.setPrimarybuttonClip(buttonClipData)
-    }
+//    fun copyTobuttonClipBoard(context: Context?, text: String) {
+//        val buttonClipBoard = context?.getSystemService(Context.buttonClipBOARD_SERVICE) as buttonClipboardManager
+//        val buttonClipData = buttonClipData.newPlainText("label", text)
+//        buttonClipBoard.setPrimarybuttonClip(buttonClipData)
+//    }
 
 
     fun createToast(text: String) {
@@ -220,6 +221,15 @@ object Utils : CoroutineScope {
     fun byteArrayToBitMap(byte: String): Bitmap {
         val base64 = Base64.decode(byte, Base64.NO_WRAP)
         return BitmapFactory.decodeByteArray(base64, 0, base64.size)
+    }
+
+    fun bitmapToByteArrayToString(bitmap: Bitmap): String {
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
+        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 30, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 
     fun uriToBitmap(uri: Uri?, contentResolver: ContentResolver): Bitmap {
