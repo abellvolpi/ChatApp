@@ -4,9 +4,7 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.media.MediaRecorder
-import android.opengl.Visibility
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -33,18 +31,17 @@ import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
-import com.example.chatapp.room.message.controller.MessageController
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.viewModel.ConnectionFactory
+import com.example.chatapp.viewModel.MessageViewModel
 import com.example.chatapp.viewModel.ProfileViewModel
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -58,10 +55,12 @@ class ChatFragment : Fragment() {
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var adapter: ChatAdapter
     private val data = arrayListOf<Message>()
+    private var isHistoryCall = false
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
     private lateinit var profileName: String
     private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val messageViewModel: MessageViewModel by activityViewModels()
     private val profileId: Int
         get() {
             return ProfileSharedProfile.getIdProfile()
@@ -71,7 +70,7 @@ class ChatFragment : Fragment() {
         findNavController()
     }
     private lateinit var snackbar: Snackbar
-    private lateinit var joinMessage: Message
+    private var joinMessage: Message? = null
 
     //bottomsheet
     private val boardCells = Array(3) { arrayOfNulls<ImageButton>(3) } // Array de image button
@@ -95,13 +94,20 @@ class ChatFragment : Fragment() {
                 }
             }
         )
+
+
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
-        joinMessage = arguments?.getSerializable("joinMessage") as Message
-        if (connectionFactory.isFirstAccessInThisFragment()) {
-            sendMessageSocket(joinMessage)
+        joinMessage = arguments?.getSerializable("joinMessage") as Message?
+        isHistoryCall = arguments?.getBoolean("isHistoryCall") ?: false
+        if (connectionFactory.isFirstAccessInThisFragment() && joinMessage != null) {
+            sendMessageSocket(joinMessage!!)
         }
         initView()
         return binding.root
@@ -112,41 +118,6 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
-
-        with(binding) {
-            chatToolbar.apply {
-                setOnClickListener {
-                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-                }
-
-                overflowIcon =
-                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-                inflateMenu(R.menu.chat_menu)
-                setOnMenuItemClickListener { item ->
-                    when (item?.itemId) {
-                        R.id.perfil -> {
-                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                        }
-                        R.id.share_link -> {
-                            val ip = connectionFactory.getIpHost()
-                            val port = connectionFactory.getIpPort()
-                            val shareIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "http://www.mychatapp.com/home/$ip:$port"
-                                )
-                                type = "text/plain"
-                            }
-                            val action = ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(ip, port.toInt())
-                            navController.navigate(action)
-                            startActivity(Intent.createChooser(shareIntent, ""))
-                        }
-                    }
-                    true
-                }
-            }
-        }
     }
 
     private fun readMessageMissed() {
@@ -168,145 +139,204 @@ class ChatFragment : Fragment() {
     }
 
     private fun initView() {
-        readMessageMissed()
         with(binding) {
-            connectionFactory.startListenerMessages()
-            connectionFactory.line.observe(viewLifecycleOwner) {
-                if (it != null) {
-                    if (connectionFactory.lastLine != it.second) {
-                        validReceivedMessage(it.first)
-                        connectionFactory.lastLine = it.second
-                        connectionFactory.isRead.remove(it.second)
+            if (!isHistoryCall) {
+                readMessageMissed()
+                connectionFactory.startListenerMessages()
+                connectionFactory.line.observe(viewLifecycleOwner) {
+                    if (it != null) {
+                        if (connectionFactory.lastLine != it.second) {
+                            validReceivedMessage(it.first)
+                            connectionFactory.lastLine = it.second
+                            connectionFactory.isRead.remove(it.second)
+                        }
+                    } else {
+                        val action =
+                            com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
+                                Message.ACTION_DISCONNECTED
+                            )
+                        navController.navigate(action)
                     }
-                } else {
-                    val action =
-                        com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
-                            Message.ACTION_DISCONNECTED
-                        )
-                    navController.navigate(action)
                 }
-            }
-            connectionFactory.serverOnline.observe(viewLifecycleOwner) {
-                if (it == false) {
-                    Log.e("Chat disconnected", "server down")
+                connectionFactory.serverOnline.observe(viewLifecycleOwner) {
+                    if (it == false) {
+                        Log.e("Chat disconnected", "server down")
 //                    val action =
 //                        ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
 //                    navController.navigate(action)
+                    }
                 }
-            }
-            constraintLayout.setOnClickListener {
-                activity?.hideSoftKeyboard()
-            }
-            tictactoe.setOnClickListener {
-                sendInviteTicTacToe()
-                bottomSheet.whoPlay.visibility = View.VISIBLE
-                if (!isTicTacToePlayRunning) {
+                constraintLayout.setOnClickListener {
+                    activity?.hideSoftKeyboard()
+                }
+                tictactoe.setOnClickListener {
                     sendInviteTicTacToe()
-                } else {
-                    Snackbar.make(
-                        requireView(),
-                        R.string.game_started,
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
-            }
-            messageField.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                }
-
-                override fun onTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    before: Int,
-                    count: Int
-                ) {
-                    if (s != null && s.isEmpty()) {
-                        buttonSend.visibility = View.GONE
-                        buttonVoiceMessageRecord.visibility = View.VISIBLE
-                        buttonClip.visibility = View.VISIBLE
+                    bottomSheet.whoPlay.visibility = View.VISIBLE
+                    if (!isTicTacToePlayRunning) {
+                        sendInviteTicTacToe()
                     } else {
-                        sentImageFrameLayout.visibility = View.GONE
-                        buttonSend.visibility = View.VISIBLE
-                        buttonVoiceMessageRecord.visibility = View.GONE
-                        buttonClip.visibility = View.GONE
+                        Snackbar.make(
+                            requireView(),
+                            R.string.game_started,
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                }
+                messageField.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
 
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                        if (s != null && s.isEmpty()) {
+                            buttonSend.visibility = View.GONE
+                            buttonVoiceMessageRecord.visibility = View.VISIBLE
+                            buttonClip.visibility = View.VISIBLE
+                        } else {
+                            sentImageFrameLayout.visibility = View.GONE
+                            buttonSend.visibility = View.VISIBLE
+                            buttonVoiceMessageRecord.visibility = View.GONE
+                            buttonClip.visibility = View.GONE
+
+                        }
+                    }
+
+                    override fun afterTextChanged(s: Editable?) {}
+                })
+
+                buttonVoiceMessageRecord.setOnClickListener {
+                    checkPermission(android.Manifest.permission.RECORD_AUDIO, RECORD_PERMISSION)
+                    if (!state) {
+                        startRecording()
+                    } else {
+                        stopRecording()
                     }
                 }
 
-                override fun afterTextChanged(s: Editable?) {}
-            })
-
-            buttonVoiceMessageRecord.setOnClickListener {
-                checkPermission(android.Manifest.permission.RECORD_AUDIO, RECORD_PERMISSION)
-                if (!state) {
-                    startRecording()
-                } else {
-                    stopRecording()
+                buttonClip.setOnClickListener {
+                    startActivityLaunch.launch("image/*")
+                    buttonSend.visibility = View.VISIBLE
+                    buttonVoiceMessageRecord.visibility = View.GONE
                 }
-            }
-
-            buttonClip.setOnClickListener {
-                startActivityLaunch.launch("image/*")
-                buttonSend.visibility = View.VISIBLE
-                buttonVoiceMessageRecord.visibility = View.GONE
-            }
-            closeImageButton.setOnClickListener {
-                restartUI()
-            }
-
-
-            buttonSend.setOnClickListener {
-                if (sentImageFrameLayout.visibility == View.VISIBLE) {
-                    val bitmap = sentImage.drawable.toBitmap()
-                    val base64 = Utils.bitmapToByteArrayToString(bitmap)
-                    val message = Message(
-                        Message.MessageType.IMAGE.code,
-                        id = profileId,
-                        base64Data = base64,
-                        text = null,
-                        username = profileName
-                    )
-                    sendMessageSocket(message)
+                closeImageButton.setOnClickListener {
                     restartUI()
+                }
 
-                } else if (messageField.text.isNotBlank()) {
-                    val message =
-                        Message(
-                            Message.MessageType.MESSAGE.code,
-                            username = profileName,
-                            text = messageField.text.toString(),
+
+                buttonSend.setOnClickListener {
+                    if (sentImageFrameLayout.visibility == View.VISIBLE) {
+                        val bitmap = sentImage.drawable.toBitmap()
+                        val base64 = Utils.bitmapToByteArrayToString(bitmap)
+                        val message = Message(
+                            Message.MessageType.IMAGE.code,
                             id = profileId,
-                            base64Data = null
+                            base64Data = base64,
+                            text = null,
+                            username = profileName
                         )
-                    sendMessageSocket(message)
-                    messageField.text.clear()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.message_blank,
-                        Toast.LENGTH_LONG
-                    )
-                        .show()
+                        sendMessageSocket(message)
+                        restartUI()
+
+                    } else if (messageField.text.isNotBlank()) {
+                        val message =
+                            Message(
+                                Message.MessageType.MESSAGE.code,
+                                username = profileName,
+                                text = messageField.text.toString(),
+                                id = profileId,
+                                base64Data = null
+                            )
+                        sendMessageSocket(message)
+                        messageField.text.clear()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.message_blank,
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    }
+                }
+                adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
+                messagesRecyclerview.adapter = adapter
+                messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
+
+                chatToolbar.apply {
+                    setOnClickListener {
+                        navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
+                    }
+                    overflowIcon =
+                        AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+                    inflateMenu(R.menu.chat_menu)
+                    setOnMenuItemClickListener { item ->
+                        when (item?.itemId) {
+                            R.id.perfil -> {
+                                navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                            }
+                            R.id.share_link -> {
+                                val ip = connectionFactory.getIpHost()
+                                val port = connectionFactory.getIpPort()
+                                val shareIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(
+                                        Intent.EXTRA_TEXT,
+                                        "http://www.mychatapp.com/home/$ip:$port"
+                                    )
+                                    type = "text/plain"
+                                }
+                                val action =
+                                    ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(
+                                        ip,
+                                        port.toInt()
+                                    )
+                                navController.navigate(action)
+                                startActivity(Intent.createChooser(shareIntent, ""))
+                            }
+                        }
+                        true
+                    }
+                }
+            } else {
+                chatToolbar.title = getString(R.string.history_title)
+                layout.visibility = View.GONE
+                centerProgressBar.visibility = View.VISIBLE
+                messagesRecyclerview.alpha = 0.5f
+                messageViewModel.getAllMessages {
+                    val arrayList = arrayListOf<Message>()
+                    arrayList.addAll(it)
+                    adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner)
+                    messagesRecyclerview.adapter = adapter
+                    messagesRecyclerview.apply {
+                        layoutManager = LinearLayoutManager(requireContext())
+                        scrollToPosition(it.size - 1)
+                    }
+                    centerProgressBar.visibility = View.GONE
+                    messagesRecyclerview.alpha = 1f
+                    chatToolbar.apply {
+                        navigationIcon = ContextCompat.getDrawable(requireContext(), R.drawable.back_icon)
+                        chatToolbar.setNavigationOnClickListener {
+                            val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("")
+                            navController.navigate(action)
+                        }
+                    }
                 }
             }
-            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
-            messagesRecyclerview.adapter = adapter
-            messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-        CoroutineScope(Dispatchers.IO).launch {
-            MessageController.insert(message)
-        }
+        messageViewModel.insertMessage(message)
     }
-
 
     private fun refreshUIChat(message: Message) {
         adapter.addData(message)
@@ -321,7 +351,7 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun returnToHomeFragmentWithMessage(message: String){
+    private fun returnToHomeFragmentWithMessage(message: String) {
         val action =
             ChatFragmentDirections.actionChatFragmentToHomeFragment(message)
         navController.navigate(action)
@@ -334,10 +364,11 @@ class ChatFragment : Fragment() {
                 when (id) {
                     1 -> {
                         message = "Wrong Password"
-                        val action = ChatFragmentDirections.actionChatFragmentToWritePasswordDialog()
+                        val action =
+                            ChatFragmentDirections.actionChatFragmentToWritePasswordDialog()
                         navController.navigate(action)
                     }
-                    2 ->{
+                    2 -> {
                         returnToHomeFragmentWithMessage("Server Security Kick")
                     }
                     3 -> returnToHomeFragmentWithMessage("Admin kicked you")
@@ -361,7 +392,10 @@ class ChatFragment : Fragment() {
                         profileViewModel.deleteAll {
                             Utils.listJsonToProfiles(text)?.forEach { profile ->
                                 if (profile.photoProfile != "" || profile.photoProfile != null) {
-                                    saveAvatarToCacheDir(profile.id, profile.photoProfile ?: "") {
+                                    saveAvatarToCacheDir(
+                                        profile.id,
+                                        profile.photoProfile ?: ""
+                                    ) {
                                         profile.photoProfile = it
                                         profile.isMemberYet = true
                                         profileViewModel.insert(profile)
@@ -417,11 +451,17 @@ class ChatFragment : Fragment() {
                             it.isMemberYet = false
                             profileViewModel.updateProfile(it)
                         } else {
-                            Log.e("database", "error when update profile because ID doesn't exists")
+                            Log.e(
+                                "database",
+                                "error when update profile because ID doesn't exists"
+                            )
                         }
                     }
                 } else {
-                    Log.e("database", "error when delete profile because id from server is null")
+                    Log.e(
+                        "database",
+                        "error when delete profile because id from server is null"
+                    )
                 }
                 return@with
             }

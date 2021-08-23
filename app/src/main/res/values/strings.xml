@@ -60,6 +60,7 @@
     <string name="draw">It\'s a draw</string>
     <string name="message">message…</string>
     <string name="link_copied">Link Copied</string>
+    <string name="history_title">History</string>
 
 
     <!--    Home Fragment-->

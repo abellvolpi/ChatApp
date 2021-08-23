@@ -79,7 +79,6 @@ object Utils : CoroutineScope {
             }catch (e:Exception){
                 onResult.invoke(null)
             }
-
         }
     }
 

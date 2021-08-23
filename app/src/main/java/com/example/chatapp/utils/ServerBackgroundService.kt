@@ -53,7 +53,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return null
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(START_SERVER)) {
             port = intent?.getIntExtra("socketConfigs", 0) ?: 0
@@ -150,39 +149,44 @@ class ServerBackgroundService : Service(), CoroutineScope {
         launch(Dispatchers.IO) {
             while (true) {
                 Log.d("service", "readingMessage")
-                val reader = Scanner(socket.getInputStream().bufferedReader())
-                val line: String
-                if (reader.hasNextLine()) {
-                    line = reader.nextLine()
-                    if (line == "ping") {
-                        Log.d("server", "received Ping")
-                    } else {
-                        val classMessage = Utils.jsonToMessageClass(line)
-                        if (classMessage.type == Message.MessageType.JOIN.code) {
-                            if (password != "") {
-                                if (classMessage.join?.password == password) {
+                try {
+                    val reader = Scanner(socket.getInputStream().bufferedReader())
+                    val line: String
+                    if (reader.hasNextLine()) {
+                        line = reader.nextLine()
+                        if (line == "ping") {
+                            Log.d("server", "received Ping")
+                        } else {
+                            val classMessage = Utils.jsonToMessageClass(line)
+                            if (classMessage.type == Message.MessageType.JOIN.code) {
+                                if (password != "") {
+                                    if (classMessage.join?.password == password) {
+                                        sendIdToSocket(socket, classMessage)
+                                        observerWhenSocketClose(socket)
+                                    } else {
+                                        val message = Message(
+                                            Message.MessageType.REVOKED.code,
+                                            username = null,
+                                            text = null,
+                                            base64Data = null,
+                                            id = 1
+                                        )
+                                        sendMessageToASocket(socket, message)
+                                    }
+                                } else {
                                     sendIdToSocket(socket, classMessage)
                                     observerWhenSocketClose(socket)
-                                } else {
-                                    val message = Message(
-                                        Message.MessageType.REVOKED.code,
-                                        username = null,
-                                        text = null,
-                                        base64Data = null,
-                                        id = 1
-                                    )
-                                    sendMessageToASocket(socket, message)
                                 }
                             } else {
-                                sendIdToSocket(socket, classMessage)
-                                observerWhenSocketClose(socket)
+                                sendMessageToAllSockets(classMessage)
                             }
-                        } else {
-                            sendMessageToAllSockets(classMessage)
                         }
                     }
+                    delay(1)
+                }catch (e: Exception){
+                    removeSocket(socket)
+                    break
                 }
-                delay(1)
             }
         }
     }
@@ -209,37 +213,39 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     private fun removeSocket(socket: Socket) {
         launch(Dispatchers.Default) {
-            var idSocket: Int? = null
-            var message: Message
-            mutex.withLock {
-                sockets.forEach {
-                    if (it.value == socket) {
-                        idSocket = it.key
-                    }
-                }
-                if (idSocket != null) {
-                    withContext(Dispatchers.IO){
-                        sockets[id]?.close()
-                    }
-                    sockets.remove(idSocket)
-                    profiles.forEach {
-                        if (it.id == idSocket) {
-                            message = Message(
-                                Message.MessageType.LEAVE.code,
-                                text = null,
-                                id = idSocket,
-                                base64Data = null,
-                                username = it.name
-                            )
-                            idSocket?.let { notifyWhenProfileDisconnected(message, it) }
-                                ?: Log.e("server", "error when notify user disconnect")
-                            Log.d("service", socket.getAddressFromSocket() + "disconnect")
-                            profiles.remove(it)
-                            return@forEach
+            if (sockets.containsValue(socket)) {
+                var idSocket: Int? = null
+                var message: Message
+                mutex.withLock {
+                    sockets.forEach {
+                        if (it.value == socket) {
+                            idSocket = it.key
                         }
                     }
-                } else {
-                    Log.e("server", "error when remove socket from socket")
+                    if (idSocket != null) {
+                        withContext(Dispatchers.IO) {
+                            sockets[id]?.close()
+                        }
+                        sockets.remove(idSocket)
+                        profiles.forEach {
+                            if (it.id == idSocket) {
+                                message = Message(
+                                    Message.MessageType.LEAVE.code,
+                                    text = null,
+                                    id = idSocket,
+                                    base64Data = null,
+                                    username = it.name
+                                )
+                                idSocket?.let { notifyWhenProfileDisconnected(message, it) }
+                                    ?: Log.e("server", "error when notify user disconnect")
+                                Log.d("service", socket.getAddressFromSocket() + "disconnect")
+                                profiles.remove(it)
+                                return@forEach
+                            }
+                        }
+                    } else {
+                        Log.e("server", "error when remove socket from socket")
+                    }
                 }
             }
         }

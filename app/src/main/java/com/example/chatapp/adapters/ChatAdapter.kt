@@ -332,6 +332,11 @@ class ChatAdapter(
         notifyItemInserted(data.size - 1)
     }
 
+    fun addData(list: List<Message>){
+        data.addAll(list)
+        notifyItemInserted(data.size - 1)
+    }
+
     private fun startAudio(
         message: String,
         position: Int,

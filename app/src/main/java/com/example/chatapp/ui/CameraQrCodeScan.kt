@@ -95,7 +95,7 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
                         id = null
                     )
                     val action =
-                        CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(message)
+                        CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(message, false)
                     findNavController().navigate(action)
                 }
             } else {

@@ -18,6 +18,7 @@ interface MessageDao {
     @Update
     fun update(vararg message: Message)
 
-
+    @Query("DELETE FROM Message")
+    fun deleteAll()
 
 }

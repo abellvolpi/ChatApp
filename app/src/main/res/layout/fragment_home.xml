@@ -10,7 +10,21 @@
     android:gravity="center"
     android:orientation="vertical"
     tools:context=".ui.HomeFragment">
-
+    <LinearLayout
+        android:padding="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageButton
+            android:id="@+id/historyButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#00FFFFFF"
+            android:src="@android:drawable/ic_menu_recent_history"
+            app:tint="?android:colorPrimary" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout"
