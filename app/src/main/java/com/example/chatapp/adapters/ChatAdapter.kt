@@ -1,8 +1,11 @@
 package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.media.MediaPlayer
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +21,8 @@ import com.example.chatapp.viewModel.UtilsViewModel
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
+import android.graphics.drawable.Drawable
+
 
 class ChatAdapter(
     private val data: ArrayList<Message>,
@@ -34,7 +39,41 @@ class ChatAdapter(
         abstract fun bind(msg: Message)
     }
 
-    inner class ViewHolderReceiveMessage(private val binding: MessageReceivedItemBinding) :
+
+    inner class ViewHolderReceivedImage(private val binding: MessageReceivedImageBinding) :
+        BaseViewHolder(binding.root) {
+        override fun bind(msg: Message) {
+            with(binding) {
+                Log.w("Imagem: ", msg.base64Data.toString())
+                name.text = msg.text
+                time.text = timeFormatter(msg.time)
+                msg.base64Data?.let {
+                    Utils.byteArrayToBitMap(it) { bitmap ->
+                        receivedImage.setImageBitmap( bitmap)
+                    }
+                }
+            }
+        }
+    }
+
+    inner class ViewHolderSentImage(private val binding: MessageSentImageBinding) :
+        BaseViewHolder(binding.root) {
+        override fun bind(msg: Message) {
+            with(binding) {
+                Log.w("Imagem: ", msg.base64Data.toString())
+                name.text = msg.username
+                time.text = timeFormatter(msg.time)
+                msg.base64Data?.let {
+                    Utils.byteArrayToBitMap(it) { bitmap ->
+                        sentImage.setImageBitmap(bitmap)
+                    }
+                }
+            }
+        }
+    }
+
+
+    inner class ViewHolderReceivedMessage(private val binding: MessageReceivedItemBinding) :
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
@@ -63,8 +102,8 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                when(msg.type){
-                    Message.MessageType.JOIN.code ->{
+                when (msg.type) {
+                    Message.MessageType.JOIN.code -> {
                         message.text = MainApplication.getContextInstance().getString(R.string.player_connected, msg.username)
                     }
                     Message.MessageType.LEAVE.code -> {
@@ -75,7 +114,7 @@ class ChatAdapter(
         }
     }
 
-    inner class ViewHolderReceiveAudioMessage(private val binding: MessageReceivedAudioBinding) :
+    inner class ViewHolderReceivedAudioMessage(private val binding: MessageReceivedAudioBinding) :
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
@@ -106,7 +145,7 @@ class ChatAdapter(
                     }
                 })
                 name.text = msg.username
-                getAudio(msg.base64Data?: "") {
+                getAudio(msg.base64Data ?: "") {
                     message.text = context.getString(
                         R.string.audio,
                         getTimeAudioInString(it.duration.toLong())
@@ -116,7 +155,7 @@ class ChatAdapter(
 
                 time.text = timeFormatter(msg.time)
                 startAudio.setOnClickListener {
-                    startAudio(msg.base64Data?: "", layoutPosition, seekBarAudio.progress) { long: Long ->
+                    startAudio(msg.base64Data ?: "", layoutPosition, seekBarAudio.progress) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
@@ -186,7 +225,7 @@ class ChatAdapter(
                     }
                 })
                 name.text = context.getString(R.string.you)
-                getAudio(msg.base64Data?:"") {
+                getAudio(msg.base64Data ?: "") {
                     message.text = context.getString(
                         R.string.audio,
                         getTimeAudioInString(it.duration.toLong())
@@ -195,7 +234,7 @@ class ChatAdapter(
                 }
                 time.text = timeFormatter(msg.time)
                 startAudio.setOnClickListener {
-                    startAudio(msg.base64Data?:"", layoutPosition, seekBarAudio.progress) { long: Long ->
+                    startAudio(msg.base64Data ?: "", layoutPosition, seekBarAudio.progress) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
@@ -264,6 +303,15 @@ class ChatAdapter(
                             )
                         )
                     }
+                    Message.MessageType.IMAGE.code -> {
+                        return ViewHolderSentImage(
+                            MessageSentImageBinding.inflate(
+                                LayoutInflater.from(parent.context),
+                                parent,
+                                false
+                            )
+                        )
+                    }
                     else -> return ViewHolderNotifyMessage(
                         MessageNotifyItemBinding.inflate(
                             LayoutInflater.from(parent.context), parent, false
@@ -273,7 +321,7 @@ class ChatAdapter(
             } else {
                 when (viewTypeWithoutFirstNumber) {
                     Message.MessageType.MESSAGE.code -> {
-                        return ViewHolderReceiveMessage(
+                        return ViewHolderReceivedMessage(
                             MessageReceivedItemBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
@@ -282,8 +330,17 @@ class ChatAdapter(
                         )
                     }
                     Message.MessageType.AUDIO.code -> {
-                        return ViewHolderReceiveAudioMessage(
+                        return ViewHolderReceivedAudioMessage(
                             MessageReceivedAudioBinding.inflate(
+                                LayoutInflater.from(parent.context),
+                                parent,
+                                false
+                            )
+                        )
+                    }
+                    Message.MessageType.IMAGE.code -> {
+                        return ViewHolderReceivedImage(
+                            MessageReceivedImageBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
                                 false

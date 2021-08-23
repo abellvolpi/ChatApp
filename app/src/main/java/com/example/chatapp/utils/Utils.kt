@@ -6,13 +6,14 @@ import android.content.Context.AUDIO_SERVICE
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
-import android.util.JsonReader
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -33,7 +34,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.net.Socket
-import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
@@ -58,25 +58,25 @@ object Utils : CoroutineScope {
     }
 
     fun jsonToMessageClass(json: String): Message {
-            Log.d("jsonToMessageClass", json)
-            val moshi = Moshi.Builder().build()
-            val adapter = moshi.adapter(Message::class.java)
-            val fromJson = adapter.fromJson(json)
-            if (fromJson != null) {
-                return fromJson
-            }
+        Log.d("jsonToMessageClass", json)
+        val moshi = Moshi.Builder().build()
+        val adapter = moshi.adapter(Message::class.java)
+        val fromJson = adapter.fromJson(json)
+        if (fromJson != null) {
+            return fromJson
+        }
         return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
     }
 
     fun createSocket(ip: String, port: Int, onResult: (Socket?) -> Unit) {
         launch(Dispatchers.IO) {
             delay(2000)
-            try{
+            try {
                 val socket = Socket(ip, port)
                 withContext(Dispatchers.Main) {
                     onResult.invoke(socket)
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 onResult.invoke(null)
             }
 
@@ -212,10 +212,6 @@ object Utils : CoroutineScope {
 //    }
 
 
-    fun createToast(text: String) {
-        Toast.makeText(MainApplication.getContextInstance(), text, Toast.LENGTH_LONG).show()
-    }
-
     fun listJsonToProfiles(jsonList: String): List<Profile>? {
         val listType = Types.newParameterizedType(List::class.java, Profile::class.java)
         val adapter: JsonAdapter<List<Profile>> =
@@ -223,19 +219,39 @@ object Utils : CoroutineScope {
         return adapter.fromJson(jsonList)
     }
 
-    fun byteArrayToBitMap(byte: String): Bitmap {
-        val base64 = Base64.decode(byte, Base64.NO_WRAP)
-        return BitmapFactory.decodeByteArray(base64, 0, base64.size)
+    fun byteArrayToBitMap(byteArray: String, onResult: (Bitmap) -> Unit) {
+        launch(Dispatchers.Default) {
+            val base64 = Base64.decode(byteArray, Base64.NO_WRAP)
+            withContext(Dispatchers.Main) {
+                onResult.invoke(BitmapFactory.decodeByteArray(base64, 0, base64.size))
+            }
+        }
     }
 
     fun bitmapToByteArrayToString(bitmap: Bitmap): String {
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
         val byteArrayOutputStream = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
-        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 30, byteArrayOutputStream)
+//        bitmap.compress(Bitmap.CompressFormat.PNG,10,byteArrayOutputStream)
+        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
+
+    fun bitmapToByteArray2(image: Drawable): String {
+        val bitmap = (image as BitmapDrawable).bitmap
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+        return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+    }
+
+    fun bitmapToByteArray3(image: Drawable, onResult: (String) -> Unit) {
+        val bitmap = (image as BitmapDrawable).bitmap
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+        val encoded = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+        onResult.invoke(encoded)
+    }
+
 
     fun uriToBitmap(uri: Uri?, contentResolver: ContentResolver): Bitmap {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && uri != null) {

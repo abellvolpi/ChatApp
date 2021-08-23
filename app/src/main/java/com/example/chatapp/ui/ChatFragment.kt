@@ -4,9 +4,7 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.media.MediaRecorder
-import android.opengl.Visibility
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -21,7 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -44,7 +41,6 @@ import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -89,9 +85,13 @@ class ChatFragment : Fragment() {
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
                 with(binding) {
-                    sentImageFrameLayout.visibility = View.VISIBLE
-                    buttonClip.visibility = View.GONE
-                    sentImage.setImageURI(uri)
+                    if (uri != null) {
+                        sentImageFrameLayout.visibility = View.VISIBLE
+                        buttonClip.visibility = View.GONE
+                        sentImage.setImageURI(uri)
+                        buttonSend.visibility = View.VISIBLE
+                        buttonVoiceMessageRecord.visibility = View.GONE
+                    }
                 }
             }
         )
@@ -252,46 +252,49 @@ class ChatFragment : Fragment() {
 
             buttonClip.setOnClickListener {
                 startActivityLaunch.launch("image/*")
-                buttonSend.visibility = View.VISIBLE
-                buttonVoiceMessageRecord.visibility = View.GONE
             }
+
             closeImageButton.setOnClickListener {
                 restartUI()
             }
 
-
             buttonSend.setOnClickListener {
-                if (sentImageFrameLayout.visibility == View.VISIBLE) {
-                    val bitmap = sentImage.drawable.toBitmap()
-                    val base64 = Utils.bitmapToByteArrayToString(bitmap)
-                    val message = Message(
-                        Message.MessageType.IMAGE.code,
-                        id = profileId,
-                        base64Data = base64,
-                        text = null,
-                        username = profileName
-                    )
-                    sendMessageSocket(message)
-                    restartUI()
-
-                } else if (messageField.text.isNotBlank()) {
-                    val message =
-                        Message(
-                            Message.MessageType.MESSAGE.code,
-                            username = profileName,
-                            text = messageField.text.toString(),
-                            id = profileId,
-                            base64Data = null
+                when {
+                    sentImageFrameLayout.visibility == View.VISIBLE -> {
+                        progressBarSendMessage.visibility = View.VISIBLE
+                        Utils.bitmapToByteArray3(sentImage.drawable) {
+                            val message = Message(
+                                Message.MessageType.IMAGE.code,
+                                id = profileId,
+                                base64Data = it,
+                                text = null,
+                                username = profileName
+                            )
+                            sendMessageSocket(message)
+                            progressBarSendMessage.visibility = View.GONE
+                            restartUI()
+                        }
+                    }
+                    messageField.text.isNotBlank() -> {
+                        val message =
+                            Message(
+                                Message.MessageType.MESSAGE.code,
+                                username = profileName,
+                                text = messageField.text.toString(),
+                                id = profileId,
+                                base64Data = null
+                            )
+                        sendMessageSocket(message)
+                        messageField.text.clear()
+                    }
+                    else -> {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.message_blank,
+                            Toast.LENGTH_LONG
                         )
-                    sendMessageSocket(message)
-                    messageField.text.clear()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.message_blank,
-                        Toast.LENGTH_LONG
-                    )
-                        .show()
+                            .show()
+                    }
                 }
             }
             adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
@@ -321,7 +324,7 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun returnToHomeFragmentWithMessage(message: String){
+    private fun returnToHomeFragmentWithMessage(message: String) {
         val action =
             ChatFragmentDirections.actionChatFragmentToHomeFragment(message)
         navController.navigate(action)
@@ -337,7 +340,7 @@ class ChatFragment : Fragment() {
                         val action = ChatFragmentDirections.actionChatFragmentToWritePasswordDialog()
                         navController.navigate(action)
                     }
-                    2 ->{
+                    2 -> {
                         returnToHomeFragmentWithMessage("Server Security Kick")
                     }
                     3 -> returnToHomeFragmentWithMessage("Admin kicked you")
@@ -442,6 +445,9 @@ class ChatFragment : Fragment() {
                         Message.MessageType.AUDIO.code -> {
                             refreshUIChat(this)
                         }
+                        Message.MessageType.IMAGE.code -> {
+                            refreshUIChat(this)
+                        }
                     }
                 }
 
@@ -451,6 +457,9 @@ class ChatFragment : Fragment() {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
+                            refreshUIChat(this)
+                        }
+                        Message.MessageType.IMAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.TICPLAY.code -> {
@@ -762,7 +771,6 @@ class ChatFragment : Fragment() {
             sentImageFrameLayout.visibility = View.GONE
             buttonSend.visibility = View.GONE
             buttonVoiceMessageRecord.visibility = View.VISIBLE
-            buttonClip.visibility = View.VISIBLE
         }
     }
 
