@@ -9,17 +9,24 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentCameraQrCodeScanBinding
-import com.example.chatapp.viewModel.ConnectionFactory
+import com.example.chatapp.models.Message
+import com.example.chatapp.utils.Extensions.toSHA256
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
+import com.example.chatapp.viewModel.ConnectionFactory
+import com.example.chatapp.viewModel.ProfileViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.Result
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 
 class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
     private lateinit var binding: FragmentCameraQrCodeScanBinding
     private lateinit var name: String
+    private val connectionFactory: ConnectionFactory by activityViewModels()
+    private val profileViewModel: ProfileViewModel by activityViewModels()
 
     companion object {
         private const val CAMERA_PERMISSION = 100
@@ -67,11 +74,35 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
 
     private fun connect(ip: String, port: String) {
         Utils.createSocket(ip, port.toInt()) {
-            ProfileSharedProfile.saveProfile(name)
-            val connectionFactory : ConnectionFactory by activityViewModels()
-            connectionFactory.setSocket(it)
-//            val action = CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(ip, port.toInt())
-//            findNavController().navigate(action)
+            val connectionFactory: ConnectionFactory by activityViewModels()
+            if (it != null) {
+                connectionFactory.setSocket(it)
+                profileViewModel.deleteAll {
+                    var image = ""
+                    val bitmap = ProfileSharedProfile.getProfilePhoto()
+                    if (bitmap != null) {
+                        image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                    }
+                    val message = Message(
+                        type = Message.MessageType.JOIN.code,
+                        username = ProfileSharedProfile.getProfile(),
+                        text = null,
+                        base64Data = null,
+                        join = Message.Join(
+                            avatar = image,
+                            password = "".toSHA256()
+                        ),
+                        id = null
+                    )
+                    val action =
+                        CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(message)
+                    findNavController().navigate(action)
+                }
+            } else {
+                val snackBar =
+                    Snackbar.make(requireView(), "Server doest exists", Snackbar.LENGTH_LONG)
+                snackBar.show()
+            }
         }
     }
 }

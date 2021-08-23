@@ -218,6 +218,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     }
                 }
                 if (idSocket != null) {
+                    withContext(Dispatchers.IO){
+                        sockets[id]?.close()
+                    }
                     sockets.remove(idSocket)
                     profiles.forEach {
                         if (it.id == idSocket) {

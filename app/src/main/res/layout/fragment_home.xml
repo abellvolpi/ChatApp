@@ -84,7 +84,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/ip_field"
                 android:inputType="textPassword"
-                android:hint="Password"/>
+                android:hint="@string/password"/>
         </RelativeLayout>
 
         <TextView

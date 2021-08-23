@@ -67,6 +67,21 @@ object ProfileSharedProfile {
         return BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
     }
 
+    fun getProfilePhotoBase64(): String?{
+        val sharedPreferences = getSharedProfile()
+        return sharedPreferences.getString("image", null)
+    }
+
+
+    fun bitmapToByteArrayToString(bitmap: Bitmap): String {
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
+        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 30, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.NO_WRAP)
+    }
+
     fun clearSharedPreferences() {
         getSharedProfile().edit().apply {
             clear()

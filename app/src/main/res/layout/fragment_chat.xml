@@ -7,13 +7,11 @@
     android:layout_height="match_parent"
     tools:context=".ui.ChatFragment">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.ChatFragment">
-
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
@@ -120,7 +118,6 @@
                     android:background="@drawable/notify_shape"
                     android:hint="@string/message"
                     android:maxLines="3" />
-
 
                 <ImageView
                     android:id="@+id/button_clip"

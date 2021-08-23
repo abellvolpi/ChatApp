@@ -40,4 +40,6 @@
     <string name="joined_chat">Entrou no chat</string>
     <string name="left_the_chat">Saiu do chat</string>
     <string name="participants">Participantes</string>
+    <string name="server_doesnt_exists">Servidor não existe</string>
+    <string name="password">Senha</string>
 </resources>

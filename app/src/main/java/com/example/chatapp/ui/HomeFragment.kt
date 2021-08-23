@@ -1,7 +1,6 @@
 package com.example.chatapp.ui
 
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,7 +25,6 @@ import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
-import com.squareup.moshi.internal.Util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -137,9 +135,10 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
             openCameraButton.setOnClickListener {
                 if (nameField.text.toString().isNotBlank()) {
+                    ProfileSharedProfile.saveProfile(nameField.text.toString())
                     val action =
-                        HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan(nameField.text.toString())
-                    navController.navigate(action)
+                        HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan()
+                        navController.navigate(action)
                 } else {
                     nameField.error = "Please, insert your name"
                 }
@@ -181,24 +180,33 @@ class HomeFragment : Fragment(), CoroutineScope {
         val port = radioGroupSelected().toInt()
         with(binding) {
             createSocket(ipField.text.toString(), port) {
-                ProfileSharedProfile.saveProfile(nameField.text.toString())
-                connectionFactory.setSocket(it)
-                profileViewModel.deleteAll {
-                    var image = ""
-                    val bitmap = ProfileSharedProfile.getProfilePhoto()
-                    if (bitmap != null) {
-                        image = Utils.bitmapToByteArrayToString(bitmap)
+                if (it != null) {
+                    ProfileSharedProfile.saveProfile(nameField.text.toString())
+                    connectionFactory.setSocket(it)
+                    profileViewModel.deleteAll {
+                        var image = ""
+                        val bitmap = ProfileSharedProfile.getProfilePhoto()
+                        if (bitmap != null) {
+                            image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                        }
+                        val message = Message(
+                            type = Message.MessageType.JOIN.code,
+                            username = nameField.text.toString(),
+                            text = null,
+                            base64Data = null,
+                            join = Message.Join(
+                                avatar = image,
+                                password = password.text.toString().toSHA256()
+                            ),
+                            id = null
+                        )
+                        val action =
+                            HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
+                        findNavController().navigate(action)
                     }
-                    val message = Message(
-                        type = Message.MessageType.JOIN.code,
-                        username = nameField.text.toString(),
-                        text = null,
-                        base64Data = null,
-                        join = Message.Join(avatar = image, password = password.text.toString().toSHA256()),
-                        id = null
-                    )
-                    val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
-                    findNavController().navigate(action)
+                }else{
+                    val snackbar = Snackbar.make(requireView(), "Server doest exists", Snackbar.LENGTH_LONG)
+                    snackbar.show()
                 }
             }
         }

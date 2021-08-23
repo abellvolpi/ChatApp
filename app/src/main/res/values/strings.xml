@@ -37,6 +37,7 @@
     <string name="port_error">Please, insert a port number</string>
     <string name="name_error">Please, insert a name</string>
     <string name="ip_error">Please, insert a ip</string>
+    <string name="server_doesnt_exists">Server Doesn\'t exists</string>
 
 
     <!--    QRCode Fragment-->
@@ -97,4 +98,5 @@
     <!--    ChatDetails Fragment-->
     <string name="participants">Participants</string>
     <string name="ranking" translatable="false">Ranking</string>
+    <string name="password">Password</string>
 </resources>

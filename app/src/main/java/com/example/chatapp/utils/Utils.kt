@@ -68,13 +68,18 @@ object Utils : CoroutineScope {
         return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
     }
 
-    fun createSocket(ip: String, port: Int, onResult: (Socket) -> Unit) {
+    fun createSocket(ip: String, port: Int, onResult: (Socket?) -> Unit) {
         launch(Dispatchers.IO) {
             delay(2000)
-            val socket = Socket(ip, port)
-            withContext(Dispatchers.Main) {
-                onResult.invoke(socket)
+            try{
+                val socket = Socket(ip, port)
+                withContext(Dispatchers.Main) {
+                    onResult.invoke(socket)
+                }
+            }catch (e:Exception){
+                onResult.invoke(null)
             }
+
         }
     }
 
