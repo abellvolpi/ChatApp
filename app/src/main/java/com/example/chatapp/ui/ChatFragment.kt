@@ -2,7 +2,6 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -16,7 +15,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -223,56 +221,57 @@ class ChatFragment : Fragment() {
                     }
                 }
 
-            buttonClip.setOnClickListener {
-                startActivityLaunch.launch("image/*")
-            }
+                buttonClip.setOnClickListener {
+                    startActivityLaunch.launch("image/*")
+                }
 
-            closeImageButton.setOnClickListener {
-                restartUI()
-            }
+                closeImageButton.setOnClickListener {
+                    restartUI()
+                }
 
-            buttonSend.setOnClickListener {
-                when {
-                    sentImageFrameLayout.visibility == View.VISIBLE -> {
-                        progressBarSendMessage.visibility = View.VISIBLE
-                        Utils.bitmapToByteArray3(sentImage.drawable) {
-                            val message = Message(
-                                Message.MessageType.IMAGE.code,
-                                id = profileId,
-                                base64Data = it,
-                                text = null,
-                                username = profileName
-                            )
+                buttonSend.setOnClickListener {
+                    when {
+                        sentImageFrameLayout.visibility == View.VISIBLE -> {
+                            progressBarSendMessage.visibility = View.VISIBLE
+                            Utils.bitmapToByteArray3(sentImage.drawable) {
+                                val message = Message(
+                                    Message.MessageType.IMAGE.code,
+                                    id = profileId,
+                                    base64Data = it,
+                                    text = null,
+                                    username = profileName
+                                )
+                                sendMessageSocket(message)
+                                progressBarSendMessage.visibility = View.GONE
+                                restartUI()
+                            }
+                        }
+                        messageField.text.isNotBlank() -> {
+                            val message =
+                                Message(
+                                    Message.MessageType.MESSAGE.code,
+                                    username = profileName,
+                                    text = messageField.text.toString(),
+                                    id = profileId,
+                                    base64Data = null
+                                )
                             sendMessageSocket(message)
-                            progressBarSendMessage.visibility = View.GONE
-                            restartUI()
+                            messageField.text.clear()
+                        }
+                        else -> {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.message_blank,
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
                         }
                     }
-                    messageField.text.isNotBlank() -> {
-                        val message =
-                            Message(
-                                Message.MessageType.MESSAGE.code,
-                                username = profileName,
-                                text = messageField.text.toString(),
-                                id = profileId,
-                                base64Data = null
-                            )
-                        sendMessageSocket(message)
-                        messageField.text.clear()
-                    }
-                    else -> {
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.message_blank,
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    }
                 }
+                adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
+                messagesRecyclerview.adapter = adapter
+                messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
             }
-            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
-            messagesRecyclerview.adapter = adapter
-            messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
@@ -281,7 +280,7 @@ class ChatFragment : Fragment() {
         messageViewModel.insertMessage(message)
     }
 
-    private fun refreshUIChat(message: Message) {
+        private fun refreshUIChat(message: Message) {
         adapter.addData(message)
         if (message.status == Message.MessageStatus.SENT.code) {
             binding.messagesRecyclerview.scrollToPosition(data.size - 1)
