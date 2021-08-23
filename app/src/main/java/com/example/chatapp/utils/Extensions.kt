@@ -2,16 +2,11 @@ package com.example.chatapp.utils
 
 import android.app.Activity
 import android.content.Context
-import android.net.ConnectivityManager
 import android.view.inputmethod.InputMethodManager
-import androidx.core.util.ObjectsCompat
-import java.io.File
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.security.MessageDigest
-import java.util.*
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 object Extensions {
 

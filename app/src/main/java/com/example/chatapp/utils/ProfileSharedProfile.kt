@@ -36,8 +36,7 @@ object ProfileSharedProfile {
 
     fun getIdProfile(): Int{
         val shred = getSharedProfile()
-        val int = shred.getInt("id", 0)
-        return int
+        return shred.getInt("id", 0)
     }
 
     fun getProfile(): String {
@@ -76,7 +75,7 @@ object ProfileSharedProfile {
     fun bitmapToByteArrayToString(bitmap: Bitmap): String {
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
         val byteArrayOutputStream = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.PNG,10,baos)
+//        bitmap.compress(Bitmap.CompressFormat.PNG,10,byteArrayOutputStream)
         scaledBitmap.compress(Bitmap.CompressFormat.PNG, 30, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)

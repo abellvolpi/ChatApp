@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.net.InetAddresses
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -25,11 +24,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import okio.sink
-import okio.source
 import java.io.DataOutputStream
-import java.net.InetSocketAddress
-import java.net.Proxy
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*

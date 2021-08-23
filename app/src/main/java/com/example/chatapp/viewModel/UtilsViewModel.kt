@@ -3,8 +3,6 @@ package com.example.chatapp.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.chatapp.models.Message
-import java.net.Socket
 
 class UtilsViewModel : ViewModel() {
     private var isRunningAudio : Pair<Int, Boolean> = Pair(-1, false)

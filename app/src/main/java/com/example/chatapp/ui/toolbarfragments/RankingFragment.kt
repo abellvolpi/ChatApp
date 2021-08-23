@@ -9,10 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.chatapp.R
-import com.example.chatapp.adapters.ParticipantsAdapter
 import com.example.chatapp.adapters.RankingAdapter
-import com.example.chatapp.databinding.FragmentParticipantsBinding
 import com.example.chatapp.databinding.FragmentRankingBinding
 import com.example.chatapp.viewModel.ProfileViewModel
 

@@ -1,7 +1,5 @@
 package com.example.chatapp.models
 
-import android.media.AsyncPlayer
-
 class Board {
 
     companion object {

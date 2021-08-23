@@ -19,7 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -88,14 +87,16 @@ class ChatFragment : Fragment() {
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
                 with(binding) {
-                    sentImageFrameLayout.visibility = View.VISIBLE
-                    buttonClip.visibility = View.GONE
-                    sentImage.setImageURI(uri)
+                    if (uri != null) {
+                        sentImageFrameLayout.visibility = View.VISIBLE
+                        buttonClip.visibility = View.GONE
+                        sentImage.setImageURI(uri)
+                        buttonSend.visibility = View.VISIBLE
+                        buttonVoiceMessageRecord.visibility = View.GONE
+                    }
                 }
             }
         )
-
-
     }
 
     override fun onCreateView(
@@ -222,31 +223,32 @@ class ChatFragment : Fragment() {
                     }
                 }
 
-                buttonClip.setOnClickListener {
-                    startActivityLaunch.launch("image/*")
-                    buttonSend.visibility = View.VISIBLE
-                    buttonVoiceMessageRecord.visibility = View.GONE
-                }
-                closeImageButton.setOnClickListener {
-                    restartUI()
-                }
+            buttonClip.setOnClickListener {
+                startActivityLaunch.launch("image/*")
+            }
 
+            closeImageButton.setOnClickListener {
+                restartUI()
+            }
 
-                buttonSend.setOnClickListener {
-                    if (sentImageFrameLayout.visibility == View.VISIBLE) {
-                        val bitmap = sentImage.drawable.toBitmap()
-                        val base64 = Utils.bitmapToByteArrayToString(bitmap)
-                        val message = Message(
-                            Message.MessageType.IMAGE.code,
-                            id = profileId,
-                            base64Data = base64,
-                            text = null,
-                            username = profileName
-                        )
-                        sendMessageSocket(message)
-                        restartUI()
-
-                    } else if (messageField.text.isNotBlank()) {
+            buttonSend.setOnClickListener {
+                when {
+                    sentImageFrameLayout.visibility == View.VISIBLE -> {
+                        progressBarSendMessage.visibility = View.VISIBLE
+                        Utils.bitmapToByteArray3(sentImage.drawable) {
+                            val message = Message(
+                                Message.MessageType.IMAGE.code,
+                                id = profileId,
+                                base64Data = it,
+                                text = null,
+                                username = profileName
+                            )
+                            sendMessageSocket(message)
+                            progressBarSendMessage.visibility = View.GONE
+                            restartUI()
+                        }
+                    }
+                    messageField.text.isNotBlank() -> {
                         val message =
                             Message(
                                 Message.MessageType.MESSAGE.code,
@@ -257,7 +259,8 @@ class ChatFragment : Fragment() {
                             )
                         sendMessageSocket(message)
                         messageField.text.clear()
-                    } else {
+                    }
+                    else -> {
                         Toast.makeText(
                             requireContext(),
                             R.string.message_blank,
@@ -266,70 +269,10 @@ class ChatFragment : Fragment() {
                             .show()
                     }
                 }
-                adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
-                messagesRecyclerview.adapter = adapter
-                messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
-
-                chatToolbar.apply {
-                    setOnClickListener {
-                        navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-                    }
-                    overflowIcon =
-                        AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-                    inflateMenu(R.menu.chat_menu)
-                    setOnMenuItemClickListener { item ->
-                        when (item?.itemId) {
-                            R.id.perfil -> {
-                                navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                            }
-                            R.id.share_link -> {
-                                val ip = connectionFactory.getIpHost()
-                                val port = connectionFactory.getIpPort()
-                                val shareIntent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(
-                                        Intent.EXTRA_TEXT,
-                                        "http://www.mychatapp.com/home/$ip:$port"
-                                    )
-                                    type = "text/plain"
-                                }
-                                val action =
-                                    ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(
-                                        ip,
-                                        port.toInt()
-                                    )
-                                navController.navigate(action)
-                                startActivity(Intent.createChooser(shareIntent, ""))
-                            }
-                        }
-                        true
-                    }
-                }
-            } else {
-                chatToolbar.title = getString(R.string.history_title)
-                layout.visibility = View.GONE
-                centerProgressBar.visibility = View.VISIBLE
-                messagesRecyclerview.alpha = 0.5f
-                messageViewModel.getAllMessages {
-                    val arrayList = arrayListOf<Message>()
-                    arrayList.addAll(it)
-                    adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner)
-                    messagesRecyclerview.adapter = adapter
-                    messagesRecyclerview.apply {
-                        layoutManager = LinearLayoutManager(requireContext())
-                        scrollToPosition(it.size - 1)
-                    }
-                    centerProgressBar.visibility = View.GONE
-                    messagesRecyclerview.alpha = 1f
-                    chatToolbar.apply {
-                        navigationIcon = ContextCompat.getDrawable(requireContext(), R.drawable.back_icon)
-                        chatToolbar.setNavigationOnClickListener {
-                            val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("")
-                            navController.navigate(action)
-                        }
-                    }
-                }
             }
+            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
+            messagesRecyclerview.adapter = adapter
+            messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
@@ -482,6 +425,9 @@ class ChatFragment : Fragment() {
                         Message.MessageType.AUDIO.code -> {
                             refreshUIChat(this)
                         }
+                        Message.MessageType.IMAGE.code -> {
+                            refreshUIChat(this)
+                        }
                     }
                 }
 
@@ -491,6 +437,9 @@ class ChatFragment : Fragment() {
                             refreshUIChat(this)
                         }
                         Message.MessageType.AUDIO.code -> {
+                            refreshUIChat(this)
+                        }
+                        Message.MessageType.IMAGE.code -> {
                             refreshUIChat(this)
                         }
                         Message.MessageType.TICPLAY.code -> {
@@ -802,7 +751,6 @@ class ChatFragment : Fragment() {
             sentImageFrameLayout.visibility = View.GONE
             buttonSend.visibility = View.GONE
             buttonVoiceMessageRecord.visibility = View.VISIBLE
-            buttonClip.visibility = View.VISIBLE
         }
     }
 

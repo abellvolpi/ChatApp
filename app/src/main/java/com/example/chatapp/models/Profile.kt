@@ -12,5 +12,4 @@ class Profile(
     var photoProfile : String?,
     var scoreTicTacToe: Int,
     var isMemberYet: Boolean?
-)  {
-}
+)
