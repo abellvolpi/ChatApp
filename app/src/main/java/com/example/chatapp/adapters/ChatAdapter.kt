@@ -1,8 +1,6 @@
 package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
@@ -21,7 +19,6 @@ import com.example.chatapp.viewModel.UtilsViewModel
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
-import android.graphics.drawable.Drawable
 
 
 class ChatAdapter(

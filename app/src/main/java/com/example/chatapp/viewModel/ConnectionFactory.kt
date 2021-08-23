@@ -15,8 +15,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
-import java.net.InetSocketAddress
-import java.net.Proxy
 import java.net.Socket
 import java.util.*
 import kotlin.collections.ArrayList

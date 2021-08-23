@@ -15,7 +15,6 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
@@ -39,7 +38,7 @@ import kotlin.coroutines.CoroutineContext
 object Utils : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     const val KEY_TEXT_REPLY = "key_text_reply"
-    const val CHANNEL_ID = "channel_id"
+    private const val CHANNEL_ID = "channel_id"
     const val NOTIFICATION_ID = 101
 
     fun getIpAddress(): String {
