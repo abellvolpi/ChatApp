@@ -2,7 +2,6 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -118,7 +117,6 @@ class ChatFragment : Fragment() {
                 setOnClickListener {
                     navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
                 }
-
                 overflowIcon =
                     AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
                 inflateMenu(R.menu.chat_menu)
@@ -128,19 +126,10 @@ class ChatFragment : Fragment() {
                             navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
                         }
                         R.id.share_link -> {
-                            val ip = connectionFactory.getIpHost()
-                            val port = connectionFactory.getIpPort()
-                            val shareIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "http://www.mychatapp.com/home/$ip:$port"
-                                )
-                                type = "text/plain"
-                            }
-                            val action = ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(ip, port.toInt())
-                            navController.navigate(action)
-                            startActivity(Intent.createChooser(shareIntent, ""))
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
+                                connectionFactory.getIpHost(),
+                                connectionFactory.getIpPort().toInt()
+                            ))
                         }
                     }
                     true
@@ -773,6 +762,7 @@ class ChatFragment : Fragment() {
             buttonVoiceMessageRecord.visibility = View.VISIBLE
         }
     }
+
 
     companion object {
         private const val RECORD_PERMISSION = 102
