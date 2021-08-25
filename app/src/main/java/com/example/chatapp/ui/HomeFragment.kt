@@ -129,7 +129,7 @@ class HomeFragment : Fragment(), CoroutineScope {
         with(binding) {
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {
-                    progressBar.alpha = 1f
+                    progressBar.visibility = View.INVISIBLE
                     connect()
                 }
             }

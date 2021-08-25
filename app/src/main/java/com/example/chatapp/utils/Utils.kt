@@ -77,6 +77,7 @@ object Utils : CoroutineScope {
                     onResult.invoke(socket)
                 }
             } catch (e: Exception) {
+                Log.e("createSocket", e.toString())
                 withContext(Dispatchers.Main) {
                     onResult.invoke(null)
                 }

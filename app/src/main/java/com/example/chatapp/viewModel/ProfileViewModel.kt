@@ -10,7 +10,7 @@ import kotlin.coroutines.CoroutineContext
 class ProfileViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private val controller = ProfileController()
-    lateinit var profiles: MutableLiveData<ArrayList<Profile>>
+    var profiles: MutableLiveData<ArrayList<Profile>> = MutableLiveData()
     lateinit var ranking: MutableLiveData<ArrayList<Profile>>
 
     init {
@@ -24,7 +24,6 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
 
     private fun allProfilesWhereIsMemberYet(onResult: (ArrayList<Profile>) -> Unit) {
         launch(Dispatchers.IO) {
-//            profiles = MutableLiveData()
             val getAll = controller.getProfileWhereIsMemberYet()
             withContext(Dispatchers.Main) {
                 onResult.invoke(getAll)
@@ -44,8 +43,8 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
     fun insert(profile: Profile) {
         launch(Dispatchers.IO) {
             controller.insert(profile)
-            val list = profiles.value
-            list?.add(profile)
+            val list = profiles.value?: arrayListOf()
+            list.add(profile)
             profiles.postValue(list)
         }
     }

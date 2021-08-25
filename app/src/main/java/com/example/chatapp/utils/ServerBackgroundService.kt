@@ -40,7 +40,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private var port: Int = 0
     private val mutex = Mutex()
     private lateinit var sock : Socket
-
     @Volatile
     private var id = 0
     private lateinit var password: String
@@ -165,17 +164,17 @@ class ServerBackgroundService : Service(), CoroutineScope {
         val socketIterator = sockets.entries.iterator()
         while (socketIterator.hasNext()) {
             val socket = socketIterator.next()
-            try {
-                val bw = DataOutputStream(socket.value.getOutputStream())
-                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-                bw.flush()
-                Log.d("service", "Sent Message")
-            }catch (e:Exception){
-                Log.e("service sendToAll", e.toString())
-                removeSocket(socket.value)
-                socketIterator.remove()
+                try {
+                    val bw = DataOutputStream(socket.value.getOutputStream())
+                    bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+                    bw.flush()
+                    Log.d("service", "Sent Message")
+                } catch (e: Exception) {
+                    Log.e("service sendToAll", e.toString())
+                    removeSocket(socket.value)
+                    socketIterator.remove()
+                }
             }
-        }
     }
 
     @Synchronized
@@ -325,6 +324,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
         withContext(Dispatchers.IO) {
             id++
             sockets[id] = socket
+            notifyProfileConnected(message, id)
+            saveProfileOnService(message, id)
             val messageAkl = Message(
                 type = Message.MessageType.ACKNOWLEDGE.code,
                 username = null,
@@ -334,8 +335,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
             )
             sendMessageToASocket(socket, messageAkl)
             Log.d("service", "Sent id to socket")
-            saveProfileOnService(message, id)
-            notifyProfileConnected(message, id)
         }
 
     @Synchronized
