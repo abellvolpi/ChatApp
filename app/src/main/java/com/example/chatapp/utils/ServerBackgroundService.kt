@@ -47,10 +47,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
     @Volatile
     private var id = 0
     private lateinit var password: String
-
     @Volatile
     private var sockets: HashMap<Int, Socket> = HashMap()
-
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
     private var startId = 0
@@ -173,7 +171,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-
     @Synchronized
     private suspend fun sendMessageToAllSockets(message: Message) = withContext(Dispatchers.IO) {
         val socketIterator = sockets.entries.iterator()
@@ -184,7 +181,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
                 bw.flush()
                 Log.d("service", "Sent Message")
-            } catch (e: Exception) {
+            }catch (e:Exception){
                 Log.e("service sendToAll", e.toString())
                 removeSocket(socket.value)
                 socketIterator.remove()
@@ -256,6 +253,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         sendMessageToAllSockets(classMessage)
                     }
                 }
+                delay(1)
             }
         }
 
@@ -287,7 +285,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 var idSocket: Int? = null
                 val socketIterator = sockets.entries.iterator()
                 mutex.withLock {
-                    while (socketIterator.hasNext()) {
+                    while(socketIterator.hasNext()) {
                         val socketFromHash = socketIterator.next()
                         if (socketFromHash.value == socket) {
                             idSocket = socketFromHash.key
@@ -298,7 +296,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             sockets[id]?.close()
                         }
                         sockets.remove(idSocket)
-                        profiles.forEach { profile ->
+                        profiles.forEach {profile ->
                             if (profile.id == idSocket) {
                                 idSocket?.let { notifyWhenProfileDisconnected(profile.name, it) }
                                     ?: Log.e("server", "error when notify user disconnect")
@@ -385,7 +383,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             messageJoin.join?.avatar ?: "",
             0, null, false
         )
-        if (sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())) {
+        if(sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())){
             profile.isAdmin = true
             profiles.add(profile)
             return
