@@ -104,10 +104,11 @@ class ChatFragment : Fragment() {
         binding = FragmentChatBinding.inflate(inflater, container, false)
         joinMessage = arguments?.getSerializable("joinMessage") as Message?
         isHistoryCall = arguments?.getBoolean("isHistoryCall") ?: false
+        initView()
         if (connectionFactory.isFirstAccessInThisFragment() && joinMessage != null) {
             sendMessageSocket(joinMessage!!)
+            connectionFactory.setFirstAccessChatFragment(false)
         }
-        initView()
         return binding.root
     }
 
@@ -116,6 +117,33 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
+
+        with(binding) {
+            chatToolbar.apply {
+                setOnClickListener {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
+                }
+                overflowIcon =
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+                inflateMenu(R.menu.chat_menu)
+                setOnMenuItemClickListener { item ->
+                    when (item?.itemId) {
+                        R.id.perfil -> {
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                        }
+                        R.id.share_link -> {
+                            navController.navigate(
+                                ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
+                                    connectionFactory.getIpHost(),
+                                    connectionFactory.getIpPort().toInt()
+                                )
+                            )
+                        }
+                    }
+                    true
+                }
+            }
+        }
     }
 
     private fun readMessageMissed() {
@@ -139,6 +167,9 @@ class ChatFragment : Fragment() {
     private fun initView() {
         readMessageMissed()
         with(binding) {
+            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner, false)
+            messagesRecyclerview.adapter = adapter
+            messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
             if (!isHistoryCall) {
                 readMessageMissed()
                 connectionFactory.startListenerMessages()
@@ -264,9 +295,6 @@ class ChatFragment : Fragment() {
                             .show()
                     }
                 }
-                adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner, false)
-                messagesRecyclerview.adapter = adapter
-                messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
                 inflateToolBarOptions()
             } else {
                 startHistoryMode()
@@ -276,26 +304,45 @@ class ChatFragment : Fragment() {
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-        when (message.type) {
-            Message.MessageType.AUDIO.code -> {
-                Utils.saveMessageAudioByteToCacheDir(message) {
-                    message.base64Data = it
-                    messageViewModel.insertMessage(message)
-                }
-            }
-            else -> {
-                messageViewModel.insertMessage(message)
-            }
-        }
-
+//        when (message.type) {
+//            Message.MessageType.AUDIO.code -> {
+//                messageViewModel.insertMessage(message)
+//            }
+//            else -> {
+//                messageViewModel.insertMessage(message)
+//            }
+//        }
+        refreshUIChatAndSaveMessageInToRoom(message)
     }
 
-    private fun refreshUIChat(message: Message) {
-        adapter.addData(message)
-        if (message.status == Message.MessageStatus.SENT.code) {
-            binding.messagesRecyclerview.scrollToPosition(data.size - 1)
+    private fun refreshUIChatAndSaveMessageInToRoom(message: Message) {
+        if (message.type == Message.MessageType.AUDIO.code) {
+            Utils.saveMessageAudioByteToCacheDir(message) {
+                message.base64Data = it
+                if (message.status == Message.MessageStatus.SENT.code) {
+                    binding.messagesRecyclerview.scrollToPosition(data.size - 1)
+                    adapter.addData(message)
+                    messageViewModel.insertMessage(message)
+                }else {
+                    adapter.addData(message)
+                    messageViewModel.insertMessage(message)
+                    binding.messagesRecyclerview.apply {
+                        if (!canScrollVertically(1)) {
+                            scrollToPosition(data.size - 1)
+                        }
+                    }
+                }
+            }
             return
         }
+        if (message.status == Message.MessageStatus.SENT.code) {
+            binding.messagesRecyclerview.scrollToPosition(data.size - 1)
+            adapter.addData(message)
+            messageViewModel.insertMessage(message)
+            return
+        }
+        adapter.addData(message)
+        messageViewModel.insertMessage(message)
         binding.messagesRecyclerview.apply {
             if (!canScrollVertically(1)) {
                 scrollToPosition(data.size - 1)
@@ -328,11 +375,11 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.ACKNOWLEDGE.code) {
                 if (id != null) {
                     ProfileSharedProfile.saveIdProfile(id)
-                    emptyHistoryCache()
+                    empyHistoryCache()
                     if (text != null) {
                         profileViewModel.deleteAll {
                             Utils.listJsonToProfiles(text)?.forEach { profile ->
-                                if (connectionFactory.getIpHost() == Utils.getIpAddress()) {
+                                if(connectionFactory.getIpHost() == Utils.getIpAddress()){
                                     profile.isAdmin = true
                                 }
                                 if (profile.photoProfile != "" || profile.photoProfile != null) {
@@ -359,16 +406,11 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.JOIN.code) {
                 if (id != null) {
                     if (id == profileId) {
-//                        if (connectionFactory.isFirstAccessInThisFragment()) {
                         saveAvatarToCacheDir(id, join?.avatar ?: "") {
                             val profile =
                                 Profile(id, username ?: "", it, 0, true, join?.isAdmin)
-                            profileViewModel.insert(profile)
-                            connectionFactory.setFirstAccessChatFragment(false)
+//                            profileViewModel.insert(profile)
                         }
-//                        } else {
-//                            return
-//                        }
                     } else {
                         if (join?.avatar != "" || join?.avatar != null) {
                             saveAvatarToCacheDir(id, join?.avatar ?: "") {
@@ -380,17 +422,17 @@ class ChatFragment : Fragment() {
                             val profile = Profile(id, username ?: "", "", 0, true, join.isAdmin)
                             profileViewModel.insert(profile)
                         }
+                        refreshUIChatAndSaveMessageInToRoom(this)
                     }
                 } else {
                     Log.e("chatNotRefresh", "an error occurred because id is null")
                     Log.e("database", "error when insert profile, id is null")
                 }
-                refreshUIChat(this)
-                return@with
+                return
             }
 
             if (type == Message.MessageType.LEAVE.code) {
-                refreshUIChat(this)
+                refreshUIChatAndSaveMessageInToRoom(this)
                 if (id != null) {
                     profileViewModel.getProfile(id.toString()) {
                         if (it != null) {
@@ -421,29 +463,29 @@ class ChatFragment : Fragment() {
 
             when (status) {
                 Message.MessageStatus.SENT.code -> {
-                    when (type) {
-                        Message.MessageType.MESSAGE.code -> {
-                            refreshUIChat(this)
-                        }
-                        Message.MessageType.AUDIO.code -> {
-                            refreshUIChat(this)
-                        }
-                        Message.MessageType.IMAGE.code -> {
-                            refreshUIChat(this)
-                        }
-                    }
+//                    when (type) {
+////                        Message.MessageType.MESSAGE.code -> {
+////                            refreshUIChatAndSaveMessageInToRoom(this)
+////                        }
+////                        Message.MessageType.AUDIO.code -> {
+////                            refreshUIChatAndSaveMessageInToRoom(this)
+////                        }
+////                        Message.MessageType.IMAGE.code -> {
+////                            refreshUIChatAndSaveMessageInToRoom(this)
+////                        }
+//                    }
                 }
 
                 Message.MessageStatus.RECEIVED.code -> {
                     when (type) {
                         Message.MessageType.MESSAGE.code -> {
-                            refreshUIChat(this)
+                            refreshUIChatAndSaveMessageInToRoom(this)
                         }
                         Message.MessageType.AUDIO.code -> {
-                            refreshUIChat(this)
+                            refreshUIChatAndSaveMessageInToRoom(this)
                         }
                         Message.MessageType.IMAGE.code -> {
-                            refreshUIChat(this)
+                            refreshUIChatAndSaveMessageInToRoom(this)
                         }
                         Message.MessageType.TICPLAY.code -> {
                             Log.e("Received", "play")
@@ -495,7 +537,7 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun emptyHistoryCache() {
+    private fun empyHistoryCache() {
         val file = File(
             MainApplication.getContextInstance().cacheDir.absolutePath,
             "/photosProfile"
@@ -837,5 +879,10 @@ class ChatFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        connectionFactory.setFirstAccessChatFragment(false)
     }
 }

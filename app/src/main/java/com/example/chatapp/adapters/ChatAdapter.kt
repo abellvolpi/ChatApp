@@ -417,7 +417,11 @@ class ChatAdapter(
                 while (true) {
                     if (mediaPlayer.isPlaying) {
                         withContext(Dispatchers.Main) {
-                            onResult.invoke(mediaPlayer.currentPosition.toLong())
+                            try{
+                                onResult.invoke(mediaPlayer.currentPosition.toLong())
+                            }catch (e:Exception){
+                                stopAudio()
+                            }
                         }
                     } else {
                         break
@@ -441,18 +445,17 @@ class ChatAdapter(
     }
 
     private fun getAudio(msg: Message, onResult: (MediaPlayer) -> Unit) {
-        var an: MediaPlayer
-        if (isHistory) {
-            an = MediaPlayer.create(
+        //        if (isHistory) {
+        val an: MediaPlayer = MediaPlayer.create(
                 MainApplication.getContextInstance(),
                 Utils.getAudioFromCache(msg)?.toUri()
             )
             onResult.invoke(an)
-        } else {
-            Utils.parseByteToAudio(msg.base64Data ?: "") {
-                an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
-                onResult.invoke(an)
-            }
-        }
+//        } else {
+//            Utils.parseByteToAudio(msg.base64Data ?: "") {
+//                an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+//                onResult.invoke(an)
+//            }
+//        }
     }
 }

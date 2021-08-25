@@ -336,6 +336,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
         withContext(Dispatchers.IO) {
             id++
             sockets[id] = socket
+            notifyProfileConnected(message, id)
+            saveProfileOnService(message, id)
             val messageAkl = Message(
                 type = Message.MessageType.ACKNOWLEDGE.code,
                 username = null,
@@ -345,8 +347,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
             )
             sendMessageToASocket(socket, messageAkl)
             Log.d("service", "Sent id to socket")
-            saveProfileOnService(message, id)
-            notifyProfileConnected(message, id)
         }
 
     @Synchronized
