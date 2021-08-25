@@ -39,6 +39,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
+    private lateinit var sock : Socket
 
     @Volatile
     private var id = 0
