@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -15,11 +16,14 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
 import android.util.Log
+import android.view.ViewGroup
+import android.view.Window
+import android.widget.ImageView
+import android.widget.RelativeLayout
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
@@ -65,7 +69,13 @@ object Utils : CoroutineScope {
         if (fromJson != null) {
             return fromJson
         }
-        return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
+        return Message(
+            type = Message.MessageType.REVOKED.code,
+            id = 2,
+            text = null,
+            base64Data = null,
+            username = null
+        ) //server kick member because security system
     }
 
     fun createSocket(ip: String, port: Int, onResult: (Socket?) -> Unit) {
@@ -207,15 +217,13 @@ object Utils : CoroutineScope {
     }
 
     fun getAudioFromCache(message: Message): File? {
-        if(message.base64Data != null || message.base64Data != ""){
-            val output =
-                File(message.base64Data)
-            return output
+        if (message.base64Data != null || message.base64Data != "") {
+            return File(message.base64Data)
         }
         return null
     }
 
-    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit){
+    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit) {
         val context = MainApplication.getContextInstance()
         val output =
             File(context.cacheDir.absolutePath + "/audios", "audio_${message.id}_${message.time}.mp3")
@@ -289,4 +297,53 @@ object Utils : CoroutineScope {
             })
         }
     }
+
+    fun openImageLikeDialog(context: Context, bitmap: Bitmap) {
+        val builder = Dialog(context, android.R.style.Theme_Light)
+        val imageView = ImageView(context).apply {
+            setImageBitmap(bitmap)
+        }
+        builder.apply {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
+            window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window?.setBackgroundDrawable(
+                ColorDrawable(
+                    android.graphics.Color.WHITE
+                )
+            )
+            addContentView(
+                imageView, RelativeLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            )
+            show()
+        }
+    }
+
+
 }
+//
+//fun dialogImage(context: Context?, bitmap: Bitmap){
+//    if(context != null){
+//        val builder = Dialog(context, android.R.style.Theme_Light)
+//        builder.requestWindowFeature(Window.FEATURE_NO_TITLE)
+//        builder.window!!.setBackgroundDrawable(
+//            ColorDrawable(Color.TRANSPARENT)
+//        )
+//
+//        //TODO make dismiss
+//
+//        val imageView = ImageView(context)
+//        imageView.setImageBitmap(bitmap)
+//        builder.addContentView(
+//            imageView, RelativeLayout.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.MATCH_PARENT
+//            )
+//        )
+//        builder.show()
+//    }

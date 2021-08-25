@@ -332,7 +332,7 @@ class ChatFragment : Fragment() {
                     if (text != null) {
                         profileViewModel.deleteAll {
                             Utils.listJsonToProfiles(text)?.forEach { profile ->
-                                if(connectionFactory.getIpHost() == Utils.getIpAddress()){
+                                if (connectionFactory.getIpHost() == Utils.getIpAddress()) {
                                     profile.isAdmin = true
                                 }
                                 if (profile.photoProfile != "" || profile.photoProfile != null) {
@@ -360,12 +360,12 @@ class ChatFragment : Fragment() {
                 if (id != null) {
                     if (id == profileId) {
 //                        if (connectionFactory.isFirstAccessInThisFragment()) {
-                            saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                                val profile =
-                                    Profile(id, username ?: "", it, 0, true, join?.isAdmin)
-                                profileViewModel.insert(profile)
-                                connectionFactory.setFirstAccessChatFragment(false)
-                            }
+                        saveAvatarToCacheDir(id, join?.avatar ?: "") {
+                            val profile =
+                                Profile(id, username ?: "", it, 0, true, join?.isAdmin)
+                            profileViewModel.insert(profile)
+                            connectionFactory.setFirstAccessChatFragment(false)
+                        }
 //                        } else {
 //                            return
 //                        }
@@ -811,39 +811,30 @@ class ChatFragment : Fragment() {
     }
 
     private fun inflateToolBarOptions() {
-        binding.chatToolbar.apply {
-            setOnClickListener {
-                navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-            }
-            overflowIcon =
-                AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-            inflateMenu(R.menu.chat_menu)
-            setOnMenuItemClickListener { item ->
-                when (item?.itemId) {
-                    R.id.perfil -> {
-                        navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                    }
-                    R.id.share_link -> {
-                        val ip = connectionFactory.getIpHost()
-                        val port = connectionFactory.getIpPort()
-                        val shareIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(
-                                Intent.EXTRA_TEXT,
-                                "http://www.mychatapp.com/home/$ip:$port"
-                            )
-                            type = "text/plain"
-                        }
-                        val action =
-                            ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(
-                                ip,
-                                port.toInt()
-                            )
-                        navController.navigate(action)
-                        startActivity(Intent.createChooser(shareIntent, ""))
-                    }
+        with(binding) {
+            chatToolbar.apply {
+                setOnClickListener {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
                 }
-                true
+                overflowIcon =
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+                inflateMenu(R.menu.chat_menu)
+                setOnMenuItemClickListener { item ->
+                    when (item?.itemId) {
+                        R.id.perfil -> {
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                        }
+                        R.id.share_link -> {
+                            navController.navigate(
+                                ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
+                                    connectionFactory.getIpHost(),
+                                    connectionFactory.getIpPort().toInt()
+                                )
+                            )
+                        }
+                    }
+                    true
+                }
             }
         }
     }
