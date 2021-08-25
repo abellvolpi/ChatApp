@@ -42,6 +42,8 @@
     <string name="participants">Participantes</string>
     <string name="server_doesnt_exists">Servidor não existe</string>
     <string name="password">Senha</string>
+    <string name="history_title">Histórico</string>
+    <string name="Kick">Expulsar</string>
     <string name="share">Compartilhar:</string>
     <string name="generate_qr_code">Gerar\nQrCode</string>
     <string name="share_link">Compartilhar\nLink</string>

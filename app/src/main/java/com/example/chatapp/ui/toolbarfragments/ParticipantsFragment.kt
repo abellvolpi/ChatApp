@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatapp.adapters.ParticipantsAdapter
 import com.example.chatapp.databinding.FragmentParticipantsBinding
+import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.ProfileViewModel
 
 
@@ -18,6 +19,7 @@ class ParticipantsFragment : Fragment() {
 
     private lateinit var binding : FragmentParticipantsBinding
     private val profileController : ProfileViewModel by activityViewModels()
+    private val connectionFactory : ConnectionFactory by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,7 +37,7 @@ class ParticipantsFragment : Fragment() {
 
         profileController.profiles.observe(viewLifecycleOwner) {
             if(it != null){
-                adapter = ParticipantsAdapter(it)
+                adapter = ParticipantsAdapter(it, connectionFactory)
                 with(binding.recyclerView){
                     setAdapter(adapter)
                     adapter.notifyDataSetChanged()

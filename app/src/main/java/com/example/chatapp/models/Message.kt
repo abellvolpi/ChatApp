@@ -13,7 +13,7 @@ class Message(
     var status: Int = MessageStatus.SENT.code,
     val username: String?,
     val text: String?,
-    val base64Data: String?,
+    var base64Data: String?,
     val time: Long = Calendar.getInstance().time.time,
     val id: Int?,
     val join: Join? = null): Serializable {
@@ -22,7 +22,7 @@ class Message(
     var messageId : Int? =null
 
     @JsonClass(generateAdapter = true)
-    data class Join(val avatar: String?, val password: String?): Serializable
+    data class Join(val avatar: String?, val password: String?, val isAdmin : Boolean): Serializable
 
 
     companion object{

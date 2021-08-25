@@ -22,10 +22,9 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         }
     }
 
-
     private fun allProfilesWhereIsMemberYet(onResult: (ArrayList<Profile>) -> Unit) {
         launch(Dispatchers.IO) {
-            profiles = MutableLiveData()
+//            profiles = MutableLiveData()
             val getAll = controller.getProfileWhereIsMemberYet()
             withContext(Dispatchers.Main) {
                 onResult.invoke(getAll)

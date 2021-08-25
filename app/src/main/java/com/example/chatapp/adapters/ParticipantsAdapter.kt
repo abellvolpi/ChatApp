@@ -12,12 +12,16 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.ParticipantsItemBinding
+import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
 import com.example.chatapp.utils.MainApplication
+import com.example.chatapp.utils.ProfileSharedProfile
+import com.example.chatapp.viewModel.ConnectionFactory
 import java.io.File
 
-class ParticipantsAdapter(private val profiles: ArrayList<Profile>) :
+class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val connectionFactory: ConnectionFactory) :
     RecyclerView.Adapter<ParticipantsAdapter.BaseViewHolder>() {
+    private var iamAdmin = verifyIfIsAdmin()
     abstract inner class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(profile: Profile)
     }
@@ -47,6 +51,20 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>) :
                     )
                 }
                 name.text = profile.name
+                kickButton.apply {
+                    if(iamAdmin){
+                        kickButton.visibility = View.VISIBLE
+                    }
+                    setOnClickListener {
+                        val message = Message(Message.MessageType.REVOKED.code, id = 3, text = profile.id.toString(), base64Data = "", username = "")
+                        connectionFactory.sendMessageToSocket(message){}
+                    }
+                }
+                if(profile.isAdmin == true){
+                    adminTitle.visibility = View.GONE
+                }else{
+                    adminTitle.visibility = View.INVISIBLE
+                }
             }
         }
     }
@@ -67,5 +85,15 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>) :
 
     override fun getItemCount(): Int {
         return profiles.size
+    }
+    private fun verifyIfIsAdmin(): Boolean{
+        profiles.forEach {
+            if(it.isAdmin == true){
+                if(it.id == ProfileSharedProfile.getIdProfile()){
+                    return true
+                }
+            }
+        }
+        return false
     }
 }

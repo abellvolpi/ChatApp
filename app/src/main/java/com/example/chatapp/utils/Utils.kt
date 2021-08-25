@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
@@ -76,9 +77,10 @@ object Utils : CoroutineScope {
                     onResult.invoke(socket)
                 }
             } catch (e: Exception) {
-                onResult.invoke(null)
+                withContext(Dispatchers.Main) {
+                    onResult.invoke(null)
+                }
             }
-
         }
     }
 
@@ -200,6 +202,32 @@ object Utils : CoroutineScope {
             fos.close()
             withContext(Dispatchers.Main) {
                 onResult.invoke(File(output))
+            }
+        }
+    }
+
+    fun getAudioFromCache(message: Message): File? {
+        if(message.base64Data != null || message.base64Data != ""){
+            val output =
+                File(message.base64Data)
+            return output
+        }
+        return null
+    }
+
+    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit){
+        val context = MainApplication.getContextInstance()
+        val output =
+            File(context.cacheDir.absolutePath + "/audios", "audio_${message.id}_${message.time}.mp3")
+        val base64 = Base64.decode(message.base64Data, Base64.NO_WRAP)
+        launch(Dispatchers.IO) {
+            output.parentFile?.mkdirs()
+            val fos = FileOutputStream(output)
+            fos.write(base64)
+            fos.flush()
+            fos.close()
+            withContext(Dispatchers.Main) {
+                onResult.invoke(output.absolutePath)
             }
         }
     }

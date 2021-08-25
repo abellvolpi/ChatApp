@@ -8,22 +8,14 @@ import android.view.ViewGroup
 import android.widget.RadioButton
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.Extensions.toSHA256
 import com.example.chatapp.utils.ServerBackgroundService
-import com.example.chatapp.viewModel.ConnectionFactory
-
 
 class   CreateServer : Fragment() {
     private lateinit var binding: FragmentCreateServerBinding
-    private val connectionFactory: ConnectionFactory by activityViewModels()
-
-    private val navController by lazy {
-        findNavController()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

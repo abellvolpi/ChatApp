@@ -11,5 +11,6 @@ class Profile(
     var name : String,
     var photoProfile : String?,
     var scoreTicTacToe: Int,
-    var isMemberYet: Boolean?
+    var isMemberYet: Boolean?,
+    var isAdmin: Boolean? = false
 )

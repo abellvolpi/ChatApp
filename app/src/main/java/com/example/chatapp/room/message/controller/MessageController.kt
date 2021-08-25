@@ -30,4 +30,8 @@ object MessageController {
         return messageController.update(message)
     }
 
+    fun deleteAll(){
+        messageController.deleteAll()
+    }
+
 }

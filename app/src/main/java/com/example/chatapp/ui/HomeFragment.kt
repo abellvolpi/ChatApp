@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -23,12 +22,10 @@ import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.viewModel.ConnectionFactory
+import com.example.chatapp.viewModel.MessageViewModel
 import com.example.chatapp.viewModel.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 class HomeFragment : Fragment(), CoroutineScope {
@@ -37,6 +34,7 @@ class HomeFragment : Fragment(), CoroutineScope {
 
     private val args: HomeFragmentArgs by navArgs()
     private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val messageViewModel: MessageViewModel by activityViewModels()
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
     private val navController by lazy {
@@ -50,17 +48,16 @@ class HomeFragment : Fragment(), CoroutineScope {
         setHasOptionsMenu(true)
 
         startActivityLaunch = registerForActivityResult(
-            ActivityResultContracts.GetContent(),
-            ActivityResultCallback { uri ->
-                launch(Dispatchers.Default) {
-                    val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
-                    imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
-                }
-                launch(Dispatchers.Main) {
-                    binding.photo.setImageURI(uri)
-                }
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            launch(Dispatchers.Default) {
+                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
             }
-        )
+            launch(Dispatchers.Main) {
+                binding.photo.setImageURI(uri)
+            }
+        }
     }
 
     override fun onCreateView(
@@ -80,7 +77,6 @@ class HomeFragment : Fragment(), CoroutineScope {
         val ip = ipPort?.get(0)
         val port = ipPort?.get(1)
 
-
         with(binding) {
             ipField.setText(ip)
             radioGroupPort.forEach {
@@ -96,7 +92,6 @@ class HomeFragment : Fragment(), CoroutineScope {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         with(binding) {
             val ip = args.ip
             val port = args.port
@@ -115,8 +110,17 @@ class HomeFragment : Fragment(), CoroutineScope {
             val message = arguments?.getString("messageIfError")
             if (message != null) {
                 if (message.isNotBlank()) {
-                    Snackbar.make(requireContext(), requireView(), getString(R.string.server_disconnected, message), Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(
+                        requireContext(),
+                        requireView(),
+                        getString(R.string.server_disconnected, message),
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
+            }
+            historyButton.setOnClickListener {
+                val action = HomeFragmentDirections.actionHomeFragmentToChatFragment(null, true)
+                navController.navigate(action)
             }
         }
     }
@@ -138,7 +142,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     ProfileSharedProfile.saveProfile(nameField.text.toString())
                     val action =
                         HomeFragmentDirections.actionHomeFragmentToCameraQrCodeScan()
-                        navController.navigate(action)
+                    navController.navigate(action)
                 } else {
                     nameField.error = "Please, insert your name"
                 }
@@ -183,30 +187,40 @@ class HomeFragment : Fragment(), CoroutineScope {
                 if (it != null) {
                     ProfileSharedProfile.saveProfile(nameField.text.toString())
                     connectionFactory.setSocket(it)
-                    profileViewModel.deleteAll {
-                        var image = ""
-                        val bitmap = ProfileSharedProfile.getProfilePhoto()
-                        if (bitmap != null) {
-                            image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                    messageViewModel.deleteAll {
+                        profileViewModel.deleteAll {
+                            var image = ""
+                            val bitmap = ProfileSharedProfile.getProfilePhoto()
+                            if (bitmap != null) {
+                                image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                            }
+                            val message = Message(
+                                type = Message.MessageType.JOIN.code,
+                                username = nameField.text.toString(),
+                                text = null,
+                                base64Data = null,
+                                join = Message.Join(
+                                    avatar = image,
+                                    password = password.text.toString().toSHA256(), false
+                                ),
+                                id = null
+                            )
+                            val action =
+                                HomeFragmentDirections.actionHomeFragmentToChatFragment(
+                                    message,
+                                    false
+                                )
+                            findNavController().navigate(action)
                         }
-                        val message = Message(
-                            type = Message.MessageType.JOIN.code,
-                            username = nameField.text.toString(),
-                            text = null,
-                            base64Data = null,
-                            join = Message.Join(
-                                avatar = image,
-                                password = password.text.toString().toSHA256()
-                            ),
-                            id = null
-                        )
-                        val action =
-                            HomeFragmentDirections.actionHomeFragmentToChatFragment(message)
-                        findNavController().navigate(action)
                     }
-                }else{
-                    val snackbar = Snackbar.make(requireView(), "Server doest exists", Snackbar.LENGTH_LONG)
+                } else {
+                    val snackbar = Snackbar.make(
+                        requireView(),
+                        "Server doest exists",
+                        Snackbar.LENGTH_LONG
+                    )
                     snackbar.show()
+                    progressBar.visibility = View.INVISIBLE
                 }
             }
         }

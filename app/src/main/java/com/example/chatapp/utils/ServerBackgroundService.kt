@@ -4,14 +4,12 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -20,6 +18,7 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
+import com.example.chatapp.utils.Extensions.toSHA256
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -39,8 +38,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
+    private lateinit var sock : Socket
 
-    @Volatile
+            @Volatile
     private var id = 0
     private lateinit var password: String
 
@@ -76,7 +76,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         return null
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(START_SERVER)) {
             this.startId = startId
@@ -154,7 +153,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
             val serverSocket = ServerSocket(port)
             serverSocket.reuseAddress = true
             while (true) {
-                val sock = serverSocket.accept()
+                sock = serverSocket.accept()
+                sock.soTimeout = 1500
                 readMessageAndSendToAllSockets(sock)
                 Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
             }
@@ -163,55 +163,90 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     @Synchronized
     private suspend fun sendMessageToAllSockets(message: Message) = withContext(Dispatchers.IO) {
-        sockets.forEach {
-            val bw = DataOutputStream(it.value.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-            bw.flush()
-            Log.d("service", "Sent Message")
-        }
-    }
-
-    private fun readMessageAndSendToAllSockets(socket: Socket) {
-        launch(Dispatchers.IO) {
-            while (true) {
-                Log.d("service", "readingMessage")
-                val reader = Scanner(socket.getInputStream().bufferedReader())
-                val line: String
-                if (reader.hasNextLine()) {
-                    line = reader.nextLine()
-                    if (line == "ping") {
-                        Log.d("server", "received Ping")
-                    } else {
-                        val classMessage = Utils.jsonToMessageClass(line)
-                        if (classMessage.type == Message.MessageType.JOIN.code) {
-                            if (password != "") {
-                                if (classMessage.join?.password == password) {
-                                    sendIdToSocket(socket, classMessage)
-                                    observerWhenSocketClose(socket)
-                                } else {
-                                    val message = Message(
-                                        Message.MessageType.REVOKED.code,
-                                        username = null,
-                                        text = null,
-                                        base64Data = null,
-                                        id = 1
-                                    )
-                                    sendMessageToASocket(socket, message)
-                                }
-                            } else {
-                                sendIdToSocket(socket, classMessage)
-                                observerWhenSocketClose(socket)
-                            }
-                        } else {
-                            sendMessageToAllSockets(classMessage)
-                        }
-                    }
-                }
-                delay(1)
+        val socketIterator = sockets.entries.iterator()
+        while (socketIterator.hasNext()) {
+            val socket = socketIterator.next()
+            try {
+                val bw = DataOutputStream(socket.value.getOutputStream())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+                bw.flush()
+                Log.d("service", "Sent Message")
+            }catch (e:Exception){
+                Log.e("service sendToAll", e.toString())
+                removeSocket(socket.value)
+                socketIterator.remove()
             }
         }
     }
 
+    @Synchronized
+    private fun readMessageAndSendToAllSockets(socket: Socket) {
+        launch(Dispatchers.IO) {
+            while (true) {
+                Log.d("service", "readingMessage")
+                try {
+                    val reader = Scanner(socket.getInputStream().bufferedReader())
+                    val line: String
+                    if (reader.hasNextLine()) {
+                        line = reader.nextLine()
+                        if (line == "ping") {
+                        } else {
+                            val classMessage = Utils.jsonToMessageClass(line)
+                            treatMessage(classMessage, socket)
+                        }
+                    }
+                    delay(1)
+                } catch (e: Exception) {
+                    Log.e("Error Read Socket Line", e.toString())
+                    removeSocket(socket)
+                    break
+                }
+            }
+        }
+    }
+
+    @Synchronized
+    private suspend fun treatMessage(classMessage: Message, socket: Socket) =
+        withContext(Dispatchers.IO) {
+            with(classMessage) {
+                when (type) {
+                    Message.MessageType.JOIN.code -> {
+                        if (password != "".toSHA256()) {
+                            if (classMessage.join?.password == password) {
+                                sendIdToSocket(socket, classMessage)
+                                observerWhenSocketClose(socket)
+                            } else {
+                                val message = Message(
+                                    Message.MessageType.REVOKED.code,
+                                    username = null,
+                                    text = null,
+                                    base64Data = null,
+                                    id = 1
+                                )
+                                sendMessageToASocket(socket, message)
+                            }
+                        } else {
+                            sendIdToSocket(socket, classMessage)
+                            observerWhenSocketClose(socket)
+                        }
+                    }
+                    Message.MessageType.REVOKED.code -> {
+                        if (text != "" || text != null) {
+                            if (sockets.containsKey(text?.toInt())) {
+                                sockets[text?.toInt()]?.let { sendMessageToASocket(it, this) }
+                            } else {
+                            }
+                        } else {
+                        }
+                    }
+                    else -> {
+                        sendMessageToAllSockets(classMessage)
+                    }
+                }
+            }
+        }
+
+    @Synchronized
     private fun observerWhenSocketClose(socket: Socket) {
         launch(Dispatchers.IO) {
             while (true) {
@@ -232,39 +267,36 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    private fun removeSocket(socket: Socket) {
-        launch(Dispatchers.Default) {
-            var idSocket: Int? = null
-            var message: Message
-            mutex.withLock {
-                sockets.forEach {
-                    if (it.value == socket) {
-                        idSocket = it.key
-                    }
-                }
-                if (idSocket != null) {
-                    withContext(Dispatchers.IO) {
-                        sockets[id]?.close()
-                    }
-                    sockets.remove(idSocket)
-                    profiles.forEach {
-                        if (it.id == idSocket) {
-                            message = Message(
-                                Message.MessageType.LEAVE.code,
-                                text = null,
-                                id = idSocket,
-                                base64Data = null,
-                                username = it.name
-                            )
-                            idSocket?.let { notifyWhenProfileDisconnected(message, it) }
-                                ?: Log.e("server", "error when notify user disconnect")
-                            Log.d("service", socket.getAddressFromSocket() + "disconnect")
-                            profiles.remove(it)
-                            return@forEach
+    @Synchronized
+    private suspend fun removeSocket(socket: Socket) {
+        withContext(Dispatchers.Default) {
+            if (sockets.containsValue(socket)) {
+                var idSocket: Int? = null
+                val socketIterator = sockets.entries.iterator()
+                mutex.withLock {
+                    while(socketIterator.hasNext()) {
+                        val socketFromHash = socketIterator.next()
+                        if (socketFromHash.value == socket) {
+                            idSocket = socketFromHash.key
                         }
                     }
-                } else {
-                    Log.e("server", "error when remove socket from socket")
+                    if (idSocket != null) {
+                        withContext(Dispatchers.IO) {
+                            sockets[id]?.close()
+                        }
+                        sockets.remove(idSocket)
+                        profiles.forEach {profile ->
+                            if (profile.id == idSocket) {
+                                idSocket?.let { notifyWhenProfileDisconnected(profile.name, it) }
+                                    ?: Log.e("server", "error when notify user disconnect")
+                                Log.d("service", socket.getAddressFromSocket() + "disconnect")
+                                profiles.remove(profile)
+                                return@forEach
+                            }
+                        }
+                    } else {
+                        Log.e("server", "error when remove socket from socket")
+                    }
                 }
             }
         }
@@ -280,32 +312,35 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     @Synchronized
-    private suspend fun sendMessageToASocket(socket: Socket, message: Message) = withContext(Dispatchers.IO) {
-        val bw = DataOutputStream(socket.getOutputStream())
-        bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-        bw.flush()
-        Log.d("service", "Sent message to a socket")
-    }
+    private suspend fun sendMessageToASocket(socket: Socket, message: Message) =
+        withContext(Dispatchers.IO) {
+            val bw = DataOutputStream(socket.getOutputStream())
+            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+            bw.flush()
+            Log.d("service", "Sent message to a socket")
+        }
 
     @Synchronized
-    private suspend fun sendIdToSocket(socket: Socket, message: Message) = withContext(Dispatchers.IO) {
-        id++
-        sockets[id] = socket
-        val messageAkl = Message(
-            type = Message.MessageType.ACKNOWLEDGE.code,
-            username = null,
-            text = shareProfilesToNewMember(),
-            base64Data = null,
-            id = id
-        )
-        sendMessageToASocket(socket, messageAkl)
-        Log.d("service", "Sent id to socket")
-        notifyProfileConnected(message, id)
-        saveProfileOnService(message, id)
-    }
+    private suspend fun sendIdToSocket(socket: Socket, message: Message) =
+        withContext(Dispatchers.IO) {
+            id++
+            sockets[id] = socket
+            val messageAkl = Message(
+                type = Message.MessageType.ACKNOWLEDGE.code,
+                username = null,
+                text = shareProfilesToNewMember(),
+                base64Data = null,
+                id = id
+            )
+            sendMessageToASocket(socket, messageAkl)
+            Log.d("service", "Sent id to socket")
+            saveProfileOnService(message, id)
+            notifyProfileConnected(message, id)
+        }
 
+    @Synchronized
     private suspend fun notifyProfileConnected(message: Message, idProfile: Int) {
-        val join = Message.Join(message.join?.avatar ?: "", "")
+        val join = Message.Join(message.join?.avatar ?: "", "", false)
         val messageToSend = Message(
             id = idProfile,
             type = Message.MessageType.JOIN.code,
@@ -317,11 +352,12 @@ class ServerBackgroundService : Service(), CoroutineScope {
         sendMessageToAllSockets(messageToSend)
     }
 
-    private suspend fun notifyWhenProfileDisconnected(message: Message, idProfile: Int) {
+    @Synchronized
+    private suspend fun notifyWhenProfileDisconnected(username: String, idProfile: Int) {
         val messageToSend = Message(
             id = idProfile,
             type = Message.MessageType.LEAVE.code,
-            username = message.username,
+            username = username,
             join = null,
             base64Data = null,
             text = null
@@ -334,8 +370,13 @@ class ServerBackgroundService : Service(), CoroutineScope {
             idSocket,
             messageJoin.username ?: "name error",
             messageJoin.join?.avatar ?: "",
-            0, null
+            0, null, false
         )
+        if(sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())){
+            profile.isAdmin = true
+            profiles.add(profile)
+            return
+        }
         profiles.add(profile)
     }
 

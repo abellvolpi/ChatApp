@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
@@ -24,7 +25,7 @@ import java.util.*
 class ChatAdapter(
     private val data: ArrayList<Message>,
     val liveDataToObserve: UtilsViewModel,
-    val lifecycleOwner: LifecycleOwner
+    val lifecycleOwner: LifecycleOwner, val isHistory: Boolean
 ) :
     RecyclerView.Adapter<ChatAdapter.BaseViewHolder>() {
 
@@ -46,7 +47,7 @@ class ChatAdapter(
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
                     Utils.byteArrayToBitMap(it) { bitmap ->
-                        receivedImage.setImageBitmap( bitmap)
+                        receivedImage.setImageBitmap(bitmap)
                     }
                 }
             }
@@ -101,10 +102,12 @@ class ChatAdapter(
             with(binding) {
                 when (msg.type) {
                     Message.MessageType.JOIN.code -> {
-                        message.text = MainApplication.getContextInstance().getString(R.string.player_connected, msg.username)
+                        message.text = MainApplication.getContextInstance()
+                            .getString(R.string.player_connected, msg.username)
                     }
                     Message.MessageType.LEAVE.code -> {
-                        message.text = MainApplication.getContextInstance().getString(R.string.player_disconnected, msg.username)
+                        message.text = MainApplication.getContextInstance()
+                            .getString(R.string.player_disconnected, msg.username)
                     }
                 }
             }
@@ -142,7 +145,7 @@ class ChatAdapter(
                     }
                 })
                 name.text = msg.username
-                getAudio(msg.base64Data ?: "") {
+                getAudio(msg) {
                     message.text = context.getString(
                         R.string.audio,
                         getTimeAudioInString(it.duration.toLong())
@@ -152,7 +155,11 @@ class ChatAdapter(
 
                 time.text = timeFormatter(msg.time)
                 startAudio.setOnClickListener {
-                    startAudio(msg.base64Data ?: "", layoutPosition, seekBarAudio.progress) { long: Long ->
+                    startAudio(
+                        msg,
+                        layoutPosition,
+                        seekBarAudio.progress
+                    ) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
@@ -222,7 +229,7 @@ class ChatAdapter(
                     }
                 })
                 name.text = context.getString(R.string.you)
-                getAudio(msg.base64Data ?: "") {
+                getAudio(msg) {
                     message.text = context.getString(
                         R.string.audio,
                         getTimeAudioInString(it.duration.toLong())
@@ -231,7 +238,11 @@ class ChatAdapter(
                 }
                 time.text = timeFormatter(msg.time)
                 startAudio.setOnClickListener {
-                    startAudio(msg.base64Data ?: "", layoutPosition, seekBarAudio.progress) { long: Long ->
+                    startAudio(
+                        msg,
+                        layoutPosition,
+                        seekBarAudio.progress
+                    ) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
                             reproduceTimeAudio.text = getTimeAudioInString(long)
@@ -386,18 +397,18 @@ class ChatAdapter(
         notifyItemInserted(data.size - 1)
     }
 
+
     private fun startAudio(
-        message: String,
+        message: Message,
         position: Int,
         progressSeekBar: Int,
         onResult: (Long) -> Unit
     ) {
-        Utils.parseByteToAudio(message) {
+        getAudio(message) {
             if (positionMessageAudioRunning != -1) {
                 stopAudio()
             }
-            mediaPlayer =
-                MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+            mediaPlayer = it
             mediaPlayer.seekTo(progressSeekBar)
             mediaPlayer.start()
             positionMessageAudioRunning = position
@@ -429,11 +440,19 @@ class ChatAdapter(
         return SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(long))
     }
 
-    private fun getAudio(msg: String, onResult: (MediaPlayer) -> Unit) {
+    private fun getAudio(msg: Message, onResult: (MediaPlayer) -> Unit) {
         var an: MediaPlayer
-        Utils.parseByteToAudio(msg) {
-            an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+        if (isHistory) {
+            an = MediaPlayer.create(
+                MainApplication.getContextInstance(),
+                Utils.getAudioFromCache(msg)?.toUri()
+            )
             onResult.invoke(an)
+        } else {
+            Utils.parseByteToAudio(msg.base64Data ?: "") {
+                an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
+                onResult.invoke(an)
+            }
         }
     }
 }
