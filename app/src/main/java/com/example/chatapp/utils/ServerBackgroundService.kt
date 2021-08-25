@@ -4,14 +4,17 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
@@ -36,13 +39,38 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
+
     @Volatile
     private var id = 0
     private lateinit var password: String
+
     @Volatile
     private var sockets: HashMap<Int, Socket> = HashMap()
+
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
+    private var startId = 0
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == STOP_SERVER) {
+                stopForeground(true)
+                runBlocking {
+                    mutex.withLock {
+                        sockets.forEach {
+                            it.value.close()
+                        }
+                    }
+                }
+                stopSelf(startId)
+                stopSelfResult(startId)
+            }
+        }
+    }
+
+    override fun onCreate() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, IntentFilter(STOP_SERVER))
+    }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -51,6 +79,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(START_SERVER)) {
+            this.startId = startId
             port = intent?.getIntExtra("socketConfigs", 0) ?: 0
             password = intent?.getStringExtra("password") ?: ""
             start()
@@ -62,9 +91,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
             stopSelfResult(startId)
             return START_NOT_STICKY
         }
-        if (intent?.action.equals(SEND_REPLY)){
+        if (intent?.action.equals(SEND_REPLY)) {
             val message = intent?.getSerializableExtra("message") as Message
-            launch(Dispatchers.IO){
+            launch(Dispatchers.IO) {
                 sendMessageToAllSockets(message)
             }
             return START_NOT_STICKY
@@ -123,6 +152,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
+            serverSocket.reuseAddress = true
             while (true) {
                 val sock = serverSocket.accept()
                 readMessageAndSendToAllSockets(sock)
@@ -132,12 +162,12 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     @Synchronized
-    private suspend fun sendMessageToAllSockets(message: Message) = withContext(Dispatchers.IO){
-            sockets.forEach {
-                val bw = DataOutputStream(it.value.getOutputStream())
-                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-                bw.flush()
-                Log.d("service", "Sent Message")
+    private suspend fun sendMessageToAllSockets(message: Message) = withContext(Dispatchers.IO) {
+        sockets.forEach {
+            val bw = DataOutputStream(it.value.getOutputStream())
+            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+            bw.flush()
+            Log.d("service", "Sent Message")
         }
     }
 
@@ -213,7 +243,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     }
                 }
                 if (idSocket != null) {
-                    withContext(Dispatchers.IO){
+                    withContext(Dispatchers.IO) {
                         sockets[id]?.close()
                     }
                     sockets.remove(idSocket)
@@ -251,27 +281,27 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     @Synchronized
     private suspend fun sendMessageToASocket(socket: Socket, message: Message) = withContext(Dispatchers.IO) {
-            val bw = DataOutputStream(socket.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-            bw.flush()
-            Log.d("service", "Sent message to a socket")
+        val bw = DataOutputStream(socket.getOutputStream())
+        bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+        bw.flush()
+        Log.d("service", "Sent message to a socket")
     }
 
     @Synchronized
-    private suspend fun sendIdToSocket(socket: Socket, message: Message) = withContext(Dispatchers.IO){
-            id++
-            sockets[id] = socket
-            val messageAkl = Message(
-                type = Message.MessageType.ACKNOWLEDGE.code,
-                username = null,
-                text = shareProfilesToNewMember(),
-                base64Data = null,
-                id = id
-            )
-            sendMessageToASocket(socket, messageAkl)
-            Log.d("service", "Sent id to socket")
-            notifyProfileConnected(message, id)
-            saveProfileOnService(message, id)
+    private suspend fun sendIdToSocket(socket: Socket, message: Message) = withContext(Dispatchers.IO) {
+        id++
+        sockets[id] = socket
+        val messageAkl = Message(
+            type = Message.MessageType.ACKNOWLEDGE.code,
+            username = null,
+            text = shareProfilesToNewMember(),
+            base64Data = null,
+            id = id
+        )
+        sendMessageToASocket(socket, messageAkl)
+        Log.d("service", "Sent id to socket")
+        notifyProfileConnected(message, id)
+        saveProfileOnService(message, id)
     }
 
     private suspend fun notifyProfileConnected(message: Message, idProfile: Int) {
