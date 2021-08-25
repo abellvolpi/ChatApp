@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -38,9 +39,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
-    private lateinit var sock : Socket
+    private lateinit var sock: Socket
+    private lateinit var serverSocket: ServerSocket
 
-            @Volatile
+    @Volatile
     private var id = 0
     private lateinit var password: String
 
@@ -56,6 +58,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             if (intent?.action == STOP_SERVER) {
                 stopForeground(true)
                 runBlocking {
+                    serverSocket.close()
                     mutex.withLock {
                         sockets.forEach {
                             it.value.close()
@@ -150,13 +153,17 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
-            val serverSocket = ServerSocket(port)
+            serverSocket = ServerSocket(port)
             serverSocket.reuseAddress = true
             while (true) {
-                sock = serverSocket.accept()
-                sock.soTimeout = 1500
-                readMessageAndSendToAllSockets(sock)
-                Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                try {
+                    sock = serverSocket.accept()
+                    sock.soTimeout = 1500
+                    readMessageAndSendToAllSockets(sock)
+                    Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                }catch (e:java.net.SocketException){
+                    return@launch
+                }
             }
         }
     }
@@ -171,7 +178,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
                 bw.flush()
                 Log.d("service", "Sent Message")
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 Log.e("service sendToAll", e.toString())
                 removeSocket(socket.value)
                 socketIterator.remove()
@@ -274,7 +281,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 var idSocket: Int? = null
                 val socketIterator = sockets.entries.iterator()
                 mutex.withLock {
-                    while(socketIterator.hasNext()) {
+                    while (socketIterator.hasNext()) {
                         val socketFromHash = socketIterator.next()
                         if (socketFromHash.value == socket) {
                             idSocket = socketFromHash.key
@@ -285,7 +292,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             sockets[id]?.close()
                         }
                         sockets.remove(idSocket)
-                        profiles.forEach {profile ->
+                        profiles.forEach { profile ->
                             if (profile.id == idSocket) {
                                 idSocket?.let { notifyWhenProfileDisconnected(profile.name, it) }
                                     ?: Log.e("server", "error when notify user disconnect")
@@ -372,7 +379,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             messageJoin.join?.avatar ?: "",
             0, null, false
         )
-        if(sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())){
+        if (sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())) {
             profile.isAdmin = true
             profiles.add(profile)
             return

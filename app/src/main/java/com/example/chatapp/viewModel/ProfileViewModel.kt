@@ -10,7 +10,7 @@ import kotlin.coroutines.CoroutineContext
 class ProfileViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private val controller = ProfileController()
-    lateinit var profiles: MutableLiveData<ArrayList<Profile>>
+    var profiles: MutableLiveData<ArrayList<Profile>> = MutableLiveData()
     lateinit var ranking: MutableLiveData<ArrayList<Profile>>
 
     init {

@@ -2,6 +2,7 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -69,7 +70,7 @@ class ChatFragment : Fragment() {
     private lateinit var snackbar: Snackbar
     private var joinMessage: Message? = null
 
-    //bottomsheet
+
     private val boardCells = Array(3) { arrayOfNulls<ImageButton>(3) } // Array de image button
     private var board = Board()
     private var canIPlay: Boolean = false
@@ -115,31 +116,6 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
-
-        with(binding) {
-            chatToolbar.apply {
-                setOnClickListener {
-                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-                }
-                overflowIcon =
-                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-                inflateMenu(R.menu.chat_menu)
-                setOnMenuItemClickListener { item ->
-                    when (item?.itemId) {
-                        R.id.perfil -> {
-                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                        }
-                        R.id.share_link -> {
-                            navController.navigate(ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
-                                connectionFactory.getIpHost(),
-                                connectionFactory.getIpPort().toInt()
-                            ))
-                        }
-                    }
-                    true
-                }
-            }
-        }
     }
 
     private fun readMessageMissed() {
@@ -352,7 +328,7 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.ACKNOWLEDGE.code) {
                 if (id != null) {
                     ProfileSharedProfile.saveIdProfile(id)
-                    empyHistoryCache()
+                    emptyHistoryCache()
                     if (text != null) {
                         profileViewModel.deleteAll {
                             Utils.listJsonToProfiles(text)?.forEach { profile ->
@@ -519,7 +495,7 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun empyHistoryCache() {
+    private fun emptyHistoryCache() {
         val file = File(
             MainApplication.getContextInstance().cacheDir.absolutePath,
             "/photosProfile"
@@ -583,6 +559,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun acceptInviteTicTacToe() {
+        binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
         refreshBoard()
         player = Board.X
         canIPlay = false
