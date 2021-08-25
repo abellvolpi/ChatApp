@@ -31,20 +31,19 @@ class ProfileFragment : Fragment(), CoroutineScope {
 
 
         startActivityLaunch = registerForActivityResult(
-            ActivityResultContracts.GetContent(),
-            ActivityResultCallback { uri ->
-                launch(Dispatchers.Default) {
-                    val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
-                    imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
-                }
-                launch(Dispatchers.Main) {
-                    binding.photo.setImageURI(uri)
-                }
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            launch(Dispatchers.Default) {
+                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
             }
-        )
+            launch(Dispatchers.Main) {
+                binding.photo.setImageURI(uri)
+            }
+        }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }

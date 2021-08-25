@@ -2,6 +2,7 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -12,11 +13,12 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -42,7 +44,6 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-
 
 class ChatFragment : Fragment() {
     private lateinit var output: String
@@ -76,25 +77,23 @@ class ChatFragment : Fragment() {
     private var player = ""
     private var isTicTacToePlayRunning = false
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         profileName = ProfileSharedProfile.getProfile()
         startActivityLaunch = registerForActivityResult(
-            ActivityResultContracts.GetContent(),
-            ActivityResultCallback { uri ->
-                with(binding) {
-                    if (uri != null) {
-                        sentImageFrameLayout.visibility = View.VISIBLE
-                        buttonClip.visibility = View.GONE
-                        sentImage.setImageURI(uri)
-                        buttonSend.visibility = View.VISIBLE
-                        buttonVoiceMessageRecord.visibility = View.GONE
-                    }
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            with(binding) {
+                if (uri != null) {
+                    sentImageFrameLayout.visibility = View.VISIBLE
+                    buttonClip.visibility = View.GONE
+                    sentImage.setImageURI(uri)
+                    buttonSend.visibility = View.VISIBLE
+                    buttonVoiceMessageRecord.visibility = View.GONE
                 }
             }
-        )
+        }
     }
 
     override fun onCreateView(
@@ -223,64 +222,74 @@ class ChatFragment : Fragment() {
 
                 buttonClip.setOnClickListener {
                     startActivityLaunch.launch("image/*")
+                    buttonSend.visibility = View.VISIBLE
+                    buttonVoiceMessageRecord.visibility = View.GONE
                 }
-
                 closeImageButton.setOnClickListener {
                     restartUI()
                 }
 
                 buttonSend.setOnClickListener {
-                    when {
-                        sentImageFrameLayout.visibility == View.VISIBLE -> {
-                            progressBarSendMessage.visibility = View.VISIBLE
-                            Utils.bitmapToByteArray3(sentImage.drawable) {
-                                val message = Message(
-                                    Message.MessageType.IMAGE.code,
-                                    id = profileId,
-                                    base64Data = it,
-                                    text = null,
-                                    username = profileName
-                                )
-                                sendMessageSocket(message)
-                                progressBarSendMessage.visibility = View.GONE
-                                restartUI()
-                            }
-                        }
-                        messageField.text.isNotBlank() -> {
-                            val message =
-                                Message(
-                                    Message.MessageType.MESSAGE.code,
-                                    username = profileName,
-                                    text = messageField.text.toString(),
-                                    id = profileId,
-                                    base64Data = null
-                                )
-                            sendMessageSocket(message)
-                            messageField.text.clear()
-                        }
-                        else -> {
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.message_blank,
-                                Toast.LENGTH_LONG
+                    if (sentImageFrameLayout.visibility == View.VISIBLE) {
+                        val bitmap = sentImage.drawable.toBitmap()
+                        val base64 = Utils.bitmapToByteArrayToString(bitmap)
+                        val message = Message(
+                            Message.MessageType.IMAGE.code,
+                            id = profileId,
+                            base64Data = base64,
+                            text = null,
+                            username = profileName
+                        )
+                        sendMessageSocket(message)
+                        restartUI()
+
+                    } else if (messageField.text.isNotBlank()) {
+                        val message =
+                            Message(
+                                Message.MessageType.MESSAGE.code,
+                                username = profileName,
+                                text = messageField.text.toString(),
+                                id = profileId,
+                                base64Data = null
                             )
-                                .show()
-                        }
+                        sendMessageSocket(message)
+                        messageField.text.clear()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.message_blank,
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
                     }
                 }
-                adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
+                adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner, false)
                 messagesRecyclerview.adapter = adapter
                 messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
+                inflateToolBarOptions()
+            } else {
+                startHistoryMode()
             }
         }
     }
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-        messageViewModel.insertMessage(message)
+        when (message.type) {
+            Message.MessageType.AUDIO.code -> {
+                Utils.saveMessageAudioByteToCacheDir(message) {
+                    message.base64Data = it
+                    messageViewModel.insertMessage(message)
+                }
+            }
+            else -> {
+                messageViewModel.insertMessage(message)
+            }
+        }
+
     }
 
-        private fun refreshUIChat(message: Message) {
+    private fun refreshUIChat(message: Message) {
         adapter.addData(message)
         if (message.status == Message.MessageStatus.SENT.code) {
             binding.messagesRecyclerview.scrollToPosition(data.size - 1)
@@ -302,10 +311,8 @@ class ChatFragment : Fragment() {
     private fun validReceivedMessage(messageReceived: Message) {
         with(messageReceived) {
             if (type == Message.MessageType.REVOKED.code) {
-                var message = ""
                 when (id) {
                     1 -> {
-                        message = "Wrong Password"
                         val action =
                             ChatFragmentDirections.actionChatFragmentToWritePasswordDialog()
                         navController.navigate(action)
@@ -320,19 +327,13 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.ACKNOWLEDGE.code) {
                 if (id != null) {
                     ProfileSharedProfile.saveIdProfile(id)
-                    val file = File(
-                        MainApplication.getContextInstance().cacheDir.absolutePath,
-                        "/photosProfile"
-                    )
-                    if (file.exists()) {
-                        file.listFiles()?.forEach {
-                            it.delete()
-                        }
-                    }
-
+                    empyHistoryCache()
                     if (text != null) {
                         profileViewModel.deleteAll {
                             Utils.listJsonToProfiles(text)?.forEach { profile ->
+                                if(connectionFactory.getIpHost() == Utils.getIpAddress()){
+                                    profile.isAdmin = true
+                                }
                                 if (profile.photoProfile != "" || profile.photoProfile != null) {
                                     saveAvatarToCacheDir(
                                         profile.id,
@@ -340,6 +341,7 @@ class ChatFragment : Fragment() {
                                     ) {
                                         profile.photoProfile = it
                                         profile.isMemberYet = true
+
                                         profileViewModel.insert(profile)
                                     }
                                 } else {
@@ -357,23 +359,25 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.JOIN.code) {
                 if (id != null) {
                     if (id == profileId) {
-                        if (connectionFactory.isFirstAccessInThisFragment()) {
+//                        if (connectionFactory.isFirstAccessInThisFragment()) {
                             saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                                val profile = Profile(id, username ?: "", it, 0, true)
+                                val profile =
+                                    Profile(id, username ?: "", it, 0, true, join?.isAdmin)
                                 profileViewModel.insert(profile)
                                 connectionFactory.setFirstAccessChatFragment(false)
                             }
-                        } else {
-                            return
-                        }
+//                        } else {
+//                            return
+//                        }
                     } else {
                         if (join?.avatar != "" || join?.avatar != null) {
                             saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                                val profile = Profile(id, username ?: "", it, 0, true)
+                                val profile =
+                                    Profile(id, username ?: "", it, 0, true, join?.isAdmin)
                                 profileViewModel.insert(profile)
                             }
                         } else {
-                            val profile = Profile(id, username ?: "", "", 0, true)
+                            val profile = Profile(id, username ?: "", "", 0, true, join.isAdmin)
                             profileViewModel.insert(profile)
                         }
                     }
@@ -488,6 +492,25 @@ class ChatFragment : Fragment() {
 //                    refreshUIChat(this)
 //                }
 //            }
+        }
+    }
+
+    private fun empyHistoryCache() {
+        val file = File(
+            MainApplication.getContextInstance().cacheDir.absolutePath,
+            "/photosProfile"
+        )
+        if (file.exists()) {
+            file.listFiles()?.forEach {
+                it.delete()
+            }
+        }
+
+        val fileAudio = File(MainApplication.getContextInstance().cacheDir.absolutePath, "audios")
+        if (fileAudio.exists()) {
+            file.listFiles()?.forEach {
+                it.delete()
+            }
         }
     }
 
@@ -755,5 +778,72 @@ class ChatFragment : Fragment() {
 
     companion object {
         private const val RECORD_PERMISSION = 102
+    }
+
+    private fun startHistoryMode() {
+        with(binding) {
+            chatToolbar.title = getString(R.string.history_title)
+            layout.visibility = View.GONE
+            centerProgressBar.visibility = View.VISIBLE
+            messagesRecyclerview.alpha = 0.5f
+            messageViewModel.getAllMessages {
+                val arrayList = arrayListOf<Message>()
+                arrayList.addAll(it)
+                adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner, true)
+                messagesRecyclerview.adapter = adapter
+                messagesRecyclerview.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    scrollToPosition(it.size - 1)
+                }
+                centerProgressBar.visibility = View.GONE
+                messagesRecyclerview.alpha = 1f
+                chatToolbar.apply {
+                    navigationIcon =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.back_icon)
+                    chatToolbar.setNavigationOnClickListener {
+                        val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("")
+                        navController.navigate(action)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun inflateToolBarOptions() {
+        binding.chatToolbar.apply {
+            setOnClickListener {
+                navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
+            }
+            overflowIcon =
+                AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+            inflateMenu(R.menu.chat_menu)
+            setOnMenuItemClickListener { item ->
+                when (item?.itemId) {
+                    R.id.perfil -> {
+                        navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                    }
+                    R.id.share_link -> {
+                        val ip = connectionFactory.getIpHost()
+                        val port = connectionFactory.getIpPort()
+                        val shareIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                "http://www.mychatapp.com/home/$ip:$port"
+                            )
+                            type = "text/plain"
+                        }
+                        val action =
+                            ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(
+                                ip,
+                                port.toInt()
+                            )
+                        navController.navigate(action)
+                        startActivity(Intent.createChooser(shareIntent, ""))
+                    }
+                }
+                true
+            }
+        }
     }
 }

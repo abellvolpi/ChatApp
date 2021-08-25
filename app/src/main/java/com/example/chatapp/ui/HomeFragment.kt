@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -26,10 +25,7 @@ import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.MessageViewModel
 import com.example.chatapp.viewModel.ProfileViewModel
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 class HomeFragment : Fragment(), CoroutineScope {
@@ -38,7 +34,7 @@ class HomeFragment : Fragment(), CoroutineScope {
 
     private val args: HomeFragmentArgs by navArgs()
     private val profileViewModel: ProfileViewModel by activityViewModels()
-    private val messageViewModel : MessageViewModel by activityViewModels()
+    private val messageViewModel: MessageViewModel by activityViewModels()
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
     private val navController by lazy {
@@ -205,7 +201,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                                 base64Data = null,
                                 join = Message.Join(
                                     avatar = image,
-                                    password = password.text.toString().toSHA256()
+                                    password = password.text.toString().toSHA256(), false
                                 ),
                                 id = null
                             )
@@ -224,6 +220,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                         Snackbar.LENGTH_LONG
                     )
                     snackbar.show()
+                    progressBar.visibility = View.INVISIBLE
                 }
             }
         }

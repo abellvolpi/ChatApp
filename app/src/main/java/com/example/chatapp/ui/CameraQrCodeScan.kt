@@ -25,7 +25,6 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView
 class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
     private lateinit var binding: FragmentCameraQrCodeScanBinding
     private lateinit var name: String
-    private val connectionFactory: ConnectionFactory by activityViewModels()
     private val profileViewModel: ProfileViewModel by activityViewModels()
 
     companion object {
@@ -90,8 +89,8 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
                         base64Data = null,
                         join = Message.Join(
                             avatar = image,
-                            password = "".toSHA256()
-                        ),
+                            password = "".toSHA256(),
+                        false),
                         id = null
                     )
                     val action =

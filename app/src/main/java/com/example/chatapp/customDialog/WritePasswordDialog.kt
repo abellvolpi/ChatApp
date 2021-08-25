@@ -43,14 +43,12 @@ class WritePasswordDialog: DialogFragment() {
                 base64Data = null,
                 join = Message.Join(
                     avatar = ProfileSharedProfile.getProfilePhotoBase64(),
-                    password = passwordField.text.toString().toSHA256()
-                ),
+                    password = passwordField.text.toString().toSHA256(), false),
                 id = null
             )
                 connectionFactory.sendMessageToSocket(message){}
                 dismiss()
             }
-
         }
     }
 }

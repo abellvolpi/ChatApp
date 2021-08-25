@@ -39,11 +39,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         </TextView>
-        <ProgressBar
-            android:layout_marginLeft="10dp"
-            android:layout_width="20dp"
-            android:layout_height="20dp">
-        </ProgressBar>
     </LinearLayout>
 </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

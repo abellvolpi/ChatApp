@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
+import com.example.chatapp.models.Profile
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.getPortFromSocket
 import com.example.chatapp.utils.MainApplication
@@ -68,7 +69,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                         line = reader.nextLine()
                         withContext(Dispatchers.Main) {
                             if(line == "ping"){
-                                Log.d("ConnectionFactory", "received ping from server")
+
                             }else {
                                 val message = Utils.jsonToMessageClass(line)
                                 if (MainApplication.applicationIsInBackground()) {
@@ -188,5 +189,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     }
     fun closeSocket(){
         socket.close()
+    }
+
+    fun kickMember(profile: Profile) {
+        val message = Message(Message.MessageType.REVOKED.code, id = 3, base64Data = "", text = profile.id.toString(), username = "")
+        sendMessageToSocket(message){}
     }
 }

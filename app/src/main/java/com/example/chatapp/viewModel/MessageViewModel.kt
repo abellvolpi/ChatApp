@@ -13,7 +13,7 @@ class MessageViewModel : ViewModel(), CoroutineScope {
     }
 
     fun getAllMessages(onResult: (List<Message>) -> Unit){
-        var listAll = listOf<Message>()
+        var listAll: List<Message>
         launch(Dispatchers.IO){
            listAll = messageController.getAll()
             withContext(Dispatchers.Main){
