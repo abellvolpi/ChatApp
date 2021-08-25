@@ -4,13 +4,16 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
@@ -36,17 +39,36 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
-    private lateinit var sock : Socket
 
-            @Volatile
+    @Volatile
     private var id = 0
     private lateinit var password: String
-
     @Volatile
     private var sockets: HashMap<Int, Socket> = HashMap()
-
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
+    private var startId = 0
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == STOP_SERVER) {
+                stopForeground(true)
+                runBlocking {
+                    mutex.withLock {
+                        sockets.forEach {
+                            it.value.close()
+                        }
+                    }
+                }
+                stopSelf(startId)
+                stopSelfResult(startId)
+            }
+        }
+    }
+
+    override fun onCreate() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, IntentFilter(STOP_SERVER))
+    }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -54,6 +76,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(START_SERVER)) {
+            this.startId = startId
             port = intent?.getIntExtra("socketConfigs", 0) ?: 0
             password = intent?.getStringExtra("password") ?: ""
             start()
@@ -126,6 +149,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
             val serverSocket = ServerSocket(port)
+            serverSocket.reuseAddress = true
             while (true) {
                 sock = serverSocket.accept()
                 sock.soTimeout = 1500
@@ -217,6 +241,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         sendMessageToAllSockets(classMessage)
                     }
                 }
+                delay(1)
             }
         }
 
