@@ -32,6 +32,12 @@
     <string name="chat" translatable="false">Chat</string>
 
 
+    <!--    BottomSheets Strings-->
+    <string name="share">Share:</string>
+    <string name="generate_qr_code">Generate\nQrCode</string>
+    <string name="share_link">Share\nLink</string>
+
+
     <!--   Warnings-->
 
     <string name="port_error">Please, insert a port number</string>
@@ -90,7 +96,7 @@
     <!--    Menu Fragment-->
 
     <string name="profile">Profile</string>
-    <string name="share_link">Share room</string>
+    <string name="share_room">Share room</string>
     <string name="player_x_wins">Player X wins!</string>
     <string name="player_o_wins">Player O wins!</string>
     <string name="recording_audio">Recording…</string>

@@ -2,7 +2,6 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -116,6 +115,31 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
+
+        with(binding) {
+            chatToolbar.apply {
+                setOnClickListener {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
+                }
+                overflowIcon =
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+                inflateMenu(R.menu.chat_menu)
+                setOnMenuItemClickListener { item ->
+                    when (item?.itemId) {
+                        R.id.perfil -> {
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                        }
+                        R.id.share_link -> {
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
+                                connectionFactory.getIpHost(),
+                                connectionFactory.getIpPort().toInt()
+                            ))
+                        }
+                    }
+                    true
+                }
+            }
+        }
     }
 
     private fun readMessageMissed() {
@@ -137,6 +161,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun initView() {
+        readMessageMissed()
         with(binding) {
             if (!isHistoryCall) {
                 readMessageMissed()
@@ -341,7 +366,6 @@ class ChatFragment : Fragment() {
                                     ) {
                                         profile.photoProfile = it
                                         profile.isMemberYet = true
-
                                         profileViewModel.insert(profile)
                                     }
                                 } else {

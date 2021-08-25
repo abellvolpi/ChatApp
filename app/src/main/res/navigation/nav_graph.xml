@@ -79,6 +79,9 @@
         <action
             android:id="@+id/action_chatFragment_to_writePasswordDialog"
             app:destination="@id/writePasswordDialog" />
+        <action
+            android:id="@+id/action_chatFragment_to_shareLinkBottomSheetDialogFragment"
+            app:destination="@id/shareLinkBottomSheetDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -145,5 +148,23 @@
         android:id="@+id/writePasswordDialog"
         android:name="com.example.chatapp.customDialog.WritePasswordDialog"
         android:label="WritePasswordDialog" />
+    <dialog
+        android:id="@+id/shareLinkBottomSheetDialogFragment"
+        android:name="com.example.chatapp.customDialog.ShareLinkBottomSheetDialogFragment"
+        android:label="ShareLinkBottomSheetDialogFragment">
+        <argument
+            android:name="ip"
+            app:nullable="false"
+            app:argType="string"/>
+        <argument
+            android:name="port"
+            app:nullable="false"
+            app:argType="integer"/>
+        <action
+            android:id="@+id/action_shareLinkBottomSheetDialogFragment_to_inviteMemberToEntryChat"
+            app:destination="@id/inviteMemberToEntryChat"
+            app:popUpTo="@id/shareLinkBottomSheetDialogFragment"
+            app:popUpToInclusive="true"/>
+    </dialog>
 
 </navigation>

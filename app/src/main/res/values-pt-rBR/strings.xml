@@ -31,7 +31,7 @@
     <string name="choose_port">Escolha a porta:</string>
     <string name="player_disconnected">%s se desconectou</string>
     <string name="profile">Perfil</string>
-    <string name="share_link">Compartilhar sala</string>
+    <string name="share_room">Compartilhar sala</string>
     <string name="audio">Áudio (%s)</string>
     <string name="server_opened">Servidor aberto</string>
     <string name="reply">Responder</string>
@@ -44,4 +44,7 @@
     <string name="password">Senha</string>
     <string name="history_title">Histórico</string>
     <string name="Kick">Expulsar</string>
+    <string name="share">Compartilhar:</string>
+    <string name="generate_qr_code">Gerar\nQrCode</string>
+    <string name="share_link">Compartilhar\nLink</string>
 </resources>
