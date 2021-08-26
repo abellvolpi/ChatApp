@@ -1,5 +1,6 @@
 package com.example.chatapp.utils
 
+import android.app.Dialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
