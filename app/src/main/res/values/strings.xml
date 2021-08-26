@@ -80,12 +80,14 @@
     <string name="port_1029" translatable="false">1029</string>
     <string name="connect">Connect</string>
     <string name="create_server">Create server</string>
+    <string name="server_already_initialized">Server already initialized</string>
 
 
     <!--    CreateServer Fragment-->
 
     <string name="create">Create</string>
     <string name="choose_port">Choose a port:</string>
+
 
 
     <!--    ServerBackgroundService-->

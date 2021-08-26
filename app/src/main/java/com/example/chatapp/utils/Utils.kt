@@ -323,27 +323,4 @@ object Utils : CoroutineScope {
             show()
         }
     }
-
-
 }
-//
-//fun dialogImage(context: Context?, bitmap: Bitmap){
-//    if(context != null){
-//        val builder = Dialog(context, android.R.style.Theme_Light)
-//        builder.requestWindowFeature(Window.FEATURE_NO_TITLE)
-//        builder.window!!.setBackgroundDrawable(
-//            ColorDrawable(Color.TRANSPARENT)
-//        )
-//
-//        //TODO make dismiss
-//
-//        val imageView = ImageView(context)
-//        imageView.setImageBitmap(bitmap)
-//        builder.addContentView(
-//            imageView, RelativeLayout.LayoutParams(
-//                ViewGroup.LayoutParams.MATCH_PARENT,
-//                ViewGroup.LayoutParams.MATCH_PARENT
-//            )
-//        )
-//        builder.show()
-//    }
