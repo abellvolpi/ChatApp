@@ -8,7 +8,7 @@ interface ProfileDAO {
     @Query("Select * from Profile")
     fun getAll(): List<Profile>
 
-    @Insert
+    @Insert()
     fun insert(vararg profile: Profile)
 
     @Query("Delete from Profile where Profile.id = :id")
@@ -26,7 +26,7 @@ interface ProfileDAO {
     @Query("Select * from Profile where isMemberYet = 1 order by scoreTicTacToe desc")
     fun getRanking(): List<Profile>
 
-    @Query("Select * from profile where isMemberYet = 1")
+    @Query("Select * from profile where isMemberYet = 1 order by name")
     fun getProfileWhereIsMemberYet(): List<Profile>
 
 }
