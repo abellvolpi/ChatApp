@@ -70,7 +70,7 @@ class ChatFragment : Fragment() {
     private lateinit var snackbar: Snackbar
     private var joinMessage: Message? = null
 
-    //bottomsheet
+
     private val boardCells = Array(3) { arrayOfNulls<ImageButton>(3) } // Array de image button
     private var board = Board()
     private var canIPlay: Boolean = false
@@ -117,33 +117,6 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
-
-        with(binding) {
-            chatToolbar.apply {
-                setOnClickListener {
-                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-                }
-                overflowIcon =
-                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-                inflateMenu(R.menu.chat_menu)
-                setOnMenuItemClickListener { item ->
-                    when (item?.itemId) {
-                        R.id.perfil -> {
-                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                        }
-                        R.id.share_link -> {
-                            navController.navigate(
-                                ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
-                                    connectionFactory.getIpHost(),
-                                    connectionFactory.getIpPort().toInt()
-                                )
-                            )
-                        }
-                    }
-                    true
-                }
-            }
-        }
     }
 
     private fun readMessageMissed() {
@@ -616,6 +589,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun acceptInviteTicTacToe() {
+        binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
         refreshBoard()
         player = Board.X
         canIPlay = false
@@ -867,39 +841,30 @@ class ChatFragment : Fragment() {
     }
 
     private fun inflateToolBarOptions() {
-        binding.chatToolbar.apply {
-            setOnClickListener {
-                navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-            }
-            overflowIcon =
-                AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-            inflateMenu(R.menu.chat_menu)
-            setOnMenuItemClickListener { item ->
-                when (item?.itemId) {
-                    R.id.perfil -> {
-                        navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                    }
-                    R.id.share_link -> {
-                        val ip = connectionFactory.getIpHost()
-                        val port = connectionFactory.getIpPort()
-                        val shareIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(
-                                Intent.EXTRA_TEXT,
-                                "http://www.mychatapp.com/home/$ip:$port"
-                            )
-                            type = "text/plain"
-                        }
-                        val action =
-                            ChatFragmentDirections.actionChatFragmentToInviteMemberToEntryChat(
-                                ip,
-                                port.toInt()
-                            )
-                        navController.navigate(action)
-                        startActivity(Intent.createChooser(shareIntent, ""))
-                    }
+        with(binding) {
+            chatToolbar.apply {
+                setOnClickListener {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
                 }
-                true
+                overflowIcon =
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+                inflateMenu(R.menu.chat_menu)
+                setOnMenuItemClickListener { item ->
+                    when (item?.itemId) {
+                        R.id.perfil -> {
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                        }
+                        R.id.share_link -> {
+                            navController.navigate(
+                                ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
+                                    connectionFactory.getIpHost(),
+                                    connectionFactory.getIpPort().toInt()
+                                )
+                            )
+                        }
+                    }
+                    true
+                }
             }
         }
     }

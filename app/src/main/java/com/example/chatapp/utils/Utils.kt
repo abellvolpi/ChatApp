@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -19,6 +20,10 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
 import android.util.Log
+import android.view.ViewGroup
+import android.view.Window
+import android.widget.ImageView
+import android.widget.RelativeLayout
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
@@ -227,7 +232,7 @@ object Utils : CoroutineScope {
         return null
     }
 
-    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit) {
+    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit){
         val context = MainApplication.getContextInstance()
         val output =
             File(
@@ -327,6 +332,32 @@ object Utils : CoroutineScope {
             BitmapFactory.decodeFileDescriptor(uri?.let {
                 contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
             })
+        }
+    }
+
+    fun openImageLikeDialog(context: Context, bitmap: Bitmap) {
+        val builder = Dialog(context, android.R.style.Theme_Light)
+        val imageView = ImageView(context).apply {
+            setImageBitmap(bitmap)
+        }
+        builder.apply {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
+            window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            window?.setBackgroundDrawable(
+                ColorDrawable(
+                    android.graphics.Color.WHITE
+                )
+            )
+            addContentView(
+                imageView, RelativeLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            )
+            show()
         }
     }
 }

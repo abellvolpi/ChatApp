@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -20,6 +21,7 @@ import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.toSHA256
+import com.google.android.material.snackbar.Snackbar
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -40,6 +42,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private var port: Int = 0
     private val mutex = Mutex()
     private lateinit var sock: Socket
+    private lateinit var serverSocket: ServerSocket
 
     @Volatile
     private var id = 0
@@ -55,8 +58,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == STOP_SERVER) {
+                serverRunning = false
                 stopForeground(true)
                 runBlocking {
+                    serverSocket.close()
                     mutex.withLock {
                         sockets.forEach {
                             it.value.close()
@@ -70,8 +75,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     override fun onCreate() {
-        LocalBroadcastManager.getInstance(this)
-            .registerReceiver(receiver, IntentFilter(STOP_SERVER))
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, IntentFilter(STOP_SERVER))
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -152,14 +156,20 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
-            val serverSocket = ServerSocket(port)
-            serverSocket.reuseAddress = true
-            while (true) {
-                sock = serverSocket.accept()
-                sock.soTimeout = 1500
-                readMessageAndSendToAllSockets(sock)
-                Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
-            }
+                serverSocket = ServerSocket(port)
+                serverSocket.reuseAddress = true
+                serverRunning = true
+                while (true) {
+                    try {
+                        sock = serverSocket.accept()
+                        sock.soTimeout = 1500
+                        readMessageAndSendToAllSockets(sock)
+                        Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                    } catch (e: java.net.SocketException) {
+                        return@launch
+                    }
+                }
+
         }
     }
 
@@ -290,7 +300,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 var idSocket: Int? = null
                 val socketIterator = sockets.entries.iterator()
                 mutex.withLock {
-                    while (socketIterator.hasNext()) {
+                    while(socketIterator.hasNext()) {
                         val socketFromHash = socketIterator.next()
                         if (socketFromHash.value == socket) {
                             idSocket = socketFromHash.key
@@ -301,7 +311,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             sockets[id]?.close()
                         }
                         sockets.remove(idSocket)
-                        profiles.forEach { profile ->
+                        profiles.forEach {profile ->
                             if (profile.id == idSocket) {
                                 idSocket?.let { notifyWhenProfileDisconnected(profile.name, it) }
                                     ?: Log.e("server", "error when notify user disconnect")
@@ -388,7 +398,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             messageJoin.join?.avatar ?: "",
             0, null, false
         )
-        if (sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())) {
+        if(sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())){
             profile.isAdmin = true
             profiles.add(profile)
             return
@@ -408,5 +418,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         const val STOP_SERVER = "com.example.STOP_SERVER"
         private const val CHANNEL_ID = "server_connection_channel_id"
         const val SEND_REPLY = "send_reply"
+        var serverRunning = false
     }
 }
