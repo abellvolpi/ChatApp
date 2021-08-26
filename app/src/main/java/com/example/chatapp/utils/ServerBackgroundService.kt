@@ -73,7 +73,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     override fun onCreate() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, IntentFilter(STOP_SERVER))
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(receiver, IntentFilter(STOP_SERVER))
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -181,7 +182,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
                 bw.flush()
                 Log.d("service", "Sent Message")
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 Log.e("service sendToAll", e.toString())
                 removeSocket(socket.value)
                 socketIterator.remove()
@@ -241,12 +242,25 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         }
                     }
                     Message.MessageType.REVOKED.code -> {
-                        if (text != "" || text != null) {
-                            if (sockets.containsKey(text?.toInt())) {
-                                sockets[text?.toInt()]?.let { sendMessageToASocket(it, this) }
-                            } else {
+                        when (id) {
+                            3 -> {
+                                if (socket.getAddressFromSocket() == Utils.getIpAddress()) { //garante que o dono do server está expulsando alguém.
+                                    if (text != "" || text != null) {
+                                        if (sockets.containsKey(text?.toInt())) {
+                                            sockets[text?.toInt()]?.let {
+                                                sendMessageToASocket(
+                                                    it,
+                                                    this
+                                                )
+                                                removeSocket(it)
+                                            }
+                                        } else {
+                                        }
+                                    } else {
+                                    }
+                                    Log.e("Server Kick Skip", "A kick has been skipped because command not are from Admin")
+                                }
                             }
-                        } else {
                         }
                     }
                     else -> {
@@ -285,7 +299,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 var idSocket: Int? = null
                 val socketIterator = sockets.entries.iterator()
                 mutex.withLock {
-                    while(socketIterator.hasNext()) {
+                    while (socketIterator.hasNext()) {
                         val socketFromHash = socketIterator.next()
                         if (socketFromHash.value == socket) {
                             idSocket = socketFromHash.key
@@ -296,7 +310,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             sockets[id]?.close()
                         }
                         sockets.remove(idSocket)
-                        profiles.forEach {profile ->
+                        profiles.forEach { profile ->
                             if (profile.id == idSocket) {
                                 idSocket?.let { notifyWhenProfileDisconnected(profile.name, it) }
                                     ?: Log.e("server", "error when notify user disconnect")

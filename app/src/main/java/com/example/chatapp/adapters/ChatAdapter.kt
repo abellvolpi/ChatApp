@@ -2,7 +2,6 @@ package com.example.chatapp.adapters
 
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
-import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +17,7 @@ import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.viewModel.UtilsViewModel
 import kotlinx.coroutines.*
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -46,9 +46,9 @@ class ChatAdapter(
                 name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
-                    Utils.byteArrayToBitMap(it) { bitmap ->
-                        receivedImage.setImageBitmap(bitmap)
-                    }
+                    val file = File(it)
+                    val bitmap = Utils.uriToBitmap(file.toUri(), context.contentResolver)
+                    receivedImage.setImageBitmap(bitmap)
                 }
             }
         }
@@ -59,17 +59,16 @@ class ChatAdapter(
         override fun bind(msg: Message) {
             with(binding) {
                 Log.w("Imagem: ", msg.base64Data.toString())
-                name.text = msg.username
+                name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
-                    Utils.byteArrayToBitMap(it) { bitmap ->
-                        sentImage.setImageBitmap(bitmap)
-                    }
+                    val file = File(it)
+                    val bitmap = Utils.uriToBitmap(file.toUri(), context.contentResolver)
+                    sentImage.setImageBitmap(bitmap)
                 }
             }
         }
     }
-
 
     inner class ViewHolderReceivedMessage(private val binding: MessageReceivedItemBinding) :
         BaseViewHolder(binding.root) {
@@ -417,9 +416,9 @@ class ChatAdapter(
                 while (true) {
                     if (mediaPlayer.isPlaying) {
                         withContext(Dispatchers.Main) {
-                            try{
+                            try {
                                 onResult.invoke(mediaPlayer.currentPosition.toLong())
-                            }catch (e:Exception){
+                            } catch (e: Exception) {
                                 stopAudio()
                             }
                         }
@@ -447,10 +446,10 @@ class ChatAdapter(
     private fun getAudio(msg: Message, onResult: (MediaPlayer) -> Unit) {
         //        if (isHistory) {
         val an: MediaPlayer = MediaPlayer.create(
-                MainApplication.getContextInstance(),
-                Utils.getAudioFromCache(msg)?.toUri()
-            )
-            onResult.invoke(an)
+            MainApplication.getContextInstance(),
+            Utils.getAudioFromCache(msg)?.toUri()
+        )
+        onResult.invoke(an)
 //        } else {
 //            Utils.parseByteToAudio(msg.base64Data ?: "") {
 //                an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
