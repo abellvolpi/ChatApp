@@ -1,8 +1,12 @@
 package com.example.chatapp.utils
 
-import android.app.*
-import android.content.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.ContentResolver
+import android.content.Context
 import android.content.Context.AUDIO_SERVICE
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
@@ -19,7 +23,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
@@ -65,7 +68,13 @@ object Utils : CoroutineScope {
         if (fromJson != null) {
             return fromJson
         }
-        return Message(type = Message.MessageType.REVOKED.code, id = 2, text = null, base64Data = null, username = null) //server kick member because security system
+        return Message(
+            type = Message.MessageType.REVOKED.code,
+            id = 2,
+            text = null,
+            base64Data = null,
+            username = null
+        ) //server kick member because security system
     }
 
     fun createSocket(ip: String, port: Int, onResult: (Socket?) -> Unit) {
@@ -154,7 +163,11 @@ object Utils : CoroutineScope {
         )
 
         val action =
-            NotificationCompat.Action.Builder(R.drawable.ic_send_icon, context.getString(R.string.reply), replyPendingIntent)
+            NotificationCompat.Action.Builder(
+                R.drawable.ic_send_icon,
+                context.getString(R.string.reply),
+                replyPendingIntent
+            )
                 .addRemoteInput(remoteInput).build()
 
 
@@ -208,18 +221,19 @@ object Utils : CoroutineScope {
     }
 
     fun getAudioFromCache(message: Message): File? {
-        if(message.base64Data != null || message.base64Data != ""){
-            val output =
-                File(message.base64Data)
-            return output
+        if (message.base64Data != null || message.base64Data != "") {
+            return File(message.base64Data!!)
         }
         return null
     }
 
-    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit){
+    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit) {
         val context = MainApplication.getContextInstance()
         val output =
-            File(context.cacheDir.absolutePath + "/audios", "audio_${message.id}_${message.time}.mp3")
+            File(
+                context.cacheDir.absolutePath + "/audios",
+                "audio_${message.id}_${message.time}.mp3"
+            )
         val base64 = Base64.decode(message.base64Data, Base64.NO_WRAP)
         launch(Dispatchers.IO) {
             output.parentFile?.mkdirs()
@@ -230,6 +244,31 @@ object Utils : CoroutineScope {
             withContext(Dispatchers.Main) {
                 onResult.invoke(output.absolutePath)
             }
+        }
+    }
+
+    fun saveMessageImageByteToCacheDirPNG(message: Message, onResult: (String?) -> Unit) {
+        val context = MainApplication.getContextInstance()
+        if (message.base64Data != null || message.base64Data != "") {
+            val output =
+                File(
+                    context.cacheDir.absolutePath + "/images",
+                    "image_${message.id}_${message.time}.png"
+                )
+            val base64 = Base64.decode(message.base64Data, Base64.NO_WRAP)
+            launch(Dispatchers.IO) {
+                output.parentFile?.mkdirs()
+                val fos = FileOutputStream(output)
+                fos.write(base64)
+                fos.flush()
+                fos.close()
+                withContext(Dispatchers.Main) {
+                    onResult.invoke(output.absolutePath)
+                }
+            }
+        } else {
+            Log.e("Save Image to PNG", "Error because base64 data is null or empty")
+            onResult.invoke(null)
         }
     }
 

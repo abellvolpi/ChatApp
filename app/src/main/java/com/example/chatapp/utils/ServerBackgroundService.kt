@@ -39,12 +39,15 @@ class ServerBackgroundService : Service(), CoroutineScope {
     override val coroutineContext: CoroutineContext = job + Dispatchers.Main
     private var port: Int = 0
     private val mutex = Mutex()
-    private lateinit var sock : Socket
+    private lateinit var sock: Socket
+
     @Volatile
     private var id = 0
     private lateinit var password: String
+
     @Volatile
     private var sockets: HashMap<Int, Socket> = HashMap()
+
     @Volatile
     private var profiles: ArrayList<Profile> = arrayListOf()
     private var startId = 0
@@ -67,7 +70,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     override fun onCreate() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, IntentFilter(STOP_SERVER))
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(receiver, IntentFilter(STOP_SERVER))
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -164,17 +168,17 @@ class ServerBackgroundService : Service(), CoroutineScope {
         val socketIterator = sockets.entries.iterator()
         while (socketIterator.hasNext()) {
             val socket = socketIterator.next()
-                try {
-                    val bw = DataOutputStream(socket.value.getOutputStream())
-                    bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-                    bw.flush()
-                    Log.d("service", "Sent Message")
-                } catch (e: Exception) {
-                    Log.e("service sendToAll", e.toString())
-                    removeSocket(socket.value)
-                    socketIterator.remove()
-                }
+            try {
+                val bw = DataOutputStream(socket.value.getOutputStream())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+                bw.flush()
+                Log.d("service", "Sent Message")
+            } catch (e: Exception) {
+                Log.e("service sendToAll", e.toString())
+                removeSocket(socket.value)
+                socketIterator.remove()
             }
+        }
     }
 
     @Synchronized
@@ -229,12 +233,25 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         }
                     }
                     Message.MessageType.REVOKED.code -> {
-                        if (text != "" || text != null) {
-                            if (sockets.containsKey(text?.toInt())) {
-                                sockets[text?.toInt()]?.let { sendMessageToASocket(it, this) }
-                            } else {
+                        when (id) {
+                            3 -> {
+                                if (socket.getAddressFromSocket() == Utils.getIpAddress()) { //garante que o dono do server está expulsando alguém.
+                                    if (text != "" || text != null) {
+                                        if (sockets.containsKey(text?.toInt())) {
+                                            sockets[text?.toInt()]?.let {
+                                                sendMessageToASocket(
+                                                    it,
+                                                    this
+                                                )
+                                                removeSocket(it)
+                                            }
+                                        } else {
+                                        }
+                                    } else {
+                                    }
+                                    Log.e("Server Kick Skip", "A kick has been skipped because command not are from Admin")
+                                }
                             }
-                        } else {
                         }
                     }
                     else -> {
@@ -273,7 +290,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 var idSocket: Int? = null
                 val socketIterator = sockets.entries.iterator()
                 mutex.withLock {
-                    while(socketIterator.hasNext()) {
+                    while (socketIterator.hasNext()) {
                         val socketFromHash = socketIterator.next()
                         if (socketFromHash.value == socket) {
                             idSocket = socketFromHash.key
@@ -284,7 +301,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             sockets[id]?.close()
                         }
                         sockets.remove(idSocket)
-                        profiles.forEach {profile ->
+                        profiles.forEach { profile ->
                             if (profile.id == idSocket) {
                                 idSocket?.let { notifyWhenProfileDisconnected(profile.name, it) }
                                     ?: Log.e("server", "error when notify user disconnect")
@@ -371,7 +388,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             messageJoin.join?.avatar ?: "",
             0, null, false
         )
-        if(sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())){
+        if (sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())) {
             profile.isAdmin = true
             profiles.add(profile)
             return

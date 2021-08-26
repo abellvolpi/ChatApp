@@ -161,7 +161,6 @@ class ChatFragment : Fragment() {
             validReceivedMessage(it.first)
             connectionFactory.lastLine = it.second
         }
-
     }
 
     private fun initView() {
@@ -312,40 +311,45 @@ class ChatFragment : Fragment() {
 //                messageViewModel.insertMessage(message)
 //            }
 //        }
-        refreshUIChatAndSaveMessageInToRoom(message)
+        if(message.type != Message.MessageType.JOIN.code) {
+            refreshUIChatAndSaveMessageInToRoom(message)
+        }
+    }
+
+    private fun refreshUiChat(message: Message) {
+        adapter.addData(message)
+        if (message.status == Message.MessageStatus.SENT.code) {
+            binding.messagesRecyclerview.scrollToPosition(data.size - 1)
+
+        } else {
+            binding.messagesRecyclerview.apply {
+                if (!canScrollVertically(1)) {
+                    scrollToPosition(data.size - 1)
+                }
+            }
+        }
+
     }
 
     private fun refreshUIChatAndSaveMessageInToRoom(message: Message) {
-        if (message.type == Message.MessageType.AUDIO.code) {
-            Utils.saveMessageAudioByteToCacheDir(message) {
-                message.base64Data = it
-                if (message.status == Message.MessageStatus.SENT.code) {
-                    binding.messagesRecyclerview.scrollToPosition(data.size - 1)
-                    adapter.addData(message)
+        when (message.type) {
+            Message.MessageType.AUDIO.code -> {
+                Utils.saveMessageAudioByteToCacheDir(message) {
+                    message.base64Data = it
+                    refreshUiChat(message)
                     messageViewModel.insertMessage(message)
-                }else {
-                    adapter.addData(message)
-                    messageViewModel.insertMessage(message)
-                    binding.messagesRecyclerview.apply {
-                        if (!canScrollVertically(1)) {
-                            scrollToPosition(data.size - 1)
-                        }
-                    }
                 }
             }
-            return
-        }
-        if (message.status == Message.MessageStatus.SENT.code) {
-            binding.messagesRecyclerview.scrollToPosition(data.size - 1)
-            adapter.addData(message)
-            messageViewModel.insertMessage(message)
-            return
-        }
-        adapter.addData(message)
-        messageViewModel.insertMessage(message)
-        binding.messagesRecyclerview.apply {
-            if (!canScrollVertically(1)) {
-                scrollToPosition(data.size - 1)
+            Message.MessageType.IMAGE.code -> {
+                Utils.saveMessageImageByteToCacheDirPNG(message) {
+                    message.base64Data = it
+                    refreshUiChat(message)
+                    messageViewModel.insertMessage(message)
+                }
+            }
+            else -> {
+                refreshUiChat(message)
+                messageViewModel.insertMessage(message)
             }
         }
     }
@@ -417,14 +421,15 @@ class ChatFragment : Fragment() {
                                 val profile =
                                     Profile(id, username ?: "", it, 0, true, join?.isAdmin)
                                 profileViewModel.insert(profile)
+//                                refreshUIChatAndSaveMessageInToRoom(this)
                             }
                         } else {
                             val profile = Profile(id, username ?: "", "", 0, true, join.isAdmin)
                             profileViewModel.insert(profile)
+//                            refreshUIChatAndSaveMessageInToRoom(this)
                         }
-                        refreshUIChatAndSaveMessageInToRoom(this)
                     }
-
+                    refreshUIChatAndSaveMessageInToRoom(this)
                 } else {
                     Log.e("chatNotRefresh", "an error occurred because id is null")
                     Log.e("database", "error when insert profile, id is null")
@@ -539,20 +544,29 @@ class ChatFragment : Fragment() {
     }
 
     private fun empyHistoryCache() {
-        val file = File(
+        File(
             MainApplication.getContextInstance().cacheDir.absolutePath,
             "/photosProfile"
-        )
-        if (file.exists()) {
-            file.listFiles()?.forEach {
-                it.delete()
+        ).apply {
+            if (exists()) {
+                listFiles()?.forEach {
+                    it.delete()
+                }
             }
         }
 
-        val fileAudio = File(MainApplication.getContextInstance().cacheDir.absolutePath, "audios")
-        if (fileAudio.exists()) {
-            file.listFiles()?.forEach {
-                it.delete()
+        File(MainApplication.getContextInstance().cacheDir.absolutePath, "audios").apply {
+            if (exists()) {
+                listFiles()?.forEach {
+                    it.delete()
+                }
+            }
+        }
+        File(MainApplication.getContextInstance().cacheDir.absolutePath, "images").apply {
+            if (exists()) {
+                listFiles()?.forEach {
+                    it.delete()
+                }
             }
         }
     }
