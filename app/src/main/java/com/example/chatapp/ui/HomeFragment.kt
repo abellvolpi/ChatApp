@@ -17,10 +17,13 @@ import android.widget.RadioButton
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.chatapp.R
@@ -66,7 +69,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                 imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
             }
             launch(Dispatchers.Main) {
-                uri?.let { binding.photo.setImageURI(it)}
+                uri?.let { binding.photo.setImageURI(it) }
             }
         }
     }
@@ -102,6 +105,7 @@ class HomeFragment : Fragment(), CoroutineScope {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         super.onViewCreated(view, savedInstanceState)
         with(binding) {
             val ip = args.ip
@@ -140,11 +144,19 @@ class HomeFragment : Fragment(), CoroutineScope {
         with(binding) {
 
             photo.setOnClickListener {
+                val extras = FragmentNavigatorExtras(photo to "image_big")
+                navController.navigate(
+                    R.id.action_homeFragment_to_imageFragment,
+                    null,
+                    null,
+                    extras
+                )
+
+
 //                var drawable = photo.drawable.toBitmap()
 //                Utils.openImageLikeDialog(requireContext(), drawable)
-                zoomImageFromThumb(photo,photo.drawable)
 
-
+//                zoomImageFromThumb(photo,photo.drawable)
             }
             connect.setOnClickListener {
                 if (!isEditTextIsEmpty()) {
@@ -244,6 +256,7 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
         }
     }
+
     private fun zoomImageFromThumb(thumbView: View, imageDrawable: Drawable) {
         // If there's an animation in progress, cancel it
         // immediately and proceed with this one.
@@ -311,10 +324,11 @@ class HomeFragment : Fragment(), CoroutineScope {
         currentAnimator = AnimatorSet().apply {
             play(
                 ObjectAnimator.ofFloat(
-                expandedImageView,
-                View.X,
-                startBounds.left,
-                finalBounds.left)
+                    expandedImageView,
+                    View.X,
+                    startBounds.left,
+                    finalBounds.left
+                )
             ).apply {
                 with(ObjectAnimator.ofFloat(expandedImageView, View.Y, startBounds.top, finalBounds.top))
                 with(ObjectAnimator.ofFloat(expandedImageView, View.SCALE_X, startScale, 1f))

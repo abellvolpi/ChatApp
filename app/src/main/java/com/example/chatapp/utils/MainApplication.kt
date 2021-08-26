@@ -28,8 +28,7 @@ class MainApplication : Application(), LifecycleObserver {
 
     companion object {
 
-
-        private lateinit var instance: Context
+        private lateinit var instance: Application
         private var isBackground: Boolean = false
 
         fun getContextInstance(): Context {

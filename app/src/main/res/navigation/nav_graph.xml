@@ -47,6 +47,9 @@
         <deepLink
             android:id="@+id/deepLink"
             app:uri="www.mychatapp.com/home/{ip}:{port}" />
+        <action
+            android:id="@+id/action_homeFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
 
     </fragment>
     <fragment
@@ -166,5 +169,10 @@
             app:popUpTo="@id/shareLinkBottomSheetDialogFragment"
             app:popUpToInclusive="true"/>
     </dialog>
+    <fragment
+        android:id="@+id/imageFragment"
+        android:name="com.example.chatapp.customDialog.ImageFragment"
+        android:label="fragment_image"
+        tools:layout="@layout/fragment_image" />
 
 </navigation>

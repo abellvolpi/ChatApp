@@ -89,7 +89,6 @@
     <string name="choose_port">Choose a port:</string>
 
 
-
     <!--    ServerBackgroundService-->
 
     <string name="player_disconnected">%s has disconnected</string>

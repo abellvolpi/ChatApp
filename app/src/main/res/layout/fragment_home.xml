@@ -49,13 +49,14 @@
             android:layout_marginBottom="4dp">
 
             <com.google.android.material.imageview.ShapeableImageView
+                android:transitionName="image_small"
                 android:id="@+id/photo"
                 android:layout_width="110dp"
                 android:layout_height="110dp"
                 android:layout_marginHorizontal="10dp"
                 android:layout_marginBottom="20dp"
                 android:padding="1dp"
-                android:src="@drawable/ic_profile"
+                app:srcCompat="@drawable/ic_profile"
                 app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
                 app:strokeColor="@color/blue_2"
                 app:strokeWidth="2dp" />
