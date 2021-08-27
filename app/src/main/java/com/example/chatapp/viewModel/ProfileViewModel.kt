@@ -45,7 +45,9 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
             controller.insert(profile)
             val list = profiles.value?: arrayListOf()
             list.add(profile)
-            profiles.postValue(list)
+            withContext(Dispatchers.Main) {
+                profiles.postValue(list)
+            }
         }
     }
 
@@ -63,7 +65,10 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
 
     fun getProfile(id: String, onResult: (Profile?) -> Unit) {
         launch(Dispatchers.IO) {
-            onResult.invoke(controller.getById(id))
+            val profile = controller.getById(id)
+            withContext(Dispatchers.Main){
+                onResult.invoke(profile)
+            }
         }
     }
 

@@ -30,6 +30,7 @@ import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
+import com.example.chatapp.room.withs.MessagesWithProfile
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -139,7 +140,7 @@ class ChatFragment : Fragment() {
     private fun initView() {
         readMessageMissed()
         with(binding) {
-            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner, false)
+            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
             messagesRecyclerview.adapter = adapter
             messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
             if (!isHistoryCall) {
@@ -379,7 +380,7 @@ class ChatFragment : Fragment() {
                             refreshUIChatAndSaveMessageInToRoom(this)
                         }
                     } else {
-                        if (join?.avatar != "" || join?.avatar != null) {
+                        if (join?.avatar != "" || join.avatar != null) {
                             saveAvatarToCacheDir(id, join?.avatar ?: "") {
                                 val profile =
                                     Profile(id, username ?: "", it, 0, true, join?.isAdmin)
@@ -814,7 +815,7 @@ class ChatFragment : Fragment() {
             messageViewModel.getAllMessages {
                 val arrayList = arrayListOf<Message>()
                 arrayList.addAll(it)
-                adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner, true)
+                adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner)
                 messagesRecyclerview.adapter = adapter
                 messagesRecyclerview.apply {
                     layoutManager = LinearLayoutManager(requireContext())

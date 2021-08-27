@@ -2,6 +2,7 @@ package com.example.chatapp.room.message.dao
 
 import androidx.room.*
 import com.example.chatapp.models.Message
+import com.example.chatapp.room.withs.MessagesWithProfile
 
 @Dao
 interface MessageDao {
@@ -20,5 +21,9 @@ interface MessageDao {
 
     @Query("DELETE FROM Message")
     fun deleteAll()
+
+    @Transaction
+    @Query("Select * From message")
+    fun getMessagesWithProfile(): List<MessagesWithProfile>
 
 }
