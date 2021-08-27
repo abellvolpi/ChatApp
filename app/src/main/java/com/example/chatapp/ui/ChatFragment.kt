@@ -117,33 +117,6 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig =
             BottomSheetBehavior.from(requireView().findViewById(R.id.bottom_sheet))
         bottomSheetForConfig.peekHeight = 150
-
-        with(binding) {
-            chatToolbar.apply {
-                setOnClickListener {
-                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-                }
-                overflowIcon =
-                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-                inflateMenu(R.menu.chat_menu)
-                setOnMenuItemClickListener { item ->
-                    when (item?.itemId) {
-                        R.id.perfil -> {
-                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                        }
-                        R.id.share_link -> {
-                            navController.navigate(
-                                ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
-                                    connectionFactory.getIpHost(),
-                                    connectionFactory.getIpPort().toInt()
-                                )
-                            )
-                        }
-                    }
-                    true
-                }
-            }
-        }
     }
 
     private fun readMessageMissed() {
@@ -180,13 +153,6 @@ class ChatFragment : Fragment() {
                             connectionFactory.isRead.remove(it.second)
                         }
                     }
-//                    else {
-//                        val action =
-//                            com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
-//                                Message.ACTION_DISCONNECTED
-//                            )
-//                        navController.navigate(action)
-//                    }
                 }
                 connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                     if (it == false) {

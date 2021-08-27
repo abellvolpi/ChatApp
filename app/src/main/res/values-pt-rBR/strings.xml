@@ -47,6 +47,7 @@
     <string name="share">Compartilhar:</string>
     <string name="generate_qr_code">Gerar\nQrCode</string>
     <string name="share_link">Compartilhar\nLink</string>
+    <string name="admin">Admin</string>
     <string name="server_already_initialized">Servidor já iniciado</string>
     <string name="admin">Admin</string>
 </resources>

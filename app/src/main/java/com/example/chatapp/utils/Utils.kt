@@ -235,7 +235,7 @@ object Utils : CoroutineScope {
         return null
     }
 
-    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit) {
+    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit){
         val context = MainApplication.getContextInstance()
         val output =
             File(
