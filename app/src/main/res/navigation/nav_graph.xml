@@ -85,6 +85,9 @@
         <action
             android:id="@+id/action_chatFragment_to_shareLinkBottomSheetDialogFragment"
             app:destination="@id/shareLinkBottomSheetDialogFragment" />
+        <action
+            android:id="@+id/action_chatFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -173,6 +176,13 @@
         android:id="@+id/imageFragment"
         android:name="com.example.chatapp.customDialog.ImageFragment"
         android:label="fragment_image"
-        tools:layout="@layout/fragment_image" />
+        tools:layout="@layout/fragment_image" >
+
+        <argument
+            android:name="image"
+            />
+
+
+    </fragment>
 
 </navigation>
