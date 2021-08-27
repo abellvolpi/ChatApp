@@ -44,7 +44,7 @@
     <TextView
         android:id="@+id/adminTitle"
         android:layout_width="0dp"
-        tools:text="Admin"
+        android:text="@string/admin"
         android:textStyle="bold"
         android:textSize="17sp"
         android:textColor="?android:colorPrimary"

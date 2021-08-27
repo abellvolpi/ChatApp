@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="5dp"
+    android:layout_marginStart="10dp"
     android:orientation="horizontal"
     android:gravity="start">
 
@@ -12,7 +13,6 @@
         android:id="@+id/childLinearLayoutChat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:minWidth="100dp"
         android:orientation="vertical"
         android:background="@drawable/received_message_shape">
@@ -38,10 +38,12 @@
 
         <TextView
             android:id="@+id/time"
-            android:layout_width="match_parent"
+            tools:text="14:33"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="20dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="30dp"
-            android:textAlignment="viewStart"
+            android:layout_gravity="end"
             android:textColor="@color/grey"
             android:textStyle="italic"/>
     </LinearLayout>

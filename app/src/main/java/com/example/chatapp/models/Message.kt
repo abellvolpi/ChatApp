@@ -22,7 +22,7 @@ class Message(
     var messageId : Int? =null
 
     @JsonClass(generateAdapter = true)
-    data class Join(val avatar: String?, val password: String?, val isAdmin : Boolean): Serializable
+    data class Join(val avatar: String?, val password: String?, val isAdmin : Boolean?): Serializable
 
 
     companion object{

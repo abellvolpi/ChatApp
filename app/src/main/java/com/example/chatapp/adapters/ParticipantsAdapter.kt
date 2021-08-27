@@ -61,7 +61,7 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                     }
                 }
                 if(profile.isAdmin == true){
-                    adminTitle.visibility = View.GONE
+                    adminTitle.visibility = View.VISIBLE
                 }else{
                     adminTitle.visibility = View.INVISIBLE
                 }
