@@ -179,13 +179,14 @@ class ChatFragment : Fragment() {
                             connectionFactory.lastLine = it.second
                             connectionFactory.isRead.remove(it.second)
                         }
-                    } else {
-                        val action =
-                            com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
-                                Message.ACTION_DISCONNECTED
-                            )
-                        navController.navigate(action)
                     }
+//                    else {
+//                        val action =
+//                            com.example.chatapp.ui.ChatFragmentDirections.actionChatFragmentToHomeFragment(
+//                                Message.ACTION_DISCONNECTED
+//                            )
+//                        navController.navigate(action)
+//                    }
                 }
                 connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                     if (it == false) {
@@ -303,14 +304,6 @@ class ChatFragment : Fragment() {
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-//        when (message.type) {
-//            Message.MessageType.AUDIO.code -> {
-//                messageViewModel.insertMessage(message)
-//            }
-//            else -> {
-//                messageViewModel.insertMessage(message)
-//            }
-//        }
         if(message.type != Message.MessageType.JOIN.code) {
             refreshUIChatAndSaveMessageInToRoom(message)
         }
@@ -320,7 +313,6 @@ class ChatFragment : Fragment() {
         adapter.addData(message)
         if (message.status == Message.MessageStatus.SENT.code) {
             binding.messagesRecyclerview.scrollToPosition(data.size - 1)
-
         } else {
             binding.messagesRecyclerview.apply {
                 if (!canScrollVertically(1)) {
@@ -346,6 +338,10 @@ class ChatFragment : Fragment() {
                     refreshUiChat(message)
                     messageViewModel.insertMessage(message)
                 }
+            }
+            Message.MessageType.JOIN.code ->{
+                refreshUiChat(message)
+                messageViewModel.insertMessage(message)
             }
             else -> {
                 refreshUiChat(message)
@@ -374,7 +370,7 @@ class ChatFragment : Fragment() {
                     }
                     3 -> returnToHomeFragmentWithMessage("Admin kicked you")
                 }
-                return@with
+                return
             }
             if (type == Message.MessageType.ACKNOWLEDGE.code) {
                 if (id != null) {
@@ -414,6 +410,7 @@ class ChatFragment : Fragment() {
                             val profile =
                                 Profile(id, username ?: "", it, 0, true, join?.isAdmin)
 //                            profileViewModel.insert(profile)
+                            refreshUIChatAndSaveMessageInToRoom(this)
                         }
                     } else {
                         if (join?.avatar != "" || join?.avatar != null) {
@@ -422,14 +419,15 @@ class ChatFragment : Fragment() {
                                     Profile(id, username ?: "", it, 0, true, join?.isAdmin)
                                 profileViewModel.insert(profile)
 //                                refreshUIChatAndSaveMessageInToRoom(this)
+                                refreshUIChatAndSaveMessageInToRoom(this)
                             }
                         } else {
                             val profile = Profile(id, username ?: "", "", 0, true, join.isAdmin)
                             profileViewModel.insert(profile)
 //                            refreshUIChatAndSaveMessageInToRoom(this)
+                            refreshUIChatAndSaveMessageInToRoom(this)
                         }
                     }
-                    refreshUIChatAndSaveMessageInToRoom(this)
                 } else {
                     Log.e("chatNotRefresh", "an error occurred because id is null")
                     Log.e("database", "error when insert profile, id is null")
@@ -457,7 +455,7 @@ class ChatFragment : Fragment() {
                         "error when delete profile because id from server is null"
                     )
                 }
-                return@with
+                return
             }
             if (id == profileId) {
                 if (status == Message.MessageStatus.RECEIVED.code) {
@@ -486,6 +484,7 @@ class ChatFragment : Fragment() {
                     when (type) {
                         Message.MessageType.MESSAGE.code -> {
                             refreshUIChatAndSaveMessageInToRoom(this)
+                            Log.i("received", "Received Message")
                         }
                         Message.MessageType.AUDIO.code -> {
                             refreshUIChatAndSaveMessageInToRoom(this)
@@ -509,8 +508,10 @@ class ChatFragment : Fragment() {
                         Message.MessageType.TICINVITE.code -> {
                             receiveInviteTicTacToe(username ?: "Error username")
                         }
+                        else -> refreshUIChatAndSaveMessageInToRoom(this)
                     }
                 }
+                else -> false
             }
 
 //            when(type){

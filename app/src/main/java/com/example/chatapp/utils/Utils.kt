@@ -87,7 +87,9 @@ object Utils : CoroutineScope {
         launch(Dispatchers.IO) {
             delay(2000)
             try {
-                val socket = Socket(ip, port)
+                val socket = Socket(ip, port).apply {
+                    soTimeout = 1500
+                }
                 withContext(Dispatchers.Main) {
                     onResult.invoke(socket)
                 }
@@ -326,11 +328,11 @@ object Utils : CoroutineScope {
     }
 
 
-    fun uriToBitmap(uri: Uri?, contentResolver: ContentResolver): Bitmap {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && uri != null) {
+    fun uriToBitmap(uri: Uri, contentResolver: ContentResolver): Bitmap {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
         } else {
-            BitmapFactory.decodeFileDescriptor(uri?.let {
+            BitmapFactory.decodeFileDescriptor(uri.let {
                 contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
             })
         }

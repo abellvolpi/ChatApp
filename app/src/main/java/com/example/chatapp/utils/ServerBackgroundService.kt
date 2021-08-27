@@ -11,7 +11,6 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -21,7 +20,6 @@ import com.example.chatapp.models.Profile
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.toSHA256
-import com.google.android.material.snackbar.Snackbar
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -155,19 +153,19 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
     private fun serverConnecting(port: Int) {
         launch(Dispatchers.IO) {
-                serverSocket = ServerSocket(port)
-                serverSocket.reuseAddress = true
-                serverRunning = true
-                while (true) {
-                    try {
-                        sock = serverSocket.accept()
-                        sock.soTimeout = 1500
-                        readMessageAndSendToAllSockets(sock)
-                        Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
-                    } catch (e: java.net.SocketException) {
-                        return@launch
-                    }
+            serverSocket = ServerSocket(port)
+            serverSocket.reuseAddress = true
+            serverRunning = true
+            while (true) {
+                try {
+                    sock = serverSocket.accept()
+                    sock.soTimeout = 1500
+                    readMessageAndSendToAllSockets(sock)
+                    Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                } catch (e: java.net.SocketException) {
+                    return@launch
                 }
+            }
 
         }
     }
@@ -178,10 +176,19 @@ class ServerBackgroundService : Service(), CoroutineScope {
         while (socketIterator.hasNext()) {
             val socket = socketIterator.next()
             try {
-                val bw = DataOutputStream(socket.value.getOutputStream())
-                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-                bw.flush()
-                Log.d("service", "Sent Message")
+                if (message.type != Message.MessageType.JOIN.code) {
+                    if (socket.key != message.id) {
+                        val bw = DataOutputStream(socket.value.getOutputStream())
+                        bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+                        bw.flush()
+                        Log.d("service", "Sent Message")
+                    }
+                } else {
+                    val bw = DataOutputStream(socket.value.getOutputStream())
+                    bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+                    bw.flush()
+                    Log.d("service", "Sent Message")
+                }
             } catch (e: Exception) {
                 Log.e("service sendToAll", e.toString())
                 removeSocket(socket.value)
@@ -190,7 +197,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    @Synchronized
     private fun readMessageAndSendToAllSockets(socket: Socket) {
         launch(Dispatchers.IO) {
             while (true) {
@@ -258,7 +264,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                         }
                                     } else {
                                     }
-                                    Log.e("Server Kick Skip", "A kick has been skipped because command not are from Admin")
+                                    Log.e(
+                                        "Server Kick Skip",
+                                        "A kick has been skipped because command not are from Admin"
+                                    )
                                 }
                             }
                         }
@@ -397,7 +406,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             messageJoin.join?.avatar ?: "",
             0, null, false
         )
-        if(sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())){
+        if (sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())) {
             profile.isAdmin = true
             profiles.add(profile)
             return
