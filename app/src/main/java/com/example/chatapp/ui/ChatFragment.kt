@@ -228,37 +228,41 @@ class ChatFragment : Fragment() {
                 }
 
                 buttonSend.setOnClickListener {
-                    if (sentImageFrameLayout.visibility == View.VISIBLE) {
-                        val bitmap = sentImage.drawable.toBitmap()
-                        val base64 = Utils.bitmapToByteArrayToString(bitmap)
-                        val message = Message(
-                            Message.MessageType.IMAGE.code,
-                            id = profileId,
-                            base64Data = base64,
-                            text = null,
-                            username = profileName
-                        )
-                        sendMessageSocket(message)
-                        restartUI()
-
-                    } else if (messageField.text.isNotBlank()) {
-                        val message =
-                            Message(
-                                Message.MessageType.MESSAGE.code,
-                                username = profileName,
-                                text = messageField.text.toString(),
+                    when {
+                        sentImageFrameLayout.visibility == View.VISIBLE -> {
+                //       val bitmap = sentImage.drawable.toBitmap()
+                            val base64 = Utils.bitmapToByteArray3(sentImage.drawable)
+                            val message = Message(
+                                Message.MessageType.IMAGE.code,
                                 id = profileId,
-                                base64Data = null
+                                base64Data = base64,
+                                text = null,
+                                username = profileName
                             )
-                        sendMessageSocket(message)
-                        messageField.text.clear()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.message_blank,
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
+                            sendMessageSocket(message)
+                            restartUI()
+
+                        }
+                        messageField.text.isNotBlank() -> {
+                            val message =
+                                Message(
+                                    Message.MessageType.MESSAGE.code,
+                                    username = profileName,
+                                    text = messageField.text.toString(),
+                                    id = profileId,
+                                    base64Data = null
+                                )
+                            sendMessageSocket(message)
+                            messageField.text.clear()
+                        }
+                        else -> {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.message_blank,
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                        }
                     }
                 }
                 inflateToolBarOptions()

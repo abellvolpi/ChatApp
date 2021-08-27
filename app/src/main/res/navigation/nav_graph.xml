@@ -176,13 +176,7 @@
         android:id="@+id/imageFragment"
         android:name="com.example.chatapp.customDialog.ImageFragment"
         android:label="fragment_image"
-        tools:layout="@layout/fragment_image" >
+        tools:layout="@layout/fragment_image" />
 
-        <argument
-            android:name="image"
-            />
-
-
-    </fragment>
 
 </navigation>

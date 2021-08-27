@@ -41,7 +41,7 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentCameraQrCodeScanBinding.inflate(inflater, container, false)
-        checkPermission(android.Manifest.permission.CAMERA, CAMERA_PERMISSION)
+        checkPermission()
         return binding.root
     }
 
@@ -55,13 +55,13 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
         binding.qrcodeCamera.startCamera()
     }
 
-    private fun checkPermission(permission: String, requestCode: Int) {
+    private fun checkPermission() {
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
-                permission
+                android.Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_DENIED
         ) {
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(permission), requestCode)
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.CAMERA), CAMERA_PERMISSION)
         }
     }
 
@@ -78,24 +78,26 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
                 connectionFactory.setSocket(it)
                 profileViewModel.deleteAll {
                     var image = ""
-                    val bitmap = ProfileSharedProfile.getProfilePhoto()
-                    if (bitmap != null) {
-                        image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                    ProfileSharedProfile.getProfilePhoto { bitmap ->
+                        if (bitmap != null) {
+                            image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                        }
+                        val message = Message(
+                            type = Message.MessageType.JOIN.code,
+                            username = ProfileSharedProfile.getProfile(),
+                            text = null,
+                            base64Data = null,
+                            join = Message.Join(
+                                avatar = image,
+                                password = "".toSHA256(),
+                                false
+                            ),
+                            id = null
+                        )
+                        val action =
+                            CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(message, false)
+                        findNavController().navigate(action)
                     }
-                    val message = Message(
-                        type = Message.MessageType.JOIN.code,
-                        username = ProfileSharedProfile.getProfile(),
-                        text = null,
-                        base64Data = null,
-                        join = Message.Join(
-                            avatar = image,
-                            password = "".toSHA256(),
-                        false),
-                        id = null
-                    )
-                    val action =
-                        CameraQrCodeScanDirections.actionCameraQrCodeScanToChatFragment(message, false)
-                    findNavController().navigate(action)
                 }
             } else {
                 val snackBar =

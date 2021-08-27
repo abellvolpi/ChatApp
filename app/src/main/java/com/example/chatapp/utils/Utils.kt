@@ -235,7 +235,7 @@ object Utils : CoroutineScope {
         return null
     }
 
-    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit){
+    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit) {
         val context = MainApplication.getContextInstance()
         val output =
             File(
@@ -304,10 +304,10 @@ object Utils : CoroutineScope {
     }
 
     fun bitmapToByteArrayToString(bitmap: Bitmap): String {
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
+//        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
         val byteArrayOutputStream = ByteArrayOutputStream()
 //        bitmap.compress(Bitmap.CompressFormat.PNG,10,byteArrayOutputStream)
-        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
@@ -319,48 +319,26 @@ object Utils : CoroutineScope {
         return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
     }
 
-    fun bitmapToByteArray3(image: Drawable, onResult: (String) -> Unit) {
+    fun bitmapToByteArray3(image: Drawable): String {
         val bitmap = (image as BitmapDrawable).bitmap
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
         val encoded = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
-        onResult.invoke(encoded)
+        return encoded
     }
 
 
-    fun uriToBitmap(uri: Uri, contentResolver: ContentResolver): Bitmap {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
-        } else {
-            BitmapFactory.decodeFileDescriptor(uri.let {
-                contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
-            })
-        }
-    }
-
-    fun openImageLikeDialog(context: Context, bitmap: Bitmap) {
-        val builder = Dialog(context, android.R.style.Theme_Light)
-        val imageView = ImageView(context).apply {
-            setImageBitmap(bitmap)
-        }
-        builder.apply {
-            requestWindowFeature(Window.FEATURE_NO_TITLE)
-            window?.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            window?.setBackgroundDrawable(
-                ColorDrawable(
-                    android.graphics.Color.WHITE
-                )
-            )
-            addContentView(
-                imageView, RelativeLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-            )
-            show()
+    fun uriToBitmap(uri: Uri, contentResolver: ContentResolver, onResult: (Bitmap) -> Unit){
+        launch(Dispatchers.IO) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val image = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
+                onResult.invoke(image)
+            } else {
+                val image = BitmapFactory.decodeFileDescriptor(uri.let {
+                    contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
+                })
+                onResult.invoke(image)
+            }
         }
     }
 }

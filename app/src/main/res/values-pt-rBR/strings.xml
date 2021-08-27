@@ -49,5 +49,6 @@
     <string name="share_link">Compartilhar\nLink</string>
     <string name="admin">Admin</string>
     <string name="server_already_initialized">Servidor já iniciado</string>
-    <string name="admin">Admin</string>
+    <string name="profile_photo">Foto de Perfil</string>
+
 </resources>
