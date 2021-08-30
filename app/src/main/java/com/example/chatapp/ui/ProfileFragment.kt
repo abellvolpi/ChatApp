@@ -33,11 +33,12 @@ class ProfileFragment : Fragment(), CoroutineScope {
             ActivityResultContracts.GetContent()
         ) { uri ->
             launch(Dispatchers.Default) {
-                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
-                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+//                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+//                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+                uri?.let { ProfileSharedProfile.saveUriProfilePhoto(uri) }
             }
             launch(Dispatchers.Main) {
-                binding.photo.setImageURI(uri)
+                uri?.let { binding.photo.setImageURI(it) }
             }
         }
     }
@@ -53,8 +54,9 @@ class ProfileFragment : Fragment(), CoroutineScope {
         with(binding){
 
             username.text = ProfileSharedProfile.getProfile()
-            if (ProfileSharedProfile.getProfilePhoto() != null) {
-                binding.photo.setImageBitmap(ProfileSharedProfile.getProfilePhoto())
+            if (ProfileSharedProfile.getUriProfilePhoto() != null) {
+                val a = ProfileSharedProfile.getUriProfilePhoto()
+                binding.photo.setImageURI(ProfileSharedProfile.getUriProfilePhoto())
             }
 
             floatingEditButton.setOnClickListener {

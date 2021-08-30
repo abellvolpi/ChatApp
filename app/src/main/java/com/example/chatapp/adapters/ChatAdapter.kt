@@ -54,8 +54,9 @@ class ChatAdapter(
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
                     val file = File(it)
-                    val bitmap = Utils.uriToBitmap(file.toUri(), context.contentResolver)
-                    receivedImage.setImageBitmap(bitmap)
+                    Utils.uriToBitmap(file.toUri(), context.contentResolver) { bitmap ->
+                        receivedImage.setImageBitmap(bitmap)
+                    }
                 }
             }
         }
@@ -70,8 +71,9 @@ class ChatAdapter(
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
                     val file = File(it)
-                    val bitmap = Utils.uriToBitmap(file.toUri(), context.contentResolver)
-                    sentImage.setImageBitmap(bitmap)
+                    Utils.uriToBitmap(file.toUri(), context.contentResolver) { bitmap ->
+                        sentImage.setImageBitmap(bitmap)
+                    }
                 }
             }
         }
