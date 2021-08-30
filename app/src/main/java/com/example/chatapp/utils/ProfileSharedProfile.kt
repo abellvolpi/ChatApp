@@ -76,7 +76,7 @@ object ProfileSharedProfile : CoroutineScope {
             apply()
         }
         launch(Dispatchers.Default) {
-            Utils.uriToBitmap(imageUri, context.contentResolver){
+            Utils.uriToBitmap(imageUri, context.contentResolver) {
                 saveProfilePhoto(it)
             }
         }
@@ -92,20 +92,14 @@ object ProfileSharedProfile : CoroutineScope {
 //        return BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
 //    }
 
-    fun getProfilePhoto(onResult: (Bitmap?) -> Unit){
-
+    fun getProfilePhoto(onResult: (Bitmap?) -> Unit) {
         val sharedPreferences = getSharedProfile()
-        val uri = sharedPreferences.getString("imageUri", "NO IMAGE SAVED")
-        if (uri == "NO IMAGE SAVED") {
+        val bitmap = sharedPreferences.getString("image", "NO IMAGE SAVED")
+        if (bitmap == "NO IMAGE SAVED") {
             onResult.invoke(null)
-        }
-        var result: Bitmap
-        uri?.let { uri->
-            Utils.uriToBitmap(uri.toUri(), context.contentResolver) { bitmap ->
-                val bitmapString = bitmap.toString()
-                result = BitmapFactory.decodeByteArray(Base64.decode(bitmapString, 0), 0, Base64.decode(bitmapString, 0).size)
-                onResult.invoke(result)
-            }
+        } else {
+            val result = BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
+            onResult.invoke(result)
         }
     }
 

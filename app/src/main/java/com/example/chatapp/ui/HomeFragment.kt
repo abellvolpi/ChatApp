@@ -62,7 +62,9 @@ class HomeFragment : Fragment(), CoroutineScope {
             launch(Dispatchers.Default) {
 //                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
 //                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+
                 uri?.let { ProfileSharedProfile.saveUriProfilePhoto(uri) }
+
             }
             launch(Dispatchers.Main) {
                 uri?.let { binding.photo.setImageURI(it) }
@@ -221,7 +223,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     messageViewModel.deleteAll {
                         profileViewModel.deleteAll {
                             var image = ""
-                            val bitmap = ProfileSharedProfile.getProfilePhoto { bitmap ->
+                            ProfileSharedProfile.getProfilePhoto { bitmap ->
                                 if (bitmap != null) {
                                     image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
                                 }

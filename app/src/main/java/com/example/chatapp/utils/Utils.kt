@@ -1,6 +1,5 @@
 package com.example.chatapp.utils
 
-import android.app.Dialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -12,7 +11,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -21,10 +19,6 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
 import android.util.Log
-import android.view.ViewGroup
-import android.view.Window
-import android.widget.ImageView
-import android.widget.RelativeLayout
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
@@ -204,11 +198,11 @@ object Utils : CoroutineScope {
     }
 
     fun parseAnythingToByteString(file: File, onResult: (String) -> Unit) {
-        var enconded: String
+        var encoded: String
         launch(Dispatchers.IO) {
-            enconded = Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
+            encoded = Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
             withContext(Dispatchers.Main) {
-                onResult.invoke(enconded)
+                onResult.invoke(encoded)
             }
         }
     }
@@ -280,10 +274,10 @@ object Utils : CoroutineScope {
         }
     }
 
-//    fun copyTobuttonClipBoard(context: Context?, text: String) {
+//    fun copyToButtonClipBoard(context: Context?, text: String) {
 //        val buttonClipBoard = context?.getSystemService(Context.buttonClipBOARD_SERVICE) as buttonClipboardManager
 //        val buttonClipData = buttonClipData.newPlainText("label", text)
-//        buttonClipBoard.setPrimarybuttonClip(buttonClipData)
+//        buttonClipBoard.setPrimaryButtonClip(buttonClipData)
 //    }
 
 
@@ -323,22 +317,21 @@ object Utils : CoroutineScope {
         val bitmap = (image as BitmapDrawable).bitmap
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
-        val encoded = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
-        return encoded
+        return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
     }
 
 
     fun uriToBitmap(uri: Uri, contentResolver: ContentResolver, onResult: (Bitmap) -> Unit){
-        launch(Dispatchers.IO) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 val image = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
                 onResult.invoke(image)
             } else {
                 val image = BitmapFactory.decodeFileDescriptor(uri.let {
                     contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
+
                 })
                 onResult.invoke(image)
             }
-        }
+
     }
 }

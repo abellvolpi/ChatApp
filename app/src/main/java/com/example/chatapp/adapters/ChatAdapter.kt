@@ -8,7 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.*
@@ -33,6 +36,7 @@ class ChatAdapter(
     private lateinit var mediaPlayer: MediaPlayer
     private var positionMessageAudioRunning: Int = -1
 
+
     abstract inner class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(msg: Message)
     }
@@ -51,6 +55,17 @@ class ChatAdapter(
                         receivedImage.setImageBitmap(bitmap)
                     }
                 }
+                receivedImage.setOnClickListener { view ->
+                    val uri = msg.base64Data
+                    val extras = FragmentNavigatorExtras(receivedImage to "image_big")
+                    findNavController(view).navigate(
+                        R.id.action_chatFragment_to_imageFragment,
+                        bundleOf("image" to uri),
+                        null,
+                        extras
+                    )
+                }
+
             }
         }
     }
@@ -66,6 +81,16 @@ class ChatAdapter(
                     val file = File(it)
                     Utils.uriToBitmap(file.toUri(), context.contentResolver) { bitmap ->
                         sentImage.setImageBitmap(bitmap)
+                    }
+                    sentImage.setOnClickListener { view ->
+                        val uri = msg.base64Data
+                        val extras = FragmentNavigatorExtras(sentImage to "image_big")
+                        findNavController(view).navigate(
+                            R.id.action_chatFragment_to_imageFragment,
+                            bundleOf("image" to uri),
+                            null,
+                            extras
+                        )
                     }
                 }
             }

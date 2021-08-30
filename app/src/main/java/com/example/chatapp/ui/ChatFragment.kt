@@ -308,6 +308,7 @@ class ChatFragment : Fragment() {
                     refreshUiChat(message)
                     messageViewModel.insertMessage(message)
                 }
+
             }
             Message.MessageType.JOIN.code ->{
                 refreshUiChat(message)
