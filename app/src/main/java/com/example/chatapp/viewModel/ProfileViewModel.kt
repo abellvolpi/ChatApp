@@ -40,13 +40,14 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         }
     }
 
+    @Synchronized
     fun insert(profile: Profile) {
         launch(Dispatchers.IO) {
             controller.insert(profile)
             val list = profiles.value?: arrayListOf()
             list.add(profile)
             withContext(Dispatchers.Main) {
-                profiles.postValue(list)
+                profiles.value = list
             }
         }
     }

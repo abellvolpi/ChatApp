@@ -332,11 +332,15 @@ object Utils : CoroutineScope {
         launch(Dispatchers.IO) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 val image = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
-                onResult.invoke(image)
+                withContext(Dispatchers.Main) {
+                    onResult.invoke(image)
+                }
             } else {
                 val fd = contentResolver.openFileDescriptor(uri, "r")?.fileDescriptor
                 val image = BitmapFactory.decodeFileDescriptor(fd)
-                onResult.invoke(image)
+                withContext(Dispatchers.Main) {
+                    onResult.invoke(image)
+                }
             }
         }
     }

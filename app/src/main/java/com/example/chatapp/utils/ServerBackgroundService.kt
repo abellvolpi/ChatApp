@@ -170,7 +170,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     return@launch
                 }
             }
-
         }
     }
 
@@ -299,7 +298,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         break
                     }
                 }
-                delay(2000)
+                delay(1)
             }
         }
     }
@@ -318,7 +317,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         }
                     }
                     if (idSocket != null) {
-                        withContext(Dispatchers.IO) {
+                        launch(Dispatchers.IO) {
                             sockets[id]?.close()
                         }
                         sockets.remove(idSocket)

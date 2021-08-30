@@ -67,7 +67,6 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
-                        Log.i("read message from s", line)
                         withContext(Dispatchers.Main) {
                             if (line != "ping") {
                                 val message = Utils.jsonToMessageClass(line)

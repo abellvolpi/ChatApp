@@ -31,10 +31,6 @@ class ChatAdapter(
 ) :
     RecyclerView.Adapter<ChatAdapter.BaseViewHolder>() {
 
-    constructor(data: ArrayList<Message>,lifecycleOwner: LifecycleOwner, liveDataToObserve: UtilsViewModel) : this(data,liveDataToObserve, lifecycleOwner) {
-
-    }
-
 
     private val context = MainApplication.getContextInstance()
     private lateinit var mediaPlayer: MediaPlayer
@@ -43,7 +39,6 @@ class ChatAdapter(
     abstract inner class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(msg: Message)
     }
-
 
     inner class ViewHolderReceivedImage(private val binding: MessageReceivedImageBinding) :
         BaseViewHolder(binding.root) {
@@ -67,7 +62,6 @@ class ChatAdapter(
         override fun bind(msg: Message) {
             with(binding) {
                 Log.w("Imagem: ", msg.base64Data.toString())
-                name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
                     val file = File(it)
@@ -453,17 +447,10 @@ class ChatAdapter(
     }
 
     private fun getAudio(msg: Message, onResult: (MediaPlayer) -> Unit) {
-        //        if (isHistory) {
         val an: MediaPlayer = MediaPlayer.create(
             MainApplication.getContextInstance(),
             Utils.getAudioFromCache(msg)?.toUri()
         )
         onResult.invoke(an)
-//        } else {
-//            Utils.parseByteToAudio(msg.base64Data ?: "") {
-//                an = MediaPlayer.create(MainApplication.getContextInstance(), Uri.fromFile(it))
-//                onResult.invoke(an)
-//            }
-//        }
     }
 }
