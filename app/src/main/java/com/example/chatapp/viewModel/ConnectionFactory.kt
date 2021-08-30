@@ -18,7 +18,6 @@ import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
 import java.net.Socket
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.coroutines.CoroutineContext
 
 class ConnectionFactory : CoroutineScope, ViewModel() {
@@ -26,6 +25,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
     var line: MutableLiveData<Pair<Message, String>> = MutableLiveData()
+
     @Volatile
     var isRead: ArrayList<String> = arrayListOf()
     private val mutex = Mutex()
@@ -41,19 +41,19 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
 //        }
 //    }
 
-    fun removeIsNotReadMessages(position: Int){
-        launch(Dispatchers.Default){
+    fun removeIsNotReadMessages(position: Int) {
+        launch(Dispatchers.Default) {
             mutex.withLock {
                 isRead.removeAt(position)
             }
         }
     }
 
-    fun setFirstAccessChatFragment(boolean: Boolean){
+    fun setFirstAccessChatFragment(boolean: Boolean) {
         isFirstAccessInThisFragment = boolean
     }
 
-    fun isFirstAccessInThisFragment(): Boolean{
+    fun isFirstAccessInThisFragment(): Boolean {
         return isFirstAccessInThisFragment
     }
 
@@ -61,16 +61,15 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         val context = MainApplication.getContextInstance()
         observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
-            while (true) {
+            while (isActive) {
                 if (socket.isConnected) {
                     val reader = Scanner(socket.getInputStream().bufferedReader())
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
+                        Log.i("read message from s", line)
                         withContext(Dispatchers.Main) {
-                            if(line == "ping"){
-
-                            }else {
+                            if (line != "ping") {
                                 val message = Utils.jsonToMessageClass(line)
                                 if (MainApplication.applicationIsInBackground()) {
                                     backgroundMessages.add(message)
@@ -115,16 +114,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                 }
                             }
                         }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            this@ConnectionFactory.line.postValue(null)
-                            this@ConnectionFactory.line = MutableLiveData()
-                        }
-                        break
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        this@ConnectionFactory.line.postValue(null)
+                        this@ConnectionFactory.line.value = null
                         this@ConnectionFactory.line = MutableLiveData()
                     }
 
@@ -170,29 +163,38 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         return socket.getPortFromSocket()
     }
 
-    private fun observerWhenSocketClose() = launch(Dispatchers.IO) {
-        while (true) {
-            if (socket.isConnected) {
-                try {
-                       socket.getOutputStream().bufferedWriter(Charsets.UTF_8).apply {
+    private fun observerWhenSocketClose() {
+        launch(Dispatchers.IO) {
+            while (true) {
+                if (socket.isConnected) {
+                    try {
+                        socket.getOutputStream().bufferedWriter(Charsets.UTF_8).apply {
                             write("ping\n")
                             flush()
-                       }
-                } catch (e: Exception) {
-                    serverOnline.postValue(false)
-                    Log.e("ConnectionFactory",e.toString())
-                    break
+                        }
+                    } catch (e: Exception) {
+                        serverOnline.postValue(false)
+                        Log.e("ConnectionFactory", e.toString())
+                        break
+                    }
                 }
+                delay(2000)
             }
-            delay(2000)
         }
     }
-    fun closeSocket(){
+
+    fun closeSocket() {
         socket.close()
     }
 
     fun kickMember(profile: Profile) {
-        val message = Message(Message.MessageType.REVOKED.code, id = 3, base64Data = "", text = profile.id.toString(), username = "")
-        sendMessageToSocket(message){}
+        val message = Message(
+            Message.MessageType.REVOKED.code,
+            id = 3,
+            base64Data = "",
+            text = profile.id.toString(),
+            username = ""
+        )
+        sendMessageToSocket(message) {}
     }
 }

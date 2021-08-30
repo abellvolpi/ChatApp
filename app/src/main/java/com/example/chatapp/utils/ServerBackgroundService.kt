@@ -181,18 +181,17 @@ class ServerBackgroundService : Service(), CoroutineScope {
         while (socketIterator.hasNext()) {
             val socket = socketIterator.next()
             try {
+                val bw = DataOutputStream(socket.value.getOutputStream())
                 if (message.type != Message.MessageType.JOIN.code) {
                     if (socket.key != message.id) {
-                        val bw = DataOutputStream(socket.value.getOutputStream())
                         bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
                         bw.flush()
-                        Log.d("service", "Sent Message")
+                        Log.d("service", "Sent Message to socket ${socket.key}")
                     }
                 } else {
-                    val bw = DataOutputStream(socket.value.getOutputStream())
                     bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
                     bw.flush()
-                    Log.d("service", "Sent Message")
+                    Log.d("service", "Sent Message to socket ${socket.key}")
                 }
             } catch (e: Exception) {
                 Log.e("service sendToAll", e.toString())
@@ -211,8 +210,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     val line: String
                     if (reader.hasNextLine()) {
                         line = reader.nextLine()
-                        if (line == "ping") {
-                        } else {
+                        if (line != "ping") {
                             val classMessage = Utils.jsonToMessageClass(line)
                             treatMessage(classMessage, socket)
                         }

@@ -7,10 +7,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
 import androidx.core.net.toUri
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import kotlin.coroutines.CoroutineContext
 
@@ -69,15 +66,17 @@ object ProfileSharedProfile : CoroutineScope {
     }
 
     fun saveUriProfilePhoto(imageUri: Uri) {
-        val profileSharedPreferences = getSharedProfile()
-        profileSharedPreferences.edit().apply {
-            clear()
-            putString("imageUri", imageUri.toString())
-            apply()
-        }
         launch(Dispatchers.Default) {
-            Utils.uriToBitmap(imageUri, context.contentResolver){
-                saveProfilePhoto(it)
+            val profileSharedPreferences = getSharedProfile()
+            profileSharedPreferences.edit().apply {
+                clear()
+                putString("imageUri", imageUri.toString())
+                apply()
+            }
+            withContext(Dispatchers.Main) {
+                Utils.uriToBitmap(imageUri, context.contentResolver) {
+                    saveProfilePhoto(it)
+                }
             }
         }
     }
@@ -92,18 +91,23 @@ object ProfileSharedProfile : CoroutineScope {
 //        return BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
 //    }
 
-    fun getProfilePhoto(onResult: (Bitmap?) -> Unit){
+    fun getProfilePhoto(onResult: (Bitmap?) -> Unit) {
 
         val sharedPreferences = getSharedProfile()
         val uri = sharedPreferences.getString("imageUri", "NO IMAGE SAVED")
         if (uri == "NO IMAGE SAVED") {
             onResult.invoke(null)
+            return
         }
         var result: Bitmap
-        uri?.let { uri->
+        uri?.let { uri ->
             Utils.uriToBitmap(uri.toUri(), context.contentResolver) { bitmap ->
                 val bitmapString = bitmap.toString()
-                result = BitmapFactory.decodeByteArray(Base64.decode(bitmapString, 0), 0, Base64.decode(bitmapString, 0).size)
+                result = BitmapFactory.decodeByteArray(
+                    Base64.decode(bitmapString, 0),
+                    0,
+                    Base64.decode(bitmapString, 0).size
+                )
                 onResult.invoke(result)
             }
         }

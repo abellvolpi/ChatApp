@@ -59,14 +59,10 @@ class HomeFragment : Fragment(), CoroutineScope {
         startActivityLaunch = registerForActivityResult(
             ActivityResultContracts.GetContent()
         ) { uri ->
-            launch(Dispatchers.Default) {
 //                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
 //                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
-                uri?.let { ProfileSharedProfile.saveUriProfilePhoto(uri) }
-            }
-            launch(Dispatchers.Main) {
-                uri?.let { binding.photo.setImageURI(it) }
-            }
+            ProfileSharedProfile.saveUriProfilePhoto(uri)
+            binding.photo.setImageURI(uri)
         }
     }
 
@@ -221,7 +217,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     messageViewModel.deleteAll {
                         profileViewModel.deleteAll {
                             var image = ""
-                            val bitmap = ProfileSharedProfile.getProfilePhoto { bitmap ->
+                            ProfileSharedProfile.getProfilePhoto { bitmap ->
                                 if (bitmap != null) {
                                     image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
                                 }
@@ -331,7 +327,14 @@ class HomeFragment : Fragment(), CoroutineScope {
                     finalBounds.left
                 )
             ).apply {
-                with(ObjectAnimator.ofFloat(expandedImageView, View.Y, startBounds.top, finalBounds.top))
+                with(
+                    ObjectAnimator.ofFloat(
+                        expandedImageView,
+                        View.Y,
+                        startBounds.top,
+                        finalBounds.top
+                    )
+                )
                 with(ObjectAnimator.ofFloat(expandedImageView, View.SCALE_X, startScale, 1f))
                 with(ObjectAnimator.ofFloat(expandedImageView, View.SCALE_Y, startScale, 1f))
             }

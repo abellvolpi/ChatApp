@@ -2,7 +2,6 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -30,7 +29,6 @@ import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
-import com.example.chatapp.room.withs.MessagesWithProfile
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -41,7 +39,6 @@ import com.example.chatapp.viewModel.ProfileViewModel
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -51,7 +48,7 @@ class ChatFragment : Fragment() {
     private lateinit var mediaRecorder: MediaRecorder
     private var state: Boolean = false
     private lateinit var binding: FragmentChatBinding
-    private val connectionFactory: ConnectionFactory by activityViewModels()
+    private val connectionFactory : ConnectionFactory by activityViewModels()
     private lateinit var adapter: ChatAdapter
     private val data = arrayListOf<Message>()
     private var isHistoryCall = false
@@ -147,20 +144,25 @@ class ChatFragment : Fragment() {
                 readMessageMissed()
                 connectionFactory.startListenerMessages()
                 connectionFactory.line.observe(viewLifecycleOwner) {
+                    Log.i("observer", "triggered")
                     if (it != null) {
+                        Log.i("observer message1", "received: ${it.second}")
                         if (connectionFactory.lastLine != it.second) {
+                            Log.i("observer message2", "received: ${it.second}")
                             validReceivedMessage(it.first)
                             connectionFactory.lastLine = it.second
                             connectionFactory.isRead.remove(it.second)
+                        }else{
+                            Log.w("observer message", "duplicate message, skipped it")
                         }
+                    }else{
+                        connectionFactory.isRead.remove(it?.second)
+                        Log.e("ChatFragment", "Message observer received null")
                     }
                 }
                 connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                     if (it == false) {
                         Log.e("Chat disconnected", "server down")
-//                    val action =
-//                        ChatFragmentDirections.actionChatFragmentToHomeFragment("Server Stopped")
-//                    navController.navigate(action)
                     }
                 }
                 constraintLayout.setOnClickListener {

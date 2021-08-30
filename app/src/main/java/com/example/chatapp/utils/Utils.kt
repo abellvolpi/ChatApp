@@ -334,9 +334,8 @@ object Utils : CoroutineScope {
                 val image = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
                 onResult.invoke(image)
             } else {
-                val image = BitmapFactory.decodeFileDescriptor(uri.let {
-                    contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
-                })
+                val fd = contentResolver.openFileDescriptor(uri, "r")?.fileDescriptor
+                val image = BitmapFactory.decodeFileDescriptor(fd)
                 onResult.invoke(image)
             }
         }
