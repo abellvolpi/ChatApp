@@ -16,6 +16,7 @@ import android.widget.RadioButton
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -146,10 +147,16 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
 
             photo.setOnClickListener {
+                val uri: String = if (ProfileSharedProfile.getUriProfilePhoto()!=null) {
+                    ProfileSharedProfile.getUriProfilePhoto().toString()
+                } else{
+                    "android.resource://" + requireActivity().packageName + "/" + R.drawable.ic_profile
+                }
+
                 val extras = FragmentNavigatorExtras(photo to "image_big")
                 navController.navigate(
                     R.id.action_homeFragment_to_imageFragment,
-                    null,
+                    bundleOf("image" to uri),
                     null,
                     extras
                 )

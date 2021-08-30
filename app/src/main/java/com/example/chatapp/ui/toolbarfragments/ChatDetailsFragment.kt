@@ -29,7 +29,6 @@ class ChatDetailsFragment : Fragment() {
             ParticipantsFragment(),
             RankingFragment()
         )
-
         val myAdapter = ViewPagerAdapter(fragmentList, requireActivity().supportFragmentManager, lifecycle)
         val viewPager = view.findViewById(R.id.viewpager) as ViewPager2
         viewPager.adapter = myAdapter

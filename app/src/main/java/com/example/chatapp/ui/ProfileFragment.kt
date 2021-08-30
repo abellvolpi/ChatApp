@@ -12,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.chatapp.databinding.FragmentProfileBinding
 import com.example.chatapp.utils.ProfileSharedProfile
-import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -55,14 +54,11 @@ class ProfileFragment : Fragment(), CoroutineScope {
 
             username.text = ProfileSharedProfile.getProfile()
             if (ProfileSharedProfile.getUriProfilePhoto() != null) {
-                val a = ProfileSharedProfile.getUriProfilePhoto()
                 binding.photo.setImageURI(ProfileSharedProfile.getUriProfilePhoto())
             }
-
             floatingEditButton.setOnClickListener {
                 startActivityLaunch.launch("image/*")
             }
-
             profileToolbar.setNavigationOnClickListener {
                 activity?.onBackPressed()
             }

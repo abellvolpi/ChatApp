@@ -41,12 +41,11 @@ class ChatAdapter(
         abstract fun bind(msg: Message)
     }
 
-
     inner class ViewHolderReceivedImage(private val binding: MessageReceivedImageBinding) :
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                Log.w("Imagem: ", msg.base64Data.toString())
+                Log.w("Image: ", msg.base64Data.toString())
                 name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
@@ -74,7 +73,8 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                Log.w("Imagem: ", msg.base64Data.toString())
+                Log.w("" +
+                        "Image: ", msg.base64Data.toString())
                 name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {

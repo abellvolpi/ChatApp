@@ -14,7 +14,6 @@ import com.example.chatapp.R
 import com.example.chatapp.databinding.FragmentCreateServerBinding
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.Extensions.toSHA256
-import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ServerBackgroundService
 
 class CreateServer : Fragment() {

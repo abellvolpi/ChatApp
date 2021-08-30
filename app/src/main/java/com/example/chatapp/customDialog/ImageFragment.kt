@@ -8,10 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
-import androidx.navigation.fragment.navArgs
 import com.example.chatapp.databinding.FragmentImageBinding
-import com.example.chatapp.ui.HomeFragmentArgs
-import com.example.chatapp.utils.ProfileSharedProfile
 
 class ImageFragment : Fragment() {
 
