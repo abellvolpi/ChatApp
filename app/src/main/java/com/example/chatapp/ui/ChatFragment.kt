@@ -2,11 +2,9 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
@@ -17,8 +15,10 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.animation.addListener
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat.canScrollVertically
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -154,7 +154,7 @@ class ChatFragment : Fragment() {
     private fun initView() {
         readMessageMissed()
         with(binding) {
-            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner, false)
+            adapter = ChatAdapter(data, utilsViewModel, viewLifecycleOwner)
             messagesRecyclerview.adapter = adapter
             messagesRecyclerview.layoutManager = LinearLayoutManager(requireContext())
             if (!isHistoryCall) {
@@ -234,11 +234,12 @@ class ChatFragment : Fragment() {
                 }
 
                 buttonClip.setOnClickListener {
-                    if (sendImagesOptions.visibility == View.GONE) {
-                        sendImagesOptions.visibility = View.VISIBLE
-                    } else {
-                        sendImagesOptions.visibility = View.GONE
-                    }
+                    setAnimation()
+//                    if (sendImagesOptions.visibility == View.GONE) {
+//                        sendImagesOptions.visibility = View.VISIBLE
+//                    } else {
+//                        sendImagesOptions.visibility = View.GONE
+//                    }
                 }
 
                 cardViewCamera.setOnClickListener {
@@ -309,6 +310,7 @@ class ChatFragment : Fragment() {
             }
         }
     }
+
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
@@ -859,7 +861,7 @@ class ChatFragment : Fragment() {
             messageViewModel.getAllMessages {
                 val arrayList = arrayListOf<Message>()
                 arrayList.addAll(it)
-                adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner, true)
+                adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner)
                 messagesRecyclerview.adapter = adapter
                 messagesRecyclerview.apply {
                     layoutManager = LinearLayoutManager(requireContext())
@@ -905,6 +907,28 @@ class ChatFragment : Fragment() {
                     true
                 }
             }
+        }
+    }
+
+    private fun setAnimation() {
+        with(binding) {
+            val centerX = (sendImagesOptions.left + sendImagesOptions.right) / 2
+            val centerY = (sendImagesOptions.top) / 2
+            val radius = Math.max(sendImagesOptions.width, sendImagesOptions.height) * 2.0f
+
+            if (sendImagesOptions.visibility == View.GONE) {
+                sendImagesOptions.visibility = View.VISIBLE
+                ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, 0F, radius).start()
+            } else {
+                val reveal = ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, radius, 0F).apply {
+                    addListener(onEnd = {
+                        sendImagesOptions.visibility = View.GONE
+                    })
+                }
+                reveal.start()
+
+            }
+
         }
     }
 

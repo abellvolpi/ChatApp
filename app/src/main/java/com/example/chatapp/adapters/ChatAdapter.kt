@@ -9,9 +9,9 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
-import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.FragmentNavigatorExtras
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.*
@@ -26,9 +26,9 @@ import java.util.*
 
 
 class ChatAdapter(
-    private val data: ArrayList<Message>,
+    val data: ArrayList<Message>,
     val liveDataToObserve: UtilsViewModel,
-    val lifecycleOwner: LifecycleOwner, val isHistory: Boolean
+    val lifecycleOwner: LifecycleOwner
 ) :
     RecyclerView.Adapter<ChatAdapter.BaseViewHolder>() {
 
