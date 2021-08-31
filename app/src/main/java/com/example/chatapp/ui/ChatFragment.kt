@@ -2,9 +2,11 @@ package com.example.chatapp.ui
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
@@ -41,6 +43,7 @@ import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.jar.Manifest
 
 class ChatFragment : Fragment() {
     private lateinit var output: String
@@ -53,6 +56,7 @@ class ChatFragment : Fragment() {
     private var isHistoryCall = false
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
+    private lateinit var registerUseCamera: ActivityResultLauncher<Void>
     private lateinit var profileName: String
     private val profileViewModel: ProfileViewModel by activityViewModels()
     private val messageViewModel: MessageViewModel by activityViewModels()
@@ -67,7 +71,6 @@ class ChatFragment : Fragment() {
     private lateinit var snackbar: Snackbar
     private var joinMessage: Message? = null
 
-
     private val boardCells = Array(3) { arrayOfNulls<ImageButton>(3) } // Array de image button
     private var board = Board()
     private var canIPlay: Boolean = false
@@ -78,6 +81,21 @@ class ChatFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         profileName = ProfileSharedProfile.getProfile()
+
+        registerUseCamera = registerForActivityResult(
+            ActivityResultContracts.TakePicturePreview()
+        ) { bitmap ->
+            with(binding) {
+                if (bitmap != null) {
+                    sentImageFrameLayout.visibility = View.VISIBLE
+                    buttonClip.visibility = View.GONE
+                    sentImage.setImageBitmap(bitmap)
+                    buttonSend.visibility = View.VISIBLE
+                    buttonVoiceMessageRecord.visibility = View.GONE
+                }
+            }
+        }
+
         startActivityLaunch = registerForActivityResult(
             ActivityResultContracts.GetContent()
         ) { uri ->
@@ -216,10 +234,33 @@ class ChatFragment : Fragment() {
                 }
 
                 buttonClip.setOnClickListener {
+                    if (sendImagesOptions.visibility == View.GONE) {
+                        sendImagesOptions.visibility = View.VISIBLE
+                    } else {
+                        sendImagesOptions.visibility = View.GONE
+                    }
+                }
+
+                cardViewCamera.setOnClickListener {
+                    sendImagesOptions.visibility = View.GONE
+                    checkPermission(android.Manifest.permission.CAMERA, REQUEST_IMAGE_CAPTURE)
+                    if (ContextCompat.checkSelfPermission(
+                            requireContext(),
+                            android.Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        registerUseCamera.launch(null)
+                    }
+
+
+                }
+                cardViewGallery.setOnClickListener {
+                    sendImagesOptions.visibility = View.GONE
                     startActivityLaunch.launch("image/*")
                     buttonSend.visibility = View.VISIBLE
                     buttonVoiceMessageRecord.visibility = View.GONE
                 }
+
                 closeImageButton.setOnClickListener {
                     restartUI()
                 }
@@ -227,7 +268,7 @@ class ChatFragment : Fragment() {
                 buttonSend.setOnClickListener {
                     when {
                         sentImageFrameLayout.visibility == View.VISIBLE -> {
-                //       val bitmap = sentImage.drawable.toBitmap()
+                            //       val bitmap = sentImage.drawable.toBitmap()
                             val base64 = Utils.bitmapToByteArray3(sentImage.drawable)
                             val message = Message(
                                 Message.MessageType.IMAGE.code,
@@ -271,7 +312,7 @@ class ChatFragment : Fragment() {
 
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-        if(message.type != Message.MessageType.JOIN.code) {
+        if (message.type != Message.MessageType.JOIN.code) {
             refreshUIChatAndSaveMessageInToRoom(message)
         }
     }
@@ -307,7 +348,7 @@ class ChatFragment : Fragment() {
                 }
 
             }
-            Message.MessageType.JOIN.code ->{
+            Message.MessageType.JOIN.code -> {
                 refreshUiChat(message)
                 messageViewModel.insertMessage(message)
             }
@@ -805,6 +846,8 @@ class ChatFragment : Fragment() {
 
     companion object {
         private const val RECORD_PERMISSION = 102
+        const val REQUEST_IMAGE_CAPTURE = 1
+
     }
 
     private fun startHistoryMode() {
@@ -864,6 +907,7 @@ class ChatFragment : Fragment() {
             }
         }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()

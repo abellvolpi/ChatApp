@@ -86,6 +86,9 @@
         <action
             android:id="@+id/action_chatFragment_to_imageFragment"
             app:destination="@id/imageFragment" />
+        <action
+            android:id="@+id/action_chatFragment_to_takePictureBottomSheetDialogFragment"
+            app:destination="@id/takePictureBottomSheetDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/createServer"
@@ -181,6 +184,10 @@
             app:argType="string" />
 
     </fragment>
+    <dialog
+        android:id="@+id/takePictureBottomSheetDialogFragment"
+        android:name="com.example.chatapp.customDialog.TakePictureBottomSheetDialogFragment"
+        android:label="TakePictureBottomSheetDialogFragment" />
 
 
 </navigation>
