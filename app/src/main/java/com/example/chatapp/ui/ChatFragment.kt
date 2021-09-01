@@ -18,7 +18,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.animation.addListener
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat.canScrollVertically
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -43,7 +42,6 @@ import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.jar.Manifest
 
 class ChatFragment : Fragment() {
     private lateinit var output: String
@@ -386,7 +384,7 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.ACKNOWLEDGE.code) {
                 if (id != null) {
                     ProfileSharedProfile.saveIdProfile(id)
-                    empyHistoryCache()
+                    emptyHistoryCache()
                     if (text != null) {
                         profileViewModel.deleteAll {
                             Utils.listJsonToProfiles(text)?.forEach { profile ->
@@ -555,7 +553,7 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun empyHistoryCache() {
+    private fun emptyHistoryCache() {
         File(
             MainApplication.getContextInstance().cacheDir.absolutePath,
             "/photosProfile"
@@ -926,9 +924,7 @@ class ChatFragment : Fragment() {
                     })
                 }
                 reveal.start()
-
             }
-
         }
     }
 

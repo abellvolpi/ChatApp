@@ -56,23 +56,23 @@
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
-
+            android:visibility="gone"
             android:id="@+id/send_images_options"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
             android:layout_marginBottom="7dp"
             android:background="@drawable/background_menu"
             app:layout_constraintBottom_toTopOf="@+id/layout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginHorizontal="30dp">
+            app:layout_constraintStart_toStartOf="parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
                 android:gravity="center"
                 android:orientation="horizontal"
+                android:padding="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
@@ -86,9 +86,9 @@
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/card_view_camera"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        app:cardCornerRadius="75dp">
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        app:cardCornerRadius="30dp">
 
                         <ImageView
                             android:layout_width="30dp"
@@ -115,10 +115,9 @@
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/card_view_gallery"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:shape="ring"
-                        app:cardCornerRadius="75dp">
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        app:cardCornerRadius="30dp">
 
                         <ImageView
                             android:layout_width="30dp"
