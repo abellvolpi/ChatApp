@@ -324,7 +324,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         sockets.remove(idSocket)
                         profiles.forEach {profile ->
                             if (profile.id == idSocket) {
-                                idSocket?.let { notifyWhenProfileDisconnected(profile.name, it) }
+                                idSocket?.let { notifyWhenProfileDisconnected(profile.name ?:"", it) }
                                     ?: Log.e("server", "error when notify user disconnect")
                                 Log.d("service", socket.getAddressFromSocket() + "disconnect")
                                 profiles.remove(profile)

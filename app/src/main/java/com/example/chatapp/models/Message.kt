@@ -1,12 +1,13 @@
 package com.example.chatapp.models
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
+import androidx.room.ForeignKey.CASCADE
 import com.squareup.moshi.JsonClass
 import java.io.Serializable
 import java.util.*
+import kotlin.reflect.KClass
 
-@Entity
+@Entity(tableName = "message")
 @JsonClass(generateAdapter = true)
 class Message(
     var type: Int,
@@ -16,7 +17,8 @@ class Message(
     var base64Data: String?,
     val time: Long = Calendar.getInstance().time.time,
     val id: Int?,
-    val join: Join? = null): Serializable {
+    val join: Join? = null,
+    val fk_profile : Int? = null): Serializable {
 
     @PrimaryKey(autoGenerate = true)
     var messageId : Int? =null

@@ -3,6 +3,7 @@ package com.example.chatapp.viewModel
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Message
 import com.example.chatapp.room.message.controller.MessageController
+import com.example.chatapp.room.withs.MessagesWithProfile
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 

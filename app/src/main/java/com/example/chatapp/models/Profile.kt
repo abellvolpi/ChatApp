@@ -8,9 +8,9 @@ import androidx.room.PrimaryKey
 class Profile(
     @PrimaryKey
     var id : Int,
-    var name : String,
+    var name : String?,
     var photoProfile : String?,
-    var scoreTicTacToe: Int,
+    var scoreTicTacToe: Int?,
     var isMemberYet: Boolean?,
     var isAdmin: Boolean? = false
 )

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.*
 import com.example.chatapp.models.Message
+import com.example.chatapp.room.withs.MessagesWithProfile
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.viewModel.UtilsViewModel
@@ -23,6 +24,7 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ChatAdapter(
@@ -31,6 +33,11 @@ class ChatAdapter(
     val lifecycleOwner: LifecycleOwner
 ) :
     RecyclerView.Adapter<ChatAdapter.BaseViewHolder>() {
+
+    constructor(data: ArrayList<Message>,lifecycleOwner: LifecycleOwner, liveDataToObserve: UtilsViewModel) : this(data,liveDataToObserve, lifecycleOwner) {
+
+    }
+
 
     private val context = MainApplication.getContextInstance()
     private lateinit var mediaPlayer: MediaPlayer
