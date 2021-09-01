@@ -24,15 +24,16 @@ class SplashFragment : Fragment() {
         (activity as AppCompatActivity?)?.supportActionBar?.hide()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSplashBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        delay(1000) { navigate() }
-
+        delay {
+            navigate()
+        }
     }
 
     private fun delay(delay: Long = 1500, action: () -> Unit) {

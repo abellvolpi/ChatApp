@@ -8,6 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
@@ -40,23 +43,35 @@ class ChatAdapter(
     private lateinit var mediaPlayer: MediaPlayer
     private var positionMessageAudioRunning: Int = -1
 
+
     abstract inner class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(msg: Message)
     }
-
 
     inner class ViewHolderReceivedImage(private val binding: MessageReceivedImageBinding) :
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                Log.w("Imagem: ", msg.base64Data.toString())
+                Log.w("Image: ", msg.base64Data.toString())
                 name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
                     val file = File(it)
-                    val bitmap = Utils.uriToBitmap(file.toUri(), context.contentResolver)
-                    receivedImage.setImageBitmap(bitmap)
+                    Utils.uriToBitmap(file.toUri(), context.contentResolver) { bitmap ->
+                        receivedImage.setImageBitmap(bitmap)
+                    }
                 }
+                receivedImage.setOnClickListener { view ->
+                    val uri = msg.base64Data
+                    val extras = FragmentNavigatorExtras(receivedImage to "image_big")
+                    findNavController(view).navigate(
+                        R.id.action_chatFragment_to_imageFragment,
+                        bundleOf("image" to uri),
+                        null,
+                        extras
+                    )
+                }
+
             }
         }
     }
@@ -65,13 +80,25 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                Log.w("Imagem: ", msg.base64Data.toString())
+                Log.w("" +
+                        "Image: ", msg.base64Data.toString())
                 name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
                     val file = File(it)
-                    val bitmap = Utils.uriToBitmap(file.toUri(), context.contentResolver)
-                    sentImage.setImageBitmap(bitmap)
+                    Utils.uriToBitmap(file.toUri(), context.contentResolver) { bitmap ->
+                        sentImage.setImageBitmap(bitmap)
+                    }
+                    sentImage.setOnClickListener { view ->
+                        val uri = msg.base64Data
+                        val extras = FragmentNavigatorExtras(sentImage to "image_big")
+                        findNavController(view).navigate(
+                            R.id.action_chatFragment_to_imageFragment,
+                            bundleOf("image" to uri),
+                            null,
+                            extras
+                        )
+                    }
                 }
             }
         }

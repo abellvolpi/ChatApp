@@ -23,7 +23,7 @@ class RankingFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentRankingBinding.inflate(inflater, container, false)
 
 
@@ -34,18 +34,11 @@ class RankingFragment : Fragment() {
                     setAdapter(adapter)
                     layoutManager = LinearLayoutManager(requireContext())
                     addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
-
                 }
             }else{
                 Log.e("participantsFragment", "Arraylist is empty")
             }
         }
-
-
-
-
-
-
         return binding.root
     }
 

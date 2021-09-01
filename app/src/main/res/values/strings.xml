@@ -36,6 +36,8 @@
     <string name="share">Share:</string>
     <string name="generate_qr_code">Generate\nQrCode</string>
     <string name="share_link">Share\nLink</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
 
 
     <!--   Warnings-->
@@ -109,4 +111,11 @@
     <string name="password">Password</string>
     <string name="Kick">kick</string>
     <string name="admin">Admin</string>
+
+
+    <!--    Profile Fragment-->
+
+    <string name="profile_photo">Profile photo</string>
+
+
 </resources>

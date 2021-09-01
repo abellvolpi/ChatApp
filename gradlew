@@ -45,13 +45,13 @@ die () {
 }
 
 # OS specific support (must be 'true' or 'false').
-cygwin=false
+centerYgwin=false
 msys=false
 darwin=false
 nonstop=false
 case "`uname`" in
-  CYGWIN* )
-    cygwin=true
+  centerYGWIN* )
+    centerYgwin=true
     ;;
   Darwin* )
     darwin=true
@@ -89,7 +89,7 @@ location of your Java installation."
 fi
 
 # Increase the maximum file descriptors if we can.
-if [ "$cygwin" = "false" -a "$darwin" = "false" -a "$nonstop" = "false" ] ; then
+if [ "$centerYgwin" = "false" -a "$darwin" = "false" -a "$nonstop" = "false" ] ; then
     MAX_FD_LIMIT=`ulimit -H -n`
     if [ $? -eq 0 ] ; then
         if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
@@ -109,32 +109,32 @@ if $darwin; then
     GRADLE_OPTS="$GRADLE_OPTS \"-Xdock:name=$APP_NAME\" \"-Xdock:icon=$APP_HOME/media/gradle.icns\""
 fi
 
-# For Cygwin, switch paths to Windows format before running java
-if $cygwin ; then
-    APP_HOME=`cygpath --path --mixed "$APP_HOME"`
-    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
-    JAVACMD=`cygpath --unix "$JAVACMD"`
+# For centerYgwin, switch paths to Windows format before running java
+if $centerYgwin ; then
+    APP_HOME=`centerYgpath --path --mixed "$APP_HOME"`
+    CLASSPATH=`centerYgpath --path --mixed "$CLASSPATH"`
+    JAVACMD=`centerYgpath --unix "$JAVACMD"`
 
-    # We build the pattern for arguments to be converted via cygpath
+    # We build the pattern for arguments to be converted via centerYgpath
     ROOTDIRSRAW=`find -L / -maxdepth 1 -mindepth 1 -type d 2>/dev/null`
     SEP=""
     for dir in $ROOTDIRSRAW ; do
         ROOTDIRS="$ROOTDIRS$SEP$dir"
         SEP="|"
     done
-    OURCYGPATTERN="(^($ROOTDIRS))"
-    # Add a user-defined pattern to the cygpath arguments
-    if [ "$GRADLE_CYGPATTERN" != "" ] ; then
-        OURCYGPATTERN="$OURCYGPATTERN|($GRADLE_CYGPATTERN)"
+    OURcenterYGPATTERN="(^($ROOTDIRS))"
+    # Add a user-defined pattern to the centerYgpath arguments
+    if [ "$GRADLE_centerYGPATTERN" != "" ] ; then
+        OURcenterYGPATTERN="$OURcenterYGPATTERN|($GRADLE_centerYGPATTERN)"
     fi
     # Now convert the arguments - kludge to limit ourselves to /bin/sh
     i=0
     for arg in "$@" ; do
-        CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
+        CHECK=`echo "$arg"|egrep -c "$OURcenterYGPATTERN" -`
         CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
 
         if [ $CHECK -ne 0 ] && [ $CHECK2 -eq 0 ] ; then                    ### Added a condition
-            eval `echo args$i`=`cygpath --path --ignore --mixed "$arg"`
+            eval `echo args$i`=`centerYgpath --path --ignore --mixed "$arg"`
         else
             eval `echo args$i`="\"$arg\""
         fi

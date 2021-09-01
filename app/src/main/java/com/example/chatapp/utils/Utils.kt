@@ -1,6 +1,5 @@
 package com.example.chatapp.utils
 
-import android.app.Dialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -12,7 +11,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -21,10 +19,6 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
 import android.util.Log
-import android.view.ViewGroup
-import android.view.Window
-import android.widget.ImageView
-import android.widget.RelativeLayout
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
@@ -204,11 +198,11 @@ object Utils : CoroutineScope {
     }
 
     fun parseAnythingToByteString(file: File, onResult: (String) -> Unit) {
-        var enconded: String
+        var encoded: String
         launch(Dispatchers.IO) {
-            enconded = Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
+            encoded = Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
             withContext(Dispatchers.Main) {
-                onResult.invoke(enconded)
+                onResult.invoke(encoded)
             }
         }
     }
@@ -235,7 +229,7 @@ object Utils : CoroutineScope {
         return null
     }
 
-    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit){
+    fun saveMessageAudioByteToCacheDir(message: Message, onResult: (String) -> Unit) {
         val context = MainApplication.getContextInstance()
         val output =
             File(
@@ -280,10 +274,10 @@ object Utils : CoroutineScope {
         }
     }
 
-//    fun copyTobuttonClipBoard(context: Context?, text: String) {
+//    fun copyToButtonClipBoard(context: Context?, text: String) {
 //        val buttonClipBoard = context?.getSystemService(Context.buttonClipBOARD_SERVICE) as buttonClipboardManager
 //        val buttonClipData = buttonClipData.newPlainText("label", text)
-//        buttonClipBoard.setPrimarybuttonClip(buttonClipData)
+//        buttonClipBoard.setPrimaryButtonClip(buttonClipData)
 //    }
 
 
@@ -304,10 +298,10 @@ object Utils : CoroutineScope {
     }
 
     fun bitmapToByteArrayToString(bitmap: Bitmap): String {
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
+//        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
         val byteArrayOutputStream = ByteArrayOutputStream()
 //        bitmap.compress(Bitmap.CompressFormat.PNG,10,byteArrayOutputStream)
-        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
@@ -319,48 +313,25 @@ object Utils : CoroutineScope {
         return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
     }
 
-    fun bitmapToByteArray3(image: Drawable, onResult: (String) -> Unit) {
+    fun bitmapToByteArray3(image: Drawable): String {
         val bitmap = (image as BitmapDrawable).bitmap
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
-        val encoded = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
-        onResult.invoke(encoded)
+        return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
     }
 
 
-    fun uriToBitmap(uri: Uri, contentResolver: ContentResolver): Bitmap {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
-        } else {
-            BitmapFactory.decodeFileDescriptor(uri.let {
-                contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
-            })
-        }
-    }
+    fun uriToBitmap(uri: Uri, contentResolver: ContentResolver, onResult: (Bitmap) -> Unit){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val image = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
+                onResult.invoke(image)
+            } else {
+                val image = BitmapFactory.decodeFileDescriptor(uri.let {
+                    contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
 
-    fun openImageLikeDialog(context: Context, bitmap: Bitmap) {
-        val builder = Dialog(context, android.R.style.Theme_Light)
-        val imageView = ImageView(context).apply {
-            setImageBitmap(bitmap)
-        }
-        builder.apply {
-            requestWindowFeature(Window.FEATURE_NO_TITLE)
-            window?.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            window?.setBackgroundDrawable(
-                ColorDrawable(
-                    android.graphics.Color.WHITE
-                )
-            )
-            addContentView(
-                imageView, RelativeLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-            )
-            show()
-        }
+                })
+                onResult.invoke(image)
+            }
+
     }
 }

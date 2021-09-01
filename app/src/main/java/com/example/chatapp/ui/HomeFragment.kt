@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -17,9 +16,7 @@ import android.widget.RadioButton
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityOptionsCompat
-import androidx.core.graphics.drawable.toBitmap
+import androidx.core.os.bundleOf
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -32,7 +29,6 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.Extensions.toSHA256
 import com.example.chatapp.utils.ProfileSharedProfile
-import com.example.chatapp.utils.Utils
 import com.example.chatapp.utils.Utils.createSocket
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.MessageViewModel
@@ -65,8 +61,11 @@ class HomeFragment : Fragment(), CoroutineScope {
             ActivityResultContracts.GetContent()
         ) { uri ->
             launch(Dispatchers.Default) {
-                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
-                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+//                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+//                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+
+                uri?.let { ProfileSharedProfile.saveUriProfilePhoto(uri) }
+
             }
             launch(Dispatchers.Main) {
                 uri?.let { binding.photo.setImageURI(it) }
@@ -143,11 +142,21 @@ class HomeFragment : Fragment(), CoroutineScope {
     private fun initViews() {
         with(binding) {
 
+            ProfileSharedProfile.getUriProfilePhoto()?.let {
+                photo.setImageURI(it)
+            }
+
             photo.setOnClickListener {
+                val uri: String = if (ProfileSharedProfile.getUriProfilePhoto()!=null) {
+                    ProfileSharedProfile.getUriProfilePhoto().toString()
+                } else{
+                    "android.resource://" + requireActivity().packageName + "/" + R.drawable.ic_profile
+                }
+
                 val extras = FragmentNavigatorExtras(photo to "image_big")
                 navController.navigate(
                     R.id.action_homeFragment_to_imageFragment,
-                    null,
+                    bundleOf("image" to uri),
                     null,
                     extras
                 )
@@ -221,36 +230,37 @@ class HomeFragment : Fragment(), CoroutineScope {
                     messageViewModel.deleteAll {
                         profileViewModel.deleteAll {
                             var image = ""
-                            val bitmap = ProfileSharedProfile.getProfilePhoto()
-                            if (bitmap != null) {
-                                image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
-                            }
-                            val message = Message(
-                                type = Message.MessageType.JOIN.code,
-                                username = nameField.text.toString(),
-                                text = null,
-                                base64Data = null,
-                                join = Message.Join(
-                                    avatar = image,
-                                    password = password.text.toString().toSHA256(), false
-                                ),
-                                id = null
-                            )
-                            val action =
-                                HomeFragmentDirections.actionHomeFragmentToChatFragment(
-                                    message,
-                                    false
+                            ProfileSharedProfile.getProfilePhoto { bitmap ->
+                                if (bitmap != null) {
+                                    image = ProfileSharedProfile.bitmapToByteArrayToString(bitmap)
+                                }
+                                val message = Message(
+                                    type = Message.MessageType.JOIN.code,
+                                    username = nameField.text.toString(),
+                                    text = null,
+                                    base64Data = null,
+                                    join = Message.Join(
+                                        avatar = image,
+                                        password = password.text.toString().toSHA256(), false
+                                    ),
+                                    id = null
                                 )
-                            findNavController().navigate(action)
+                                val action =
+                                    HomeFragmentDirections.actionHomeFragmentToChatFragment(
+                                        message,
+                                        false
+                                    )
+                                findNavController().navigate(action)
+                            }
                         }
                     }
                 } else {
-                    val snackbar = Snackbar.make(
+                    val snackBar = Snackbar.make(
                         requireView(),
                         "Server doest exists",
                         Snackbar.LENGTH_LONG
                     )
-                    snackbar.show()
+                    snackBar.show()
                     progressBar.visibility = View.INVISIBLE
                 }
             }

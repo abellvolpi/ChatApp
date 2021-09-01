@@ -12,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.chatapp.databinding.FragmentProfileBinding
 import com.example.chatapp.utils.ProfileSharedProfile
-import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -33,11 +32,12 @@ class ProfileFragment : Fragment(), CoroutineScope {
             ActivityResultContracts.GetContent()
         ) { uri ->
             launch(Dispatchers.Default) {
-                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
-                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+//                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
+//                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
+                uri?.let { ProfileSharedProfile.saveUriProfilePhoto(uri) }
             }
             launch(Dispatchers.Main) {
-                binding.photo.setImageURI(uri)
+                uri?.let { binding.photo.setImageURI(it) }
             }
         }
     }
@@ -53,14 +53,12 @@ class ProfileFragment : Fragment(), CoroutineScope {
         with(binding){
 
             username.text = ProfileSharedProfile.getProfile()
-            if (ProfileSharedProfile.getProfilePhoto() != null) {
-                binding.photo.setImageBitmap(ProfileSharedProfile.getProfilePhoto())
+            if (ProfileSharedProfile.getUriProfilePhoto() != null) {
+                binding.photo.setImageURI(ProfileSharedProfile.getUriProfilePhoto())
             }
-
             floatingEditButton.setOnClickListener {
                 startActivityLaunch.launch("image/*")
             }
-
             profileToolbar.setNavigationOnClickListener {
                 activity?.onBackPressed()
             }

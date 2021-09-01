@@ -4,11 +4,19 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
+import androidx.core.net.toUri
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
+import kotlin.coroutines.CoroutineContext
 
-object ProfileSharedProfile {
+object ProfileSharedProfile : CoroutineScope {
 
+    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private const val NAME = "profile"
     private val context by lazy {
         MainApplication.getContextInstance()
@@ -26,15 +34,15 @@ object ProfileSharedProfile {
         }
     }
 
-    fun saveIdProfile(id: Int){
+    fun saveIdProfile(id: Int) {
         val profileSharedPreferences = getSharedProfile()
-        with(profileSharedPreferences.edit()){
+        with(profileSharedPreferences.edit()) {
             putInt("id", id)
             apply()
         }
     }
 
-    fun getIdProfile(): Int{
+    fun getIdProfile(): Int {
         val shred = getSharedProfile()
         return shred.getInt("id", 0)
     }
@@ -44,29 +52,69 @@ object ProfileSharedProfile {
         return shared.getString("value", "NO NAME SAVED") ?: "NO NAME SAVED"
     }
 
-    fun saveProfilePhoto(imageBitmap: Bitmap) {
-        val profileSharedPreferences = getSharedProfile()
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        imageBitmap.compress(Bitmap.CompressFormat.PNG, 10, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
-        val result = Base64.encodeToString(byteArray, Base64.NO_WRAP)
-        profileSharedPreferences.edit().apply {
-            clear()
-            putString("image", result)
-            apply()
+
+    private fun saveProfilePhoto(imageBitmap: Bitmap) {
+        launch(Dispatchers.Default) {
+            val profileSharedPreferences = getSharedProfile()
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            imageBitmap.compress(Bitmap.CompressFormat.PNG, 10, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+            val result = Base64.encodeToString(byteArray, Base64.NO_WRAP)
+            profileSharedPreferences.edit().apply {
+//                clear()
+                putString("image", result)
+                apply()
+            }
         }
     }
 
-    fun getProfilePhoto(): Bitmap? {
+    fun saveUriProfilePhoto(imageUri: Uri) {
+        val profileSharedPreferences = getSharedProfile()
+        profileSharedPreferences.edit().apply {
+            clear()
+            putString("imageUri", imageUri.toString())
+            apply()
+        }
+        launch(Dispatchers.Default) {
+            Utils.uriToBitmap(imageUri, context.contentResolver) {
+                saveProfilePhoto(it)
+            }
+        }
+    }
+
+
+//    fun getProfilePhoto(): Bitmap? {
+//        val sharedPreferences = getSharedProfile()
+//        val bitmap = sharedPreferences.getString("image", "NO IMAGE SAVED")
+//        if (bitmap == "NO IMAGE SAVED") {
+//            return null
+//        }
+//        return BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
+//    }
+
+    fun getProfilePhoto(onResult: (Bitmap?) -> Unit) {
         val sharedPreferences = getSharedProfile()
         val bitmap = sharedPreferences.getString("image", "NO IMAGE SAVED")
         if (bitmap == "NO IMAGE SAVED") {
-            return null
+            onResult.invoke(null)
+        } else {
+            val result = BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
+            onResult.invoke(result)
         }
-        return BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
     }
 
-    fun getProfilePhotoBase64(): String?{
+
+    fun getUriProfilePhoto(): Uri? {
+        val sharedPreferences = getSharedProfile()
+        val uri = sharedPreferences.getString("imageUri", "NO IMAGE SAVED")
+        if (uri == "NO IMAGE SAVED") {
+            return null
+        }
+        return uri?.toUri()
+    }
+
+
+    fun getProfilePhotoBase64(): String? {
         val sharedPreferences = getSharedProfile()
         return sharedPreferences.getString("image", null)
     }
