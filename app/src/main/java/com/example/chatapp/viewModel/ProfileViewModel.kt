@@ -84,12 +84,12 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         }
     }
 
-    fun getRanking(onResult: (ArrayList<Profile>) -> Unit){
+    private fun getRanking(onResult: (ArrayList<Profile>) -> Unit){
         ranking = MutableLiveData()
         launch(Dispatchers.IO) {
             val ranking = controller.getRanking()
             withContext(Dispatchers.Main) {
-                onResult.invoke(ranking as ArrayList<Profile>)
+                onResult.invoke(ranking)
             }
         }
     }

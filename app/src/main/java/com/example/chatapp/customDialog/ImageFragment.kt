@@ -7,8 +7,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import com.example.chatapp.databinding.FragmentImageBinding
-import com.example.chatapp.utils.ProfileSharedProfile
 
 class ImageFragment : Fragment() {
 
@@ -18,11 +18,8 @@ class ImageFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentImageBinding.inflate(inflater, container, false)
 
+        binding.photoImageFragment.setImageURI(arguments?.getString("image")?.toUri())
 
-
-        ProfileSharedProfile.getUriProfilePhoto()?.let {
-            binding.photoImageFragment.setImageURI(it)
-        }
         val animation = TransitionInflater.from(requireContext()).inflateTransition(
             android.R.transition.move
         )
@@ -40,13 +37,6 @@ class ImageFragment : Fragment() {
             imageFragmentToolbar.setNavigationOnClickListener {
                 activity?.onBackPressed()
             }
-
         }
-
     }
-
-
-
-
-
 }

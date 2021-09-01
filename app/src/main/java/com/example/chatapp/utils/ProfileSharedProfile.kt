@@ -66,17 +66,15 @@ object ProfileSharedProfile : CoroutineScope {
     }
 
     fun saveUriProfilePhoto(imageUri: Uri) {
+        val profileSharedPreferences = getSharedProfile()
+        profileSharedPreferences.edit().apply {
+            clear()
+            putString("imageUri", imageUri.toString())
+            apply()
+        }
         launch(Dispatchers.Default) {
-            val profileSharedPreferences = getSharedProfile()
-            profileSharedPreferences.edit().apply {
-                clear()
-                putString("imageUri", imageUri.toString())
-                apply()
-            }
-            withContext(Dispatchers.Main) {
-                Utils.uriToBitmap(imageUri, context.contentResolver) {
-                    saveProfilePhoto(it)
-                }
+            Utils.uriToBitmap(imageUri, context.contentResolver) {
+                saveProfilePhoto(it)
             }
         }
     }
@@ -92,24 +90,13 @@ object ProfileSharedProfile : CoroutineScope {
 //    }
 
     fun getProfilePhoto(onResult: (Bitmap?) -> Unit) {
-
         val sharedPreferences = getSharedProfile()
-        val uri = sharedPreferences.getString("imageUri", "NO IMAGE SAVED")
-        if (uri == "NO IMAGE SAVED") {
+        val bitmap = sharedPreferences.getString("image", "NO IMAGE SAVED")
+        if (bitmap == "NO IMAGE SAVED") {
             onResult.invoke(null)
-            return
-        }
-        var result: Bitmap
-        uri?.let { uri ->
-            Utils.uriToBitmap(uri.toUri(), context.contentResolver) { bitmap ->
-                val bitmapString = bitmap.toString()
-                result = BitmapFactory.decodeByteArray(
-                    Base64.decode(bitmapString, 0),
-                    0,
-                    Base64.decode(bitmapString, 0).size
-                )
-                onResult.invoke(result)
-            }
+        } else {
+            val result = BitmapFactory.decodeByteArray(Base64.decode(bitmap, 0), 0, Base64.decode(bitmap, 0).size)
+            onResult.invoke(result)
         }
     }
 

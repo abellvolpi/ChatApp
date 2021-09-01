@@ -15,9 +15,9 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.animation.addListener
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -54,6 +54,7 @@ class ChatFragment : Fragment() {
     private var isHistoryCall = false
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
+    private lateinit var registerUseCamera: ActivityResultLauncher<Void>
     private lateinit var profileName: String
     private val profileViewModel: ProfileViewModel by activityViewModels()
     private val messageViewModel: MessageViewModel by activityViewModels()
@@ -68,7 +69,6 @@ class ChatFragment : Fragment() {
     private lateinit var snackbar: Snackbar
     private var joinMessage: Message? = null
 
-
     private val boardCells = Array(3) { arrayOfNulls<ImageButton>(3) } // Array de image button
     private var board = Board()
     private var canIPlay: Boolean = false
@@ -79,6 +79,21 @@ class ChatFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         profileName = ProfileSharedProfile.getProfile()
+
+        registerUseCamera = registerForActivityResult(
+            ActivityResultContracts.TakePicturePreview()
+        ) { bitmap ->
+            with(binding) {
+                if (bitmap != null) {
+                    sentImageFrameLayout.visibility = View.VISIBLE
+                    buttonClip.visibility = View.GONE
+                    sentImage.setImageBitmap(bitmap)
+                    buttonSend.visibility = View.VISIBLE
+                    buttonVoiceMessageRecord.visibility = View.GONE
+                }
+            }
+        }
+
         startActivityLaunch = registerForActivityResult(
             ActivityResultContracts.GetContent()
         ) { uri ->
@@ -222,10 +237,34 @@ class ChatFragment : Fragment() {
                 }
 
                 buttonClip.setOnClickListener {
+                    setAnimation()
+//                    if (sendImagesOptions.visibility == View.GONE) {
+//                        sendImagesOptions.visibility = View.VISIBLE
+//                    } else {
+//                        sendImagesOptions.visibility = View.GONE
+//                    }
+                }
+
+                cardViewCamera.setOnClickListener {
+                    sendImagesOptions.visibility = View.GONE
+                    checkPermission(android.Manifest.permission.CAMERA, REQUEST_IMAGE_CAPTURE)
+                    if (ContextCompat.checkSelfPermission(
+                            requireContext(),
+                            android.Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        registerUseCamera.launch(null)
+                    }
+
+
+                }
+                cardViewGallery.setOnClickListener {
+                    sendImagesOptions.visibility = View.GONE
                     startActivityLaunch.launch("image/*")
                     buttonSend.visibility = View.VISIBLE
                     buttonVoiceMessageRecord.visibility = View.GONE
                 }
+
                 closeImageButton.setOnClickListener {
                     restartUI()
                 }
@@ -233,7 +272,7 @@ class ChatFragment : Fragment() {
                 buttonSend.setOnClickListener {
                     when {
                         sentImageFrameLayout.visibility == View.VISIBLE -> {
-                //       val bitmap = sentImage.drawable.toBitmap()
+                            //       val bitmap = sentImage.drawable.toBitmap()
                             val base64 = Utils.bitmapToByteArray3(sentImage.drawable)
                             val message = Message(
                                 Message.MessageType.IMAGE.code,
@@ -275,9 +314,10 @@ class ChatFragment : Fragment() {
         }
     }
 
+
     private fun sendMessageSocket(message: Message) {
         connectionFactory.sendMessageToSocket(message) {}
-        if(message.type != Message.MessageType.JOIN.code) {
+        if (message.type != Message.MessageType.JOIN.code) {
             refreshUIChatAndSaveMessageInToRoom(message)
         }
     }
@@ -311,8 +351,9 @@ class ChatFragment : Fragment() {
                     refreshUiChat(message)
                     messageViewModel.insertMessage(message)
                 }
+
             }
-            Message.MessageType.JOIN.code ->{
+            Message.MessageType.JOIN.code -> {
                 refreshUiChat(message)
                 messageViewModel.insertMessage(message)
             }
@@ -348,7 +389,7 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.ACKNOWLEDGE.code) {
                 if (id != null) {
                     ProfileSharedProfile.saveIdProfile(id)
-                    empyHistoryCache()
+                    emptyHistoryCache()
                     if (text != null) {
                         profileViewModel.deleteAll {
                             Utils.listJsonToProfiles(text)?.forEach { profile ->
@@ -517,7 +558,7 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun empyHistoryCache() {
+    private fun emptyHistoryCache() {
         File(
             MainApplication.getContextInstance().cacheDir.absolutePath,
             "/photosProfile"
@@ -810,6 +851,8 @@ class ChatFragment : Fragment() {
 
     companion object {
         private const val RECORD_PERMISSION = 102
+        const val REQUEST_IMAGE_CAPTURE = 1
+
     }
 
     private fun startHistoryMode() {
@@ -869,6 +912,27 @@ class ChatFragment : Fragment() {
             }
         }
     }
+
+    private fun setAnimation() {
+        with(binding) {
+            val centerX = (sendImagesOptions.left + sendImagesOptions.right) / 2
+            val centerY = (sendImagesOptions.top) / 2
+            val radius = Math.max(sendImagesOptions.width, sendImagesOptions.height) * 2.0f
+
+            if (sendImagesOptions.visibility == View.GONE) {
+                sendImagesOptions.visibility = View.VISIBLE
+                ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, 0F, radius).start()
+            } else {
+                val reveal = ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, radius, 0F).apply {
+                    addListener(onEnd = {
+                        sendImagesOptions.visibility = View.GONE
+                    })
+                }
+                reveal.start()
+            }
+        }
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

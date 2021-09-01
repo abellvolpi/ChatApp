@@ -16,6 +16,7 @@ import android.widget.RadioButton
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.view.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -59,10 +60,16 @@ class HomeFragment : Fragment(), CoroutineScope {
         startActivityLaunch = registerForActivityResult(
             ActivityResultContracts.GetContent()
         ) { uri ->
+            launch(Dispatchers.Default) {
 //                val imageBitmap = context?.contentResolver?.let { Utils.uriToBitmap(uri, it) }
 //                imageBitmap?.let { ProfileSharedProfile.saveProfilePhoto(it) }
-            ProfileSharedProfile.saveUriProfilePhoto(uri)
-            binding.photo.setImageURI(uri)
+
+                uri?.let { ProfileSharedProfile.saveUriProfilePhoto(uri) }
+
+            }
+            launch(Dispatchers.Main) {
+                uri?.let { binding.photo.setImageURI(it) }
+            }
         }
     }
 
@@ -140,10 +147,16 @@ class HomeFragment : Fragment(), CoroutineScope {
             }
 
             photo.setOnClickListener {
+                val uri: String = if (ProfileSharedProfile.getUriProfilePhoto()!=null) {
+                    ProfileSharedProfile.getUriProfilePhoto().toString()
+                } else{
+                    "android.resource://" + requireActivity().packageName + "/" + R.drawable.ic_profile
+                }
+
                 val extras = FragmentNavigatorExtras(photo to "image_big")
                 navController.navigate(
                     R.id.action_homeFragment_to_imageFragment,
-                    null,
+                    bundleOf("image" to uri),
                     null,
                     extras
                 )
@@ -327,14 +340,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     finalBounds.left
                 )
             ).apply {
-                with(
-                    ObjectAnimator.ofFloat(
-                        expandedImageView,
-                        View.Y,
-                        startBounds.top,
-                        finalBounds.top
-                    )
-                )
+                with(ObjectAnimator.ofFloat(expandedImageView, View.Y, startBounds.top, finalBounds.top))
                 with(ObjectAnimator.ofFloat(expandedImageView, View.SCALE_X, startScale, 1f))
                 with(ObjectAnimator.ofFloat(expandedImageView, View.SCALE_Y, startScale, 1f))
             }
