@@ -17,6 +17,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
+import com.example.chatapp.tictactoe.TicTacToeManager
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.toSHA256
@@ -31,6 +32,7 @@ import java.io.DataOutputStream
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.coroutines.CoroutineContext
 
@@ -41,6 +43,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private val mutex = Mutex()
     private lateinit var sock: Socket
     private lateinit var serverSocket: ServerSocket
+    private lateinit var ticTacToeArray: ArrayList<TicTacToeManager>
 
     @Volatile
     private var id = 0
@@ -269,11 +272,28 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                     }
                                     Log.e(
                                         "Server Kick Skip",
-                                        "A kick has been skipped because command not are from Admin"
+                                        "A kick has been skipped because command is not from Admin"
                                     )
                                 }
                             }
                         }
+                    }
+                    Message.MessageType.TICPLAY.code -> {
+
+
+                        val message = Message(
+                            Message.MessageType.TICPLAY.code,
+                            username = classMessage.username,
+                            text = classMessage.text,
+                            base64Data = null,
+                            id = 1
+                        )
+                        sendMessageToASocket(socket, message)
+
+//                        Message(Message.MessageType.TICPLAY, username = classMessage.username, text = "3", id =)
+//verificar se ainda está disponível o espaço selecionado e atualizar o jogo, e mandar para o outro player
+
+
                     }
                     else -> {
                         sendMessageToAllSockets(classMessage)
@@ -311,7 +331,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 var idSocket: Int? = null
                 val socketIterator = sockets.entries.iterator()
                 mutex.withLock {
-                    while(socketIterator.hasNext()) {
+                    while (socketIterator.hasNext()) {
                         val socketFromHash = socketIterator.next()
                         if (socketFromHash.value == socket) {
                             idSocket = socketFromHash.key
@@ -322,7 +342,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             sockets[id]?.close()
                         }
                         sockets.remove(idSocket)
-                        profiles.forEach {profile ->
+                        profiles.forEach { profile ->
                             if (profile.id == idSocket) {
                                 idSocket?.let { notifyWhenProfileDisconnected(profile.name ?:"", it) }
                                     ?: Log.e("server", "error when notify user disconnect")
@@ -409,7 +429,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             messageJoin.join?.avatar ?: "",
             0, null, false
         )
-        if(sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())){
+        if (sockets[idSocket]?.getAddressFromSocket().equals(sock.getAddressFromSocket())) {
             profile.isAdmin = true
             profiles.add(profile)
             return

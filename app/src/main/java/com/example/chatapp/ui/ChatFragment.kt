@@ -9,7 +9,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewAnimationUtils
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -25,11 +28,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatapp.R
 import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
-import com.example.chatapp.models.Board
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
-import com.example.chatapp.room.withs.MessagesWithProfile
+import com.example.chatapp.tictactoe.UsersTicTacToeManager
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -70,8 +72,9 @@ class ChatFragment : Fragment() {
     private lateinit var snackbar: Snackbar
     private var joinMessage: Message? = null
 
-    private val boardCells = Array(3) { arrayOfNulls<ImageButton>(3) } // Array de image button
-    private var board = Board()
+    private val boardCells = arrayOf<ImageButton?>() // Array de image button
+
+    //    private var board = Board()
     private var canIPlay: Boolean = false
     private var player = ""
     private var isTicTacToePlayRunning = false
@@ -505,18 +508,19 @@ class ChatFragment : Fragment() {
                         Message.MessageType.TICPLAY.code -> {
                             Log.e("Received", "play")
                             val i = text?.split(",")?.get(0)?.toInt() ?: -1
-                            val j = text?.split(",")?.get(1)?.toInt() ?: -1
+//                            val j = text?.split(",")?.get(1)?.toInt() ?: -1
                             val playerReceived = text?.split(",")?.get(2) ?: ""
-                            val cell = Cell(i, j)
-                            board.placeMove(cell, playerReceived)
+                            val cell = Cell(i)
+                            UsersTicTacToeManager.placeMove(cell, playerReceived)
                             mapBoardToUi()
                             binding.bottomSheet.whoPlay.text =
                                 getString(R.string.your_move, player)
                             canIPlay = true
-                            verifyIfHasWinner()
+//                            verifyIfHasWinner()
                         }
                         Message.MessageType.TICINVITE.code -> {
                             receiveInviteTicTacToe(username ?: "Error username")
+
                         }
                         else -> refreshUIChatAndSaveMessageInToRoom(this)
                     }
@@ -629,7 +633,7 @@ class ChatFragment : Fragment() {
     private fun acceptInviteTicTacToe() {
         binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
         refreshBoard()
-        player = Board.X
+        player = UsersTicTacToeManager.OPPONENT
         canIPlay = false
         initViewTicTacToe()
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
@@ -666,15 +670,15 @@ class ChatFragment : Fragment() {
     private fun initViewTicTacToe() {
         isTicTacToePlayRunning = true
         with(binding.bottomSheet) {
-            boardCells[0][0] = btn1
-            boardCells[0][1] = btn2
-            boardCells[0][2] = btn3
-            boardCells[1][0] = btn4
-            boardCells[1][1] = btn5
-            boardCells[1][2] = btn6
-            boardCells[2][0] = btn7
-            boardCells[2][1] = btn8
-            boardCells[2][2] = btn9
+            boardCells[0] = btn1
+            boardCells[1] = btn2
+            boardCells[2] = btn3
+            boardCells[3] = btn4
+            boardCells[4] = btn5
+            boardCells[5] = btn6
+            boardCells[6] = btn7
+            boardCells[7] = btn8
+            boardCells[8] = btn9
             if (canIPlay) {
                 whoPlay.text = getString(R.string.your_move, player)
             } else {
@@ -689,51 +693,47 @@ class ChatFragment : Fragment() {
 
     private fun callClickListener() {
         for (i in boardCells.indices) {
-            for (j in boardCells.indices) {
-                boardCells[i][j]?.setOnClickListener(CellClickListener(i, j))
-            }
+            boardCells[i]?.setOnClickListener(CellClickListener(i))
         }
     }
 
-    inner class CellClickListener(private val i: Int, private val j: Int) :
+    inner class CellClickListener(private val i: Int) :
         View.OnClickListener {
         override fun onClick(v: View?) {
-            if (!board.gameOver() && canIPlay) {
-                val cell = Cell(i, j)
-                board.placeMove(cell, player)
-                sendPlay(i, j)
-                verifyIfHasWinner()
-            }
+//            if (!UsersTicTacToeManager.gameOver() && canIPlay) {
+            val cell = Cell(i)
+            UsersTicTacToeManager.placeMove(cell, player)
+            sendPlay(i)
+//                verifyIfHasWinner()
+//            }
             mapBoardToUi()
         }
     }
 
     private fun mapBoardToUi() {
-        for (i in board.boardPlaces.indices) {
-            for (j in board.boardPlaces.indices) {
-                when (board.boardPlaces[i][j]) {
-                    Board.O -> {
-                        boardCells[i][j]?.setImageResource(R.drawable.ic_circle)
-                        boardCells[i][j]?.isEnabled = false
-                    }
-                    Board.X -> {
-                        boardCells[i][j]?.setImageResource(R.drawable.ic_x)
-                        boardCells[i][j]?.isEnabled = false
-                    }
-                    //servirá para limpar o board após o restart
-                    else -> {
-                        boardCells[i][j]?.setImageResource(0)
-                        boardCells[i][j]?.isEnabled = true
-                    }
+        for (i in UsersTicTacToeManager.boardPlaces.indices) {
+            when (UsersTicTacToeManager.boardPlaces[i]) {
+                UsersTicTacToeManager.OPPONENT -> {
+                    boardCells[i]?.setImageResource(R.drawable.ic_circle)
+                    boardCells[i]?.isEnabled = false
+                }
+                UsersTicTacToeManager.PLAYER -> {
+                    boardCells[i]?.setImageResource(R.drawable.ic_x)
+                    boardCells[i]?.isEnabled = false
+                }
+                //servirá para limpar o board após o restart
+                else -> {
+                    boardCells[i]?.setImageResource(0)
+                    boardCells[i]?.isEnabled = true
                 }
             }
         }
     }
 
-    private fun sendPlay(i: Int, j: Int) {
+    private fun sendPlay(i: Int) {
         val messagePlay = Message(
             Message.MessageType.TICPLAY.code,
-            text = "${i},${j},${player}",
+            text = "${i},${player},",
             id = profileId,
             base64Data = null,
             username = profileName
@@ -742,39 +742,39 @@ class ChatFragment : Fragment() {
         binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)
         canIPlay = false
         Log.e("Sent", "play")
-        verifyIfHasWinner()
+//        verifyIfHasWinner()
     }
 
     private fun refreshBoard() {
-        board = Board()
+//        board = Board()
         mapBoardToUi()
     }
 
-    private fun verifyIfHasWinner() {
-        with(binding.bottomSheet) {
-            if (board.gameOver()) {
-                if (board.playerWon()) { //player O
-                    whoPlay.text = getString(R.string.player_o_wins)
-                    rematchButton.visibility = View.VISIBLE
-                    if (player == Board.O) { // verifica se eu sou o jogador O
-                        // adicionar pontos ao placar do jogador
-                    }
-                    return
-                }
-                if (board.opponentWon()) {
-                    whoPlay.text = getString(R.string.player_x_wins)
-                    rematchButton.visibility = View.VISIBLE
-                    if (player == Board.X) { // verifica se eu sou o jogador X
-                        //adicionar ponto ao placar do jogador
-                    }
-                    return
-                }
-                whoPlay.text = getString(R.string.draw)
-                rematchButton.visibility = View.VISIBLE
-                return
-            }
-        }
-    }
+//    private fun verifyIfHasWinner() {
+//        with(binding.bottomSheet) {
+//            if (TicTacToeManager.gameIsOver()) {
+//                if (TicTacToeManager.playerWon()) { //player O
+//                    whoPlay.text = getString(R.string.player_o_wins)
+//                    rematchButton.visibility = View.VISIBLE
+//                    if (player == TicTacToeManager) { // verifica se eu sou o jogador O
+//                        // adicionar pontos ao placar do jogador
+//                    }
+//                    return
+//                }
+//                if (TicTacToeManager.opponentWon()) {
+//                    whoPlay.text = getString(R.string.player_x_wins)
+//                    rematchButton.visibility = View.VISIBLE
+//                    if (player == Board.X) { // verifica se eu sou o jogador X
+//                        //adicionar ponto ao placar do jogador
+//                    }
+//                    return
+//                }
+//                whoPlay.text = getString(R.string.draw)
+//                rematchButton.visibility = View.VISIBLE
+//                return
+//            }
+//        }
+//    }
 
     private fun checkPermission(permission: String, requestCode: Int) {
         if (ContextCompat.checkSelfPermission(
