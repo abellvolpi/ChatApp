@@ -17,7 +17,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
-import com.example.chatapp.tictactoe.TicTacToeManager
+import com.example.chatapp.tictactoe.ServerTicTacToeManager
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.toSHA256
@@ -32,7 +32,6 @@ import java.io.DataOutputStream
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.coroutines.CoroutineContext
 
@@ -43,7 +42,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private val mutex = Mutex()
     private lateinit var sock: Socket
     private lateinit var serverSocket: ServerSocket
-    private lateinit var ticTacToeArray: ArrayList<TicTacToeManager>
 
     @Volatile
     private var id = 0
@@ -278,9 +276,30 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             }
                         }
                     }
+
+                    Message.MessageType.TICINVITE.code -> {
+                        if (classMessage.text == null) {
+                            // == send invite
+
+
+
+                        } else {
+                            val ticMessages = classMessage.ticMessages
+                            if (ticMessages != null) {
+                                val player1 = ticMessages.player1Id
+                                val player2 = ticMessages.player2Id
+                                if (player1 != null && player2 != null)
+                                    ServerTicTacToeManager.newGame(player1, player2)
+                            }
+
+                        }
+
+                    }
                     Message.MessageType.TICPLAY.code -> {
 
-
+                        val playerMove = classMessage.text.toString().split(",")[0]
+                        val player1Id = classMessage.text.toString().split(",")[1]
+                        val player2Id = classMessage.text.toString().split(",")[2]
                         val message = Message(
                             Message.MessageType.TICPLAY.code,
                             username = classMessage.username,
@@ -288,7 +307,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             base64Data = null,
                             id = 1
                         )
-                        sendMessageToASocket(socket, message)
 
 //                        Message(Message.MessageType.TICPLAY, username = classMessage.username, text = "3", id =)
 //verificar se ainda está disponível o espaço selecionado e atualizar o jogo, e mandar para o outro player
@@ -344,7 +362,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         sockets.remove(idSocket)
                         profiles.forEach { profile ->
                             if (profile.id == idSocket) {
-                                idSocket?.let { notifyWhenProfileDisconnected(profile.name ?:"", it) }
+                                idSocket?.let { notifyWhenProfileDisconnected(profile.name ?: "", it) }
                                     ?: Log.e("server", "error when notify user disconnect")
                                 Log.d("service", socket.getAddressFromSocket() + "disconnect")
                                 profiles.remove(profile)

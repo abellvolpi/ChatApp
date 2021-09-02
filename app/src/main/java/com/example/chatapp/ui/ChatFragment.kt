@@ -31,6 +31,7 @@ import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
+import com.example.chatapp.tictactoe.TicMessages
 import com.example.chatapp.tictactoe.UsersTicTacToeManager
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
@@ -519,7 +520,7 @@ class ChatFragment : Fragment() {
 //                            verifyIfHasWinner()
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            receiveInviteTicTacToe(username ?: "Error username")
+                            receiveInviteTicTacToe(username ?: "Error username",id)
 
                         }
                         else -> refreshUIChatAndSaveMessageInToRoom(this)
@@ -599,11 +600,11 @@ class ChatFragment : Fragment() {
         onResult.invoke(output.absolutePath)
     }
 
-    private fun receiveInviteTicTacToe(name: String) {
+    private fun receiveInviteTicTacToe(name: String, id: Int?) {
         val builder = AlertDialog.Builder(requireContext()).apply {
             setMessage(getString(R.string.invite_received, name))
             setPositiveButton("ok") { _, _ ->
-                acceptInviteTicTacToe()
+                acceptInviteTicTacToe(id)
             }
             setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
                 dialog?.dismiss()
@@ -630,19 +631,21 @@ class ChatFragment : Fragment() {
         snackbar.show()
     }
 
-    private fun acceptInviteTicTacToe() {
+    private fun acceptInviteTicTacToe(opponentId: Int?) {
         binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
         refreshBoard()
         player = UsersTicTacToeManager.OPPONENT
         canIPlay = false
         initViewTicTacToe()
+
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         val message = Message(
             Message.MessageType.TICINVITE.code,
             text = "accepted",
             id = profileId,
             base64Data = null,
-            username = profileName
+            username = profileName,
+            ticMessages = TicMessages(player1Id = opponentId, player2Id = profileId)
         )
         sendMessageSocket(message)
     }
@@ -733,7 +736,7 @@ class ChatFragment : Fragment() {
     private fun sendPlay(i: Int) {
         val messagePlay = Message(
             Message.MessageType.TICPLAY.code,
-            text = "${i},${player},",
+            text = "${i},${profileId},",
             id = profileId,
             base64Data = null,
             username = profileName

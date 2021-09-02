@@ -5,6 +5,7 @@ import com.example.chatapp.models.Cell
 object UsersTicTacToeManager {
     const val PLAYER = "O"
     const val OPPONENT = "X"
+    var matchId : Int? = null
     var boardPlaces = arrayOf<String?>()
 
 
@@ -14,6 +15,11 @@ object UsersTicTacToeManager {
 
     fun restartGame() {
         boardPlaces = emptyArray()
+        matchId = null
+    }
+
+    fun newGame(matchId : Int){
+        this.matchId = matchId
     }
 
 //    fun gameIsOver(): Boolean {

@@ -1,34 +1,46 @@
 package com.example.chatapp.tictactoe
 
-import java.net.Socket
+object ServerTicTacToeManager {
 
-class TicTacToeManager(val socket1Id: Int,
-                       val socket2Id: Int) {
-
-    private val player1 = "O"
-    private val player2 = "X"
+    private lateinit var ticTacToeArray: ArrayList<TicTacToeGame>
+    private const val player1 = "O"
+    private const val player2 = "X"
 
 
-    var boardPlaces = arrayOf<String?>()
-
-
-
-    fun placeMove(player: String, position: Int) {
-        boardPlaces[position] = player
+    fun newGame(player1Id: Int, player2Id: Int) {
+        for (i in ticTacToeArray.indices) {
+            if (ticTacToeArray.lastIndex == i) {
+                var matchId = i + 1
+                var ticTacToeGame = TicTacToeGame(matchId, player1Id, player2Id)
+                ticTacToeArray.add(ticTacToeGame)
+            }
+        }
     }
 
-    fun restartGame() {
-        boardPlaces = emptyArray()
+    fun placeMove(matchId: Int, player: String, position: Int) {
+        for (i in ticTacToeArray.indices) {
+            if (i == matchId) {
+                ticTacToeArray[i].board[position] = player
+            }
+        }
     }
 
-    fun gameIsOver(): Boolean {
-        if (player1Won() || player2Won() || hasDraw()) {
+    fun removeGame(matchId: Int) {
+        for (i in ticTacToeArray.indices) {
+            if (i == matchId) {
+                ticTacToeArray.removeAt(i)
+            }
+        }
+    }
+
+    fun gameIsOver(boardPlaces: ArrayList<String>): Boolean {
+        if (player1Won(boardPlaces) || player2Won(boardPlaces) || hasDraw(boardPlaces)) {
             return true
         }
         return false
     }
 
-    fun player2Won(): Boolean {
+    private fun player2Won(boardPlaces: ArrayList<String>): Boolean {
         for (i in boardPlaces.indices step 3) {
             if (boardPlaces[i] == boardPlaces[i + 1] &&
                 boardPlaces[i + 1] == boardPlaces[i + 2] &&
@@ -50,7 +62,7 @@ class TicTacToeManager(val socket1Id: Int,
         return false
     }
 
-    fun player1Won(): Boolean {
+    private fun player1Won(boardPlaces: ArrayList<String>): Boolean {
         for (i in boardPlaces.indices step 3) {
             if (boardPlaces[i] == boardPlaces[i + 1] &&
                 boardPlaces[i + 1] == boardPlaces[i + 2] &&
@@ -72,9 +84,9 @@ class TicTacToeManager(val socket1Id: Int,
         return false
     }
 
-    fun hasDraw(): Boolean {
+    private fun hasDraw(boardPlaces: ArrayList<String>): Boolean {
         for (i in boardPlaces.indices) {
-            if (boardPlaces[i].isNullOrEmpty()) {
+            if (boardPlaces[i].isEmpty()) {
                 return false
             }
         }
