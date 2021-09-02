@@ -159,11 +159,8 @@ class ChatFragment : Fragment() {
                 readMessageMissed()
                 connectionFactory.startListenerMessages()
                 connectionFactory.line.observe(viewLifecycleOwner) {
-                    Log.i("observer", "triggered")
                     if (it != null) {
-                        Log.i("observer message1", "received: ${it.second}")
                         if (connectionFactory.lastLine != it.second) {
-                            Log.i("observer message2", "received: ${it.second}")
                             validReceivedMessage(it.first)
                             connectionFactory.lastLine = it.second
                             connectionFactory.isRead.remove(it.second)
@@ -270,19 +267,22 @@ class ChatFragment : Fragment() {
                 }
 
                 buttonSend.setOnClickListener {
+                    progressBarSendMessage.visibility = View.VISIBLE
                     when {
                         sentImageFrameLayout.visibility == View.VISIBLE -> {
                             //       val bitmap = sentImage.drawable.toBitmap()
-                            val base64 = Utils.bitmapToByteArray3(sentImage.drawable)
-                            val message = Message(
-                                Message.MessageType.IMAGE.code,
-                                id = profileId,
-                                base64Data = base64,
-                                text = null,
-                                username = profileName
-                            )
-                            sendMessageSocket(message)
-                            restartUI()
+
+                            Utils.bitmapToByteArray3(sentImage.drawable){
+                                val message = Message(
+                                    Message.MessageType.IMAGE.code,
+                                    id = profileId,
+                                    base64Data = it,
+                                    text = null,
+                                    username = profileName
+                                )
+                                sendMessageSocket(message)
+                                restartUI()
+                            }
 
                         }
                         messageField.text.isNotBlank() -> {
@@ -306,6 +306,7 @@ class ChatFragment : Fragment() {
                                 .show()
                         }
                     }
+                    progressBarSendMessage.visibility = View.GONE
                 }
                 inflateToolBarOptions()
             } else {
@@ -333,7 +334,6 @@ class ChatFragment : Fragment() {
                 }
             }
         }
-
     }
 
     private fun refreshUIChatAndSaveMessageInToRoom(message: Message) {
@@ -438,7 +438,6 @@ class ChatFragment : Fragment() {
                         } else {
                             val profile = Profile(id, username ?: "", "", 0, true, join.isAdmin)
                             profileViewModel.insert(profile)
-//                            refreshUIChatAndSaveMessageInToRoom(this)
                             refreshUIChatAndSaveMessageInToRoom(this)
                         }
                     }
@@ -482,15 +481,15 @@ class ChatFragment : Fragment() {
             when (status) {
                 Message.MessageStatus.SENT.code -> {
 //                    when (type) {
-////                        Message.MessageType.MESSAGE.code -> {
-////                            refreshUIChatAndSaveMessageInToRoom(this)
-////                        }
-////                        Message.MessageType.AUDIO.code -> {
-////                            refreshUIChatAndSaveMessageInToRoom(this)
-////                        }
-////                        Message.MessageType.IMAGE.code -> {
-////                            refreshUIChatAndSaveMessageInToRoom(this)
-////                        }
+//                        Message.MessageType.MESSAGE.code -> {
+//                            refreshUIChatAndSaveMessageInToRoom(this)
+//                        }
+//                        Message.MessageType.AUDIO.code -> {
+//                            refreshUIChatAndSaveMessageInToRoom(this)
+//                        }
+//                        Message.MessageType.IMAGE.code -> {
+//                            refreshUIChatAndSaveMessageInToRoom(this)
+//                        }
 //                    }
                 }
 

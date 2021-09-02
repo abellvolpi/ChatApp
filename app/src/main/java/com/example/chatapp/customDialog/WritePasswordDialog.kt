@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.example.chatapp.databinding.DialogWritePasswordBinding
 import com.example.chatapp.models.Message
 import com.example.chatapp.utils.Extensions.toSHA256
@@ -48,6 +49,10 @@ class WritePasswordDialog: DialogFragment() {
             )
                 connectionFactory.sendMessageToSocket(message){}
                 dismiss()
+            }
+            cancel.setOnClickListener {
+                val action = WritePasswordDialogDirections.actionWritePasswordDialogToHomeFragment()
+                findNavController().navigate(action)
             }
         }
     }

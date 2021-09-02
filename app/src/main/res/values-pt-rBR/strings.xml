@@ -14,7 +14,7 @@
     <string name="your_move">Sua vez de jogar. você é %s</string>
     <string name="invite_rejected">Jogador recusou seu convite</string>
     <string name="invite_received">Aceitar uma partida de TicTacToe com %s ?</string>
-    <string name="cancel">cancelar</string>
+    <string name="cancel">Cancelar</string>
     <string name="waiting_accept">Aguardando oponente aceitar a partida</string>
     <string name="waiting_move">Esperando o oponente jogar…</string>
     <string name="player_o_wins">Jogador O ganhou!</string>
@@ -52,5 +52,4 @@
     <string name="profile_photo">Foto de Perfil</string>
     <string name="camera">Câmera</string>
     <string name="gallery">Galeria</string>
-
 </resources>

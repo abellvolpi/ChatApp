@@ -148,7 +148,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/messages_RecyclerView">
+            app:layout_constraintTop_toBottomOf="@id/messages_recyclerview">
 
             <FrameLayout
                 android:id="@+id/sent_image_frame_layout"
@@ -160,6 +160,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
+
+
                 <ImageView
                     android:id="@+id/sent_image"
                     android:layout_width="match_parent"
@@ -167,7 +169,6 @@
                     android:layout_gravity="center"
                     android:scaleType="fitCenter"
                     tools:src="@drawable/ic_profile" />
-
                 <ImageButton
                     android:id="@+id/close_image_button"
                     android:layout_width="50dp"

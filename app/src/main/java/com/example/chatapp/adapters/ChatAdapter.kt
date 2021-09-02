@@ -47,7 +47,7 @@ class ChatAdapter(
         override fun bind(msg: Message) {
             with(binding) {
                 Log.w("Image: ", msg.base64Data.toString())
-                name.text = msg.text
+                name.text = msg.username
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
                     val file = File(it)

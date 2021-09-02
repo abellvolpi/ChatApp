@@ -153,7 +153,13 @@
     <dialog
         android:id="@+id/writePasswordDialog"
         android:name="com.example.chatapp.customDialog.WritePasswordDialog"
-        android:label="WritePasswordDialog" />
+        android:label="WritePasswordDialog" >
+        <action
+            android:id="@+id/action_writePasswordDialog_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true"/>
+    </dialog>
     <dialog
         android:id="@+id/shareLinkBottomSheetDialogFragment"
         android:name="com.example.chatapp.customDialog.ShareLinkBottomSheetDialogFragment"

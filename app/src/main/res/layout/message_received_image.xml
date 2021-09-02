@@ -30,6 +30,7 @@
             tools:text="Asiduasdiuhasdiuhasdiuhasiudh" />
 
         <ImageView
+            android:transitionName="image_big"
             android:id="@+id/received_image"
             android:layout_width="230dp"
             android:layout_height="180dp"

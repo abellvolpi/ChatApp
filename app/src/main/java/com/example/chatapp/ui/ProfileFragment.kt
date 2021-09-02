@@ -51,7 +51,6 @@ class ProfileFragment : Fragment(), CoroutineScope {
         super.onViewCreated(view, savedInstanceState)
 
         with(binding){
-
             username.text = ProfileSharedProfile.getProfile()
             if (ProfileSharedProfile.getUriProfilePhoto() != null) {
                 binding.photo.setImageURI(ProfileSharedProfile.getUriProfilePhoto())
