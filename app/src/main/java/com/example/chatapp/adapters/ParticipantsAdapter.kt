@@ -17,6 +17,7 @@ import com.example.chatapp.models.Profile
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.viewModel.ConnectionFactory
+import com.google.android.material.snackbar.Snackbar
 import java.io.File
 
 class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val connectionFactory: ConnectionFactory) :
@@ -64,6 +65,22 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                     adminTitle.visibility = View.VISIBLE
                 }else{
                     adminTitle.visibility = View.INVISIBLE
+                }
+                participant.setOnClickListener {
+                    val message = Message(
+                        Message.MessageType.TICINVITE.code,
+                        text = null,
+                        id = profile.id,
+                        base64Data = null,
+                        username = profile.name
+                    )
+                    connectionFactory.sendMessageToSocket(message){}
+                    val snackbar = Snackbar.make(
+                        root,
+                        root.context.getString(R.string.waiting_accept),
+                        Snackbar.LENGTH_LONG
+                    )
+                    snackbar.show()
                 }
             }
         }

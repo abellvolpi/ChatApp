@@ -327,7 +327,6 @@ object Utils : CoroutineScope {
                 onResult.invoke(base64)
             }
         }
-
     }
 
 
