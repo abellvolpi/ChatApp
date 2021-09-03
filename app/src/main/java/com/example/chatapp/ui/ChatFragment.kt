@@ -74,12 +74,10 @@ class ChatFragment : Fragment() {
     private var canIPlay: Boolean = false
     private var player = ""
     private var isTicTacToePlayRunning = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         profileName = ProfileSharedProfile.getProfile()
-
         registerUseCamera = registerForActivityResult(
             ActivityResultContracts.TakePicturePreview()
         ) { bitmap ->
@@ -119,6 +117,7 @@ class ChatFragment : Fragment() {
         isHistoryCall = arguments?.getBoolean("isHistoryCall") ?: false
         initView()
         if (connectionFactory.isFirstAccessInThisFragment() && joinMessage != null) {
+            binding.centerProgressBar.visibility = View.VISIBLE
             sendMessageSocket(joinMessage!!)
             connectionFactory.setFirstAccessChatFragment(false)
         }
@@ -175,6 +174,8 @@ class ChatFragment : Fragment() {
                 connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                     if (it == false) {
                         Log.e("Chat disconnected", "server down")
+                        val action = ChatFragmentDirections.actionChatFragmentToHomeFragment(getString(R.string.server_disconnected))
+                        navController.navigate(action)
                     }
                 }
                 constraintLayout.setOnClickListener {
@@ -414,6 +415,7 @@ class ChatFragment : Fragment() {
                         }
                     }
                 }
+                binding.centerProgressBar.visibility = View.GONE
                 return
             }
 
@@ -932,9 +934,9 @@ class ChatFragment : Fragment() {
         }
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
-        connectionFactory.setFirstAccessChatFragment(false)
+        connectionFactory.setFirstAccessChatFragment(true)
+        connectionFactory.closeSocket()
     }
 }

@@ -14,7 +14,6 @@ import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.io.DataOutputStream
 import java.net.Socket
 import java.util.*
@@ -25,29 +24,10 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
     private lateinit var socket: Socket
     var line: MutableLiveData<Pair<Message, String>> = MutableLiveData()
-
-    @Volatile
     var isRead: ArrayList<String> = arrayListOf()
-    private val mutex = Mutex()
     var lastLine: String = ""
     private var backgroundMessages = arrayListOf<Message>()
     var serverOnline: MutableLiveData<Boolean> = MutableLiveData()
-
-//    fun readMessageNotReads(onResult: (ArrayList<String>) -> Unit){
-//        launch(Dispatchers.Default) {
-//            mutex.withLock {
-//                onResult
-//            }
-//        }
-//    }
-
-    fun removeIsNotReadMessages(position: Int) {
-        launch(Dispatchers.Default) {
-            mutex.withLock {
-                isRead.removeAt(position)
-            }
-        }
-    }
 
     fun setFirstAccessChatFragment(boolean: Boolean) {
         isFirstAccessInThisFragment = boolean
@@ -61,8 +41,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         val context = MainApplication.getContextInstance()
         observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                if (socket.isConnected) {
+            while (!socket.isClosed) {
+                if (socket.isConnected || !socket.isClosed) {
                     val reader = Scanner(socket.getInputStream().bufferedReader())
                     val line: String
                     if (reader.hasNextLine()) {
@@ -167,7 +147,7 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
             while (true) {
                 if (socket.isConnected) {
                     try {
-                        socket.getOutputStream().bufferedWriter(Charsets.UTF_8).apply {
+                        socket.getOutputStream()?.bufferedWriter(Charsets.UTF_8)?.apply {
                             write("ping\n")
                             flush()
                         }

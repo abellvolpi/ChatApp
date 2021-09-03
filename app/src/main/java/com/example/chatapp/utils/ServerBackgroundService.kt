@@ -165,7 +165,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     readMessageAndSendToAllSockets(sock)
                     Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
                 } catch (e: java.net.SocketException) {
-                    return@launch
                 }
             }
         }
@@ -193,7 +192,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
             } catch (e: Exception) {
                 Log.e("service sendToAll", e.toString())
                 removeSocket(socket.value)
-                socketIterator.remove()
             }
         }
     }
@@ -201,7 +199,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private fun readMessageAndSendToAllSockets(socket: Socket) {
         launch(Dispatchers.IO) {
             while (true) {
-                Log.d("service", "readingMessage")
                 try {
                     val reader = Scanner(socket.getInputStream().bufferedReader())
                     val line: String
@@ -304,10 +301,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
     @Synchronized
     private suspend fun removeSocket(socket: Socket) {
         withContext(Dispatchers.Default) {
-            if (sockets.containsValue(socket)) {
-                var idSocket: Int? = null
-                val socketIterator = sockets.entries.iterator()
-                mutex.withLock {
+            var idSocket: Int? = null
+            val socketIterator = sockets.entries.iterator()
+            mutex.withLock {
+                if (sockets.containsValue(socket)) {
                     while (socketIterator.hasNext()) {
                         val socketFromHash = socketIterator.next()
                         if (socketFromHash.value == socket) {
@@ -342,6 +339,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     } else {
                         Log.e("server", "error when remove socket from socket")
                     }
+                }else{
+                    Log.e("removeSocket", "Error when remove socket because socket is not found in the current list.")
                 }
             }
         }
@@ -357,12 +356,19 @@ class ServerBackgroundService : Service(), CoroutineScope {
     }
 
     @Synchronized
-    private fun sendMessageToASocket(socket: Socket, message: Message) {
-        launch(Dispatchers.IO) {
+    private suspend fun sendMessageToASocket(socket: Socket, message: Message) {
+        withContext(Dispatchers.IO) {
+//            try {
             val bw = DataOutputStream(socket.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
             bw.flush()
             Log.d("service", "Sent message to a socket")
+//            }catch (e: Exception){
+//                val messageJson = Utils.messageClassToJSON(message)
+//                Log.e("error send message:", messageJson)
+//                Log.e("error send message:", "error: $e")
+//                removeSocket(socket)
+//            }
         }
     }
 
@@ -370,7 +376,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
     private suspend fun sendIdToSocket(socket: Socket, message: Message) =
         withContext(Dispatchers.IO) {
             id++
-            sockets[id] = socket
+            mutex.withLock {
+                sockets.put(id, socket)
+            }
             notifyProfileConnected(message, id)
             saveProfileOnService(message, id)
             val messageAkl = Message(
@@ -380,6 +388,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 base64Data = null,
                 id = id
             )
+            Log.d("service", "Message ACKNOWLEDGE generated to $id")
             sendMessageToASocket(socket, messageAkl)
             Log.d("service", "Sent id to socket")
         }

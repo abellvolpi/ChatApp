@@ -9,22 +9,23 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.FragmentNavigatorExtras
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.*
 import com.example.chatapp.models.Message
-import com.example.chatapp.room.withs.MessagesWithProfile
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.Utils
 import com.example.chatapp.viewModel.UtilsViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class ChatAdapter(
@@ -74,8 +75,10 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                Log.w("" +
-                        "Image: ", msg.base64Data.toString())
+                Log.w(
+                    "" +
+                            "Image: ", msg.base64Data.toString()
+                )
                 name.text = msg.text
                 time.text = timeFormatter(msg.time)
                 msg.base64Data?.let {
@@ -441,20 +444,16 @@ class ChatAdapter(
             positionMessageAudioRunning = position
             liveDataToObserve.changeAudioRunning(true, position)
             CoroutineScope(Dispatchers.IO).launch {
-                while (true) {
-                    if (mediaPlayer.isPlaying) {
-                        withContext(Dispatchers.Main) {
-                            try {
-                                onResult.invoke(mediaPlayer.currentPosition.toLong())
-                            } catch (e: Exception) {
-                                stopAudio()
-                            }
+                while (mediaPlayer.isPlaying) {
+                    withContext(Dispatchers.Main) {
+                        try {
+                            onResult.invoke(mediaPlayer.currentPosition.toLong())
+                        } catch (e: Exception) {
+                            stopAudio()
                         }
-                    } else {
-                        break
                     }
-                    delay(250)
                 }
+//                    delay(250)
             }
         }
     }

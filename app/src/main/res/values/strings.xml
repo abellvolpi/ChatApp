@@ -55,7 +55,7 @@
 
     <!--    Chat Fragment-->
 
-    <string name="server_disconnected">Server disconnected because: %s</string>
+    <string name="server_disconnected">Server disconnected</string>
     <string name="game_started">Game started. Swipe up</string>
     <string name="message_blank">Message cannot be blank</string>
     <string name="your_move">Your move. You are %s</string>

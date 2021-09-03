@@ -6,7 +6,7 @@
     <string name="port_error">Insira uma porta</string>
     <string name="name_error">Insira um nome</string>
     <string name="ip_error">Insira um Ip</string>
-    <string name="server_disconnected">Servidor Desconectado, causa: %s</string>
+    <string name="server_disconnected">Servidor Desconectado</string>
     <string name="game_started">O jogo já começou. Para retornar arraste para cima</string>
     <string name="player_x_wins">Jogador X ganhou!</string>
     <string name="winner">%s ganhou a partida</string>
