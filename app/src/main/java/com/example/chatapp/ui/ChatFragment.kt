@@ -469,7 +469,7 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.LEAVE.code) {
                 refreshUIChatAndSaveMessageInToRoom(this)
                 if (id != null) {
-                    profileViewModel.getProfile(id.toString()) {
+                    profileViewModel.getProfile(id) {
                         if (it != null) {
                             it.isMemberYet = false
                             profileViewModel.updateProfile(it)
@@ -527,7 +527,9 @@ class ChatFragment : Fragment() {
                             receivePlay(text)
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            receiveInviteTicTacToe(username ?: "Error username", id)
+                            if(id!=null) {
+                                receiveInviteTicTacToe(id)
+                            }else{}
                         }
                         else -> refreshUIChatAndSaveMessageInToRoom(this)
                     }
@@ -606,18 +608,20 @@ class ChatFragment : Fragment() {
         onResult.invoke(output.absolutePath)
     }
 
-    private fun receiveInviteTicTacToe(name: String, id: Int?) {
-        val builder = AlertDialog.Builder(requireContext()).apply {
-            setMessage(getString(R.string.invite_received, name))
-            setPositiveButton("ok") { _, _ ->
-                acceptInviteTicTacToe(id)
+    private fun receiveInviteTicTacToe(id: Int) {
+        profileViewModel.getProfile(id) { profile ->
+            val builder = AlertDialog.Builder(requireContext()).apply {
+                setMessage(getString(R.string.invite_received, profile?.name))
+                setPositiveButton("ok") { _, _ ->
+                    acceptInviteTicTacToe(id)
+                }
+                setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
+                    dialog?.dismiss()
+                    declineInviteTicTacToe()
+                }
             }
-            setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
-                dialog?.dismiss()
-                declineInviteTicTacToe()
-            }
+            builder.show()
         }
-        builder.show()
     }
 
     private fun receivePlay(text: String?) {

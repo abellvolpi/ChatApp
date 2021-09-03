@@ -64,7 +64,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         }
     }
 
-    fun getProfile(id: String, onResult: (Profile?) -> Unit) {
+    fun getProfile(id: Int, onResult: (Profile?) -> Unit) {
         launch(Dispatchers.IO) {
             val profile = controller.getById(id)
             withContext(Dispatchers.Main){

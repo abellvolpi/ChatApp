@@ -273,7 +273,10 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
                     Message.MessageType.TICINVITE.code -> {
                         if (classMessage.text == null) {
-                            // == send invite
+                            // == send inv
+                                sockets.get(classMessage.username?.toInt())?.let {
+                                        sendMessageToASocket(it, classMessage)
+                                }
                         } else { // = accepted or declined, caso declined, tic messages é null
                             val ticMessages = classMessage.ticMessages
                             if (ticMessages != null) {
@@ -385,7 +388,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     } else {
                         Log.e("server", "error when remove socket from socket")
                     }
-                }else{
+                } else {
                     Log.e("removeSocket", "Error when remove socket because socket is not found in the current list.")
                 }
             }

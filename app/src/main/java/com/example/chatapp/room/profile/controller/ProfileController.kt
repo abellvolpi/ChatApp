@@ -26,7 +26,7 @@ class ProfileController {
     fun update(profile: Profile){
         profileController.update(profile)
     }
-    fun getById(id: String): Profile?{
+    fun getById(id: Int): Profile?{
         return profileController.getById(id)
     }
     fun deleteAll(){

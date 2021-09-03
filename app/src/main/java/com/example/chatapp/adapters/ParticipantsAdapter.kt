@@ -70,9 +70,9 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                     val message = Message(
                         Message.MessageType.TICINVITE.code,
                         text = null,
-                        id = profile.id,
+                        id = ProfileSharedProfile.getIdProfile(),
                         base64Data = null,
-                        username = profile.name
+                        username = profile.id.toString()
                     )
                     connectionFactory.sendMessageToSocket(message){}
                     val snackbar = Snackbar.make(
