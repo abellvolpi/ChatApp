@@ -23,6 +23,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.graphics.scale
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
@@ -38,6 +39,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.net.Socket
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
@@ -317,11 +319,11 @@ object Utils : CoroutineScope {
 
     fun bitmapToByteArray3(image: Drawable, onResult: (String) -> Unit) {
         launch(Dispatchers.Default) {
-            val bitmap = (image as BitmapDrawable).bitmap.scale(640,480)
+            val bitmap = (image as BitmapDrawable).bitmap.scale(640, 480)
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
             val base64 = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 onResult.invoke(base64)
             }
         }
@@ -329,16 +331,27 @@ object Utils : CoroutineScope {
     }
 
 
-    fun uriToBitmap(uri: Uri, contentResolver: ContentResolver, onResult: (Bitmap) -> Unit){
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val image = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
-                onResult.invoke(image)
-            } else {
-                val image = BitmapFactory.decodeFileDescriptor(uri.let {
-                    contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
+    fun uriToBitmap(uri: Uri, contentResolver: ContentResolver, onResult: (Bitmap) -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val image = ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
+            onResult.invoke(image)
+        } else {
+            val image = BitmapFactory.decodeFileDescriptor(uri.let {
+                contentResolver.openFileDescriptor(it, "r")?.fileDescriptor
 
-                })
-                onResult.invoke(image)
-            }
+            })
+            onResult.invoke(image)
+        }
     }
+
+    fun createImageName(): String {
+        return "${UUID.randomUUID()}.jpg"
+    }
+
+
+    fun createUri(name: String): Uri {
+        val file = File(MainApplication.getContextInstance().getExternalFilesDir("image"), name)
+        return FileProvider.getUriForFile(MainApplication.getContextInstance(), "com.example.chatapp.provider_file", file)
+    }
+
 }

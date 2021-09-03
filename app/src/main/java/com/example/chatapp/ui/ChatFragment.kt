@@ -4,12 +4,16 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewAnimationUtils
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -30,7 +34,6 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
 import com.example.chatapp.tictactoe.TicMessages
 import com.example.chatapp.tictactoe.UsersTicTacToeManager
-import com.example.chatapp.tictactoe.UsersTicTacToeManager.OPPONENT
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -56,7 +59,7 @@ class ChatFragment : Fragment() {
     private var isHistoryCall = false
     private lateinit var bottomSheetForConfig: BottomSheetBehavior<View>
     private lateinit var startActivityLaunch: ActivityResultLauncher<String>
-    private lateinit var registerUseCamera: ActivityResultLauncher<Void>
+    private lateinit var registerUseCamera: ActivityResultLauncher<Uri>
     private lateinit var profileName: String
     private val profileViewModel: ProfileViewModel by activityViewModels()
     private val messageViewModel: MessageViewModel by activityViewModels()
@@ -77,20 +80,28 @@ class ChatFragment : Fragment() {
     private var canIPlay: Boolean = false
     private var player = ""
     private var isTicTacToePlayRunning = false
+    private lateinit var imageUri: Uri
+    private lateinit var imageName: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         profileName = ProfileSharedProfile.getProfile()
         registerUseCamera = registerForActivityResult(
-            ActivityResultContracts.TakePicturePreview()
-        ) { bitmap ->
+            ActivityResultContracts.TakePicture()
+        ) { itsOk ->
             with(binding) {
-                if (bitmap != null) {
-                    sentImageFrameLayout.visibility = View.VISIBLE
-                    buttonClip.visibility = View.GONE
-                    sentImage.setImageBitmap(bitmap)
-                    buttonSend.visibility = View.VISIBLE
-                    buttonVoiceMessageRecord.visibility = View.GONE
+                if (itsOk) {
+                    context?.let {
+                        Utils.uriToBitmap(imageUri, it.contentResolver) { bitmap ->
+                            sentImageFrameLayout.visibility = View.VISIBLE
+                            buttonClip.visibility = View.GONE
+                            sentImage.setImageBitmap(bitmap)
+                            buttonSend.visibility = View.VISIBLE
+                            buttonVoiceMessageRecord.visibility = View.GONE
+                        }
+                    }
+
                 }
             }
         }
@@ -166,10 +177,10 @@ class ChatFragment : Fragment() {
                             validReceivedMessage(it.first)
                             connectionFactory.lastLine = it.second
                             connectionFactory.isRead.remove(it.second)
-                        }else{
+                        } else {
                             Log.w("observer message", "duplicate message, skipped it")
                         }
-                    }else{
+                    } else {
                         connectionFactory.isRead.remove(it?.second)
                         Log.e("ChatFragment", "Message observer received null")
                     }
@@ -177,7 +188,8 @@ class ChatFragment : Fragment() {
                 connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                     if (it == false) {
                         Log.e("Chat disconnected", "server down")
-                        val action = ChatFragmentDirections.actionChatFragmentToHomeFragment(getString(R.string.server_disconnected))
+                        val action =
+                            ChatFragmentDirections.actionChatFragmentToHomeFragment(getString(R.string.server_disconnected))
                         navController.navigate(action)
                     }
                 }
@@ -254,7 +266,8 @@ class ChatFragment : Fragment() {
                             android.Manifest.permission.CAMERA
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        registerUseCamera.launch(null)
+                        imageUri = Utils.createUri(Utils.createImageName())
+                        registerUseCamera.launch(imageUri)
                     }
 
 
@@ -276,7 +289,7 @@ class ChatFragment : Fragment() {
                         sentImageFrameLayout.visibility == View.VISIBLE -> {
                             //       val bitmap = sentImage.drawable.toBitmap()
 
-                            Utils.bitmapToByteArray3(sentImage.drawable){
+                            Utils.bitmapToByteArray3(sentImage.drawable) {
                                 val message = Message(
                                     Message.MessageType.IMAGE.code,
                                     id = profileId,
