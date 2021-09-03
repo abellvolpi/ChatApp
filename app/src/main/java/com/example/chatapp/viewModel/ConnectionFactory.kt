@@ -99,7 +99,6 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                         this@ConnectionFactory.line.value = null
                         this@ConnectionFactory.line = MutableLiveData()
                     }
-
                 }
             }
         }
@@ -108,12 +107,14 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     @Synchronized
     fun sendMessageToSocket(message: Message, onResult: () -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
-            val bw = DataOutputStream(socket.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-            bw.flush()
-            withContext(Dispatchers.Main) {
-                Log.d("server", "Sent Message")
-                onResult.invoke()
+            if (serverOnline.value == true) {
+                val bw = DataOutputStream(socket.getOutputStream())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+                bw.flush()
+                withContext(Dispatchers.Main) {
+                    Log.d("send message to serve", "Sent Message")
+                    onResult.invoke()
+                }
             }
         }
     }
@@ -152,7 +153,9 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                             flush()
                         }
                     } catch (e: Exception) {
-                        serverOnline.postValue(false)
+                        withContext(Dispatchers.Main) {
+                            serverOnline.postValue(false)
+                        }
                         Log.e("ConnectionFactory", e.toString())
                         break
                     }

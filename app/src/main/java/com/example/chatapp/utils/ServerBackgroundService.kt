@@ -226,6 +226,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             with(classMessage) {
                 when (type) {
                     Message.MessageType.JOIN.code -> {
+                        Log.d("treatMessage", "received a Join message")
                         if (password != "".toSHA256()) {
                             if (classMessage.join?.password == password) {
                                 sendIdToSocket(socket, classMessage)
@@ -246,6 +247,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         }
                     }
                     Message.MessageType.REVOKED.code -> {
+                        Log.d("treatMessage", "received a Revoked message")
                         when (id) {
                             3 -> {
                                 if (socket.getAddressFromSocket() == Utils.getIpAddress()) { //garante que o dono do server está expulsando alguém.
@@ -272,6 +274,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     }
 
                     Message.MessageType.TICINVITE.code -> {
+                        Log.d("treatMessage", "received a TICINVITE message")
                         if (classMessage.text == null) {
                             // == send invite
                         } else { // = accepted or declined, caso declined, tic messages é null
@@ -286,6 +289,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     }
 
                     Message.MessageType.TICPLAY.code -> {
+                        Log.d("treatMessage", "received a TICPLAY message")
                         val movement = classMessage.text
                         if (movement != null) {
 
@@ -315,6 +319,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         )
                         sendMessageToASocket(socket, message)
                     }
+                    Message.MessageType.LEAVE.code ->{}
                     else -> {
                         sendMessageToAllSockets(classMessage)
                     }
@@ -401,7 +406,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    @Synchronized
     private suspend fun sendMessageToASocket(socket: Socket, message: Message) {
         withContext(Dispatchers.IO) {
 //            try {
@@ -418,7 +422,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    @Synchronized
     private suspend fun sendIdToSocket(socket: Socket, message: Message) =
         withContext(Dispatchers.IO) {
             id++

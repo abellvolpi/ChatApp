@@ -76,6 +76,7 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
             val connectionFactory: ConnectionFactory by activityViewModels()
             if (it != null) {
                 connectionFactory.setSocket(it)
+                connectionFactory.serverOnline.postValue(true)
                 profileViewModel.deleteAll {
                     var image = ""
                     ProfileSharedProfile.getProfilePhoto { bitmap ->
