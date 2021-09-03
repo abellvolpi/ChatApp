@@ -55,6 +55,7 @@ object Utils : CoroutineScope {
 
     fun messageClassToJSON(dataClass: Message): String {
         val moshi = Moshi.Builder().build()
+
         val adapter = moshi.adapter(Message::class.java)
         val json = adapter.toJson(dataClass)
         Log.d("messageClassToJSON", json)

@@ -1,11 +1,11 @@
 package com.example.chatapp.models
 
-import androidx.room.*
-import androidx.room.ForeignKey.CASCADE
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.example.chatapp.tictactoe.TicMessages
 import com.squareup.moshi.JsonClass
 import java.io.Serializable
 import java.util.*
-import kotlin.reflect.KClass
 
 @Entity(tableName = "message")
 @JsonClass(generateAdapter = true)
@@ -18,16 +18,18 @@ class Message(
     val time: Long = Calendar.getInstance().time.time,
     val id: Int?,
     val join: Join? = null,
-    val fk_profile : Int? = null): Serializable {
+    val fk_profile: Int? = null,
+    val ticMessages: TicMessages? = null
+) : Serializable {
 
     @PrimaryKey(autoGenerate = true)
-    var messageId : Int? =null
+    var messageId: Int? = null
 
     @JsonClass(generateAdapter = true)
-    data class Join(val avatar: String?, val password: String?, val isAdmin : Boolean?): Serializable
+    data class Join(val avatar: String?, val password: String?, val isAdmin: Boolean?) : Serializable
 
 
-    companion object{
+    companion object {
         const val ACTION_DISCONNECTED = "ACTION_DISCONNECTED"
     }
 
@@ -38,4 +40,5 @@ class Message(
     enum class MessageStatus(val code: Int) {
         RECEIVED(0), SENT(1)
     }
+
 }

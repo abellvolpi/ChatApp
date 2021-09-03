@@ -17,6 +17,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatapp.R
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
+import com.example.chatapp.tictactoe.ServerTicTacToeManager
 import com.example.chatapp.ui.MainActivity
 import com.example.chatapp.utils.Extensions.getAddressFromSocket
 import com.example.chatapp.utils.Extensions.toSHA256
@@ -263,11 +264,56 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                     }
                                     Log.e(
                                         "Server Kick Skip",
-                                        "A kick has been skipped because command not are from Admin"
+                                        "A kick has been skipped because command is not from Admin"
                                     )
                                 }
                             }
                         }
+                    }
+
+                    Message.MessageType.TICINVITE.code -> {
+                        if (classMessage.text == null) {
+                            // == send invite
+                        } else { // = accepted or declined, caso declined, tic messages é null
+                            val ticMessages = classMessage.ticMessages
+                            if (ticMessages != null) {
+                                val player1 = ticMessages.player1Id
+                                val player2 = ticMessages.player2Id
+                                if (player1 != null && player2 != null)
+                                    ServerTicTacToeManager.newGame(player1, player2)
+                            }
+                        }
+                    }
+
+                    Message.MessageType.TICPLAY.code -> {
+                        val movement = classMessage.text
+                        if (movement != null) {
+
+                            val id = classMessage.id
+
+                            if (id != null) {
+
+                                if (ServerTicTacToeManager.searchInMatches(id)) {
+
+                                    if (ServerTicTacToeManager.placeMove(id, movement.toInt())) {
+
+
+                                    } else {
+                                        Log.w("Error:", "This place is already being used")
+                                    }
+                                } else {
+                                    Log.w("Error:", "This match doesn't exists")
+                                }
+                            }
+                        }
+                        val message = Message(
+                            Message.MessageType.TICPLAY.code,
+                            username = classMessage.username,
+                            text = classMessage.text,
+                            base64Data = null,
+                            id = classMessage.id
+                        )
+                        sendMessageToASocket(socket, message)
                     }
                     else -> {
                         sendMessageToAllSockets(classMessage)
