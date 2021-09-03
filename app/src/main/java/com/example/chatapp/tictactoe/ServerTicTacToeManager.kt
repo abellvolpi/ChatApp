@@ -10,19 +10,40 @@ object ServerTicTacToeManager {
     fun newGame(player1Id: Int, player2Id: Int) {
         for (i in ticTacToeArray.indices) {
             if (ticTacToeArray.lastIndex == i) {
-                var matchId = i + 1
-                var ticTacToeGame = TicTacToeGame(matchId, player1Id, player2Id)
+                val matchId = i + 1
+                val ticTacToeGame = TicTacToeGame(matchId, player1Id, player2Id)
                 ticTacToeArray.add(ticTacToeGame)
             }
         }
     }
 
-    fun placeMove(matchId: Int, player: String, position: Int) {
+    fun searchInMatches(playerId: Int): Boolean {
         for (i in ticTacToeArray.indices) {
-            if (i == matchId) {
-                ticTacToeArray[i].board[position] = player
+            if (ticTacToeArray[i].player1Id == playerId || ticTacToeArray[i].player2Id == playerId) {
+                return true
             }
         }
+        return false
+    }
+
+
+    fun placeMove(playerId: Int, position: Int): Boolean {
+
+        for (i in ticTacToeArray.indices) {
+            if (ticTacToeArray[i].player1Id == playerId) {
+                if (ticTacToeArray[i].board[position].isEmpty()) {
+                    ticTacToeArray[i].board[position] = player1
+                    return true
+                }
+            }
+            if (ticTacToeArray[i].player2Id == playerId) {
+                if (ticTacToeArray[i].board[position].isEmpty()) {
+                    ticTacToeArray[i].board[position] = player2
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     fun removeGame(matchId: Int) {

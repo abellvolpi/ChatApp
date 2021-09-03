@@ -280,10 +280,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     Message.MessageType.TICINVITE.code -> {
                         if (classMessage.text == null) {
                             // == send invite
-
-
-
-                        } else {
+                        } else { // = accepted or declined, caso declined, tic messages é null
                             val ticMessages = classMessage.ticMessages
                             if (ticMessages != null) {
                                 val player1 = ticMessages.player1Id
@@ -291,27 +288,38 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                 if (player1 != null && player2 != null)
                                     ServerTicTacToeManager.newGame(player1, player2)
                             }
-
                         }
-
                     }
-                    Message.MessageType.TICPLAY.code -> {
 
-                        val playerMove = classMessage.text.toString().split(",")[0]
-                        val player1Id = classMessage.text.toString().split(",")[1]
-                        val player2Id = classMessage.text.toString().split(",")[2]
+                    Message.MessageType.TICPLAY.code -> {
+                        val movement = classMessage.text
+                        if (movement != null) {
+
+                            val id = classMessage.id
+
+                            if (id != null) {
+
+                                if (ServerTicTacToeManager.searchInMatches(id)) {
+
+                                    if (ServerTicTacToeManager.placeMove(id, movement.toInt())) {
+
+
+                                    } else {
+                                        Log.w("Error:", "This place is already being used")
+                                    }
+                                } else {
+                                    Log.w("Error:", "This match doesn't exists")
+                                }
+                            }
+                        }
                         val message = Message(
                             Message.MessageType.TICPLAY.code,
                             username = classMessage.username,
                             text = classMessage.text,
                             base64Data = null,
-                            id = 1
+                            id = classMessage.id
                         )
-
-//                        Message(Message.MessageType.TICPLAY, username = classMessage.username, text = "3", id =)
-//verificar se ainda está disponível o espaço selecionado e atualizar o jogo, e mandar para o outro player
-
-
+                        sendMessageToASocket(socket, message)
                     }
                     else -> {
                         sendMessageToAllSockets(classMessage)

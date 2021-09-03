@@ -33,6 +33,7 @@ import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
 import com.example.chatapp.tictactoe.TicMessages
 import com.example.chatapp.tictactoe.UsersTicTacToeManager
+import com.example.chatapp.tictactoe.UsersTicTacToeManager.OPPONENT
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -272,7 +273,7 @@ class ChatFragment : Fragment() {
                 buttonSend.setOnClickListener {
                     when {
                         sentImageFrameLayout.visibility == View.VISIBLE -> {
-                            //       val bitmap = sentImage.drawable.toBitmap()
+                            // val bitmap = sentImage.drawable.toBitmap()
                             val base64 = Utils.bitmapToByteArray3(sentImage.drawable)
                             val message = Message(
                                 Message.MessageType.IMAGE.code,
@@ -507,20 +508,10 @@ class ChatFragment : Fragment() {
                             refreshUIChatAndSaveMessageInToRoom(this)
                         }
                         Message.MessageType.TICPLAY.code -> {
-                            Log.e("Received", "play")
-                            val i = text?.split(",")?.get(0)?.toInt() ?: -1
-//                            val j = text?.split(",")?.get(1)?.toInt() ?: -1
-                            val playerReceived = text?.split(",")?.get(2) ?: ""
-                            val cell = Cell(i)
-                            UsersTicTacToeManager.placeMove(cell, playerReceived)
-                            mapBoardToUi()
-                            binding.bottomSheet.whoPlay.text =
-                                getString(R.string.your_move, player)
-                            canIPlay = true
-//                            verifyIfHasWinner()
+                            receivePlay(text)
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            receiveInviteTicTacToe(username ?: "Error username",id)
+                            receiveInviteTicTacToe(username ?: "Error username", id)
 
                         }
                         else -> refreshUIChatAndSaveMessageInToRoom(this)
@@ -558,6 +549,7 @@ class ChatFragment : Fragment() {
 //            }
         }
     }
+
 
     private fun emptyHistoryCache() {
         File(
@@ -612,6 +604,21 @@ class ChatFragment : Fragment() {
             }
         }
         builder.show()
+    }
+
+    private fun receivePlay(text: String?) {
+        Log.e("Received", "play")
+        val move: Int?
+        if (text != null) {
+            move = text.toInt()
+            val cell = Cell(move)
+            UsersTicTacToeManager.placeMove(cell, player)
+        }
+        mapBoardToUi()
+        binding.bottomSheet.whoPlay.text =
+            getString(R.string.your_move, player)
+        canIPlay = true
+//      verifyIfHasWinner()
     }
 
     private fun sendInviteTicTacToe() {
@@ -736,7 +743,7 @@ class ChatFragment : Fragment() {
     private fun sendPlay(i: Int) {
         val messagePlay = Message(
             Message.MessageType.TICPLAY.code,
-            text = "${i},${profileId},",
+            text = "$i",
             id = profileId,
             base64Data = null,
             username = profileName

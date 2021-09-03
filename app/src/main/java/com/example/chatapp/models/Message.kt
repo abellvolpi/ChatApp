@@ -41,8 +41,4 @@ class Message(
         RECEIVED(0), SENT(1)
     }
 
-    enum class TicTacToeTypes() {
-
-    }
-
 }
