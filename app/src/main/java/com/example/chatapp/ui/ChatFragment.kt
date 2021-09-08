@@ -9,7 +9,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewAnimationUtils
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -28,9 +31,7 @@ import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.models.Profile
-import com.example.chatapp.tictactoe.TicMessages
 import com.example.chatapp.tictactoe.UsersTicTacToeManager
-import com.example.chatapp.tictactoe.UsersTicTacToeManager.OPPONENT
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -166,10 +167,10 @@ class ChatFragment : Fragment() {
                             validReceivedMessage(it.first)
                             connectionFactory.lastLine = it.second
                             connectionFactory.isRead.remove(it.second)
-                        }else{
+                        } else {
                             Log.w("observer message", "duplicate message, skipped it")
                         }
-                    }else{
+                    } else {
                         connectionFactory.isRead.remove(it?.second)
                         Log.e("ChatFragment", "Message observer received null")
                     }
@@ -177,7 +178,8 @@ class ChatFragment : Fragment() {
                 connectionFactory.serverOnline.observe(viewLifecycleOwner) {
                     if (it == false) {
                         Log.e("Chat disconnected", "server down")
-                        val action = ChatFragmentDirections.actionChatFragmentToHomeFragment(getString(R.string.server_disconnected))
+                        val action =
+                            ChatFragmentDirections.actionChatFragmentToHomeFragment(getString(R.string.server_disconnected))
                         navController.navigate(action)
                     }
                 }
@@ -276,7 +278,7 @@ class ChatFragment : Fragment() {
                         sentImageFrameLayout.visibility == View.VISIBLE -> {
                             //       val bitmap = sentImage.drawable.toBitmap()
 
-                            Utils.bitmapToByteArray3(sentImage.drawable){
+                            Utils.bitmapToByteArray3(sentImage.drawable) {
                                 val message = Message(
                                     Message.MessageType.IMAGE.code,
                                     id = profileId,
@@ -593,11 +595,13 @@ class ChatFragment : Fragment() {
         onResult.invoke(output.absolutePath)
     }
 
-    private fun receiveInviteTicTacToe(name: String, id: Int?) {
+    private fun receiveInviteTicTacToe(name: String, opponentId: Int?) {
         val builder = AlertDialog.Builder(requireContext()).apply {
             setMessage(getString(R.string.invite_received, name))
             setPositiveButton("ok") { _, _ ->
-                acceptInviteTicTacToe(id)
+                if (opponentId != null) {
+                    acceptInviteTicTacToe(opponentId)
+                }
             }
             setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
                 dialog?.dismiss()
@@ -628,7 +632,8 @@ class ChatFragment : Fragment() {
             text = null,
             id = profileId,
             base64Data = null,
-            username = profileName
+            username = profileName,
+            ticTacToePlay = Message.TicTacToePlay(isInviting = true, opponentId = )
         )
         sendMessageSocket(message)
         snackbar = Snackbar.make(
@@ -639,7 +644,7 @@ class ChatFragment : Fragment() {
         snackbar.show()
     }
 
-    private fun acceptInviteTicTacToe(opponentId: Int?) {
+    private fun acceptInviteTicTacToe(opponentId: Int) {
         binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
         refreshBoard()
         player = UsersTicTacToeManager.OPPONENT
@@ -648,11 +653,15 @@ class ChatFragment : Fragment() {
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         val message = Message(
             Message.MessageType.TICINVITE.code,
-            text = "accepted",
+            text = "",
             id = profileId,
             base64Data = null,
             username = profileName,
-            ticMessages = TicMessages(player1Id = opponentId, player2Id = profileId)
+            ticTacToePlay = Message.TicTacToePlay(
+                isAccepting = true,
+                gameEnd = Message.TicTacToeGameEnd.NONE,
+                opponentId = opponentId
+            )
         )
         sendMessageSocket(message)
     }
@@ -707,13 +716,13 @@ class ChatFragment : Fragment() {
         }
     }
 
-    inner class CellClickListener(private val i: Int) :
+    inner class CellClickListener(private val place: Int) :
         View.OnClickListener {
         override fun onClick(v: View?) {
 //            if (!UsersTicTacToeManager.gameOver() && canIPlay) {
-            val cell = Cell(i)
+            val cell = Cell(place)
             UsersTicTacToeManager.placeMove(cell, player)
-            sendPlay(i)
+            sendPlay(place)
 //                verifyIfHasWinner()
 //            }
             mapBoardToUi()
@@ -740,13 +749,14 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun sendPlay(i: Int) {
+    private fun sendPlay(place: Int) {
         val messagePlay = Message(
             Message.MessageType.TICPLAY.code,
-            text = "$i",
+            text = "",
             id = profileId,
             base64Data = null,
-            username = profileName
+            username = profileName,
+            ticTacToePlay = Message.TicTacToePlay(gameEnd = Message.TicTacToeGameEnd.NONE)
         )
         sendMessageSocket(messagePlay)
         binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)

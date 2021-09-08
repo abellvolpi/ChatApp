@@ -19,7 +19,7 @@ class Message(
     val id: Int?,
     val join: Join? = null,
     val fk_profile: Int? = null,
-    val ticMessages: TicMessages? = null
+    val ticTacToePlay : TicTacToePlay? = null
 ) : Serializable {
 
     @PrimaryKey(autoGenerate = true)
@@ -28,6 +28,18 @@ class Message(
     @JsonClass(generateAdapter = true)
     data class Join(val avatar: String?, val password: String?, val isAdmin: Boolean?) : Serializable
 
+    @JsonClass(generateAdapter = true)
+    data class TicTacToePlay(
+        val isInviting: Boolean? = null,
+        val isAccepting: Boolean? = null,
+        val play: String? = null,
+        val gameEnd: TicTacToeGameEnd,
+        val opponentId: Int
+    )
+
+    enum class TicTacToeGameEnd {
+        X_WIN, O_WIN, DRAW, NONE
+    }
 
     companion object {
         const val ACTION_DISCONNECTED = "ACTION_DISCONNECTED"

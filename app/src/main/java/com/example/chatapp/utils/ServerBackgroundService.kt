@@ -288,6 +288,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         }
                     }
 
+
+
                     Message.MessageType.TICPLAY.code -> {
                         Log.d("treatMessage", "received a TICPLAY message")
                         val movement = classMessage.text
@@ -319,7 +321,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         )
                         sendMessageToASocket(socket, message)
                     }
-                    Message.MessageType.LEAVE.code ->{}
+                    Message.MessageType.LEAVE.code -> {
+                    }
                     else -> {
                         sendMessageToAllSockets(classMessage)
                     }
@@ -390,7 +393,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     } else {
                         Log.e("server", "error when remove socket from socket")
                     }
-                }else{
+                } else {
                     Log.e("removeSocket", "Error when remove socket because socket is not found in the current list.")
                 }
             }
