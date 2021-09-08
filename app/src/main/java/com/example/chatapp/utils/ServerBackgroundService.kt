@@ -161,11 +161,18 @@ class ServerBackgroundService : Service(), CoroutineScope {
             serverRunning = true
             while (true) {
                 try {
-                    sock = serverSocket.accept()
-                    sock.soTimeout = 1500
-                    readMessageAndSendToAllSockets(sock)
-                    Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                    if(!serverSocket.isClosed) {
+                        sock = serverSocket.accept()
+                        sock.receiveBufferSize = (32 * 1024)
+                        sock.sendBufferSize = (32 * 1024)
+                        sock.soTimeout = 1500
+                        readMessageAndSendToAllSockets(sock)
+                        Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                    }else{
+                        break
+                    }
                 } catch (e: java.net.SocketException) {
+                    Log.e("Server Accept Sock", "Error when accept new user, cause: $e")
                 }
             }
         }

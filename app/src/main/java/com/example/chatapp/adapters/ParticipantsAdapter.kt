@@ -31,7 +31,6 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
         override fun bind(profile: Profile) {
             val file = File(profile.photoProfile?: "")
             with(binding) {
-//                if (file.exists() && profile.photoProfile != "" && file.isFile) {
                 try{
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                         val bitMap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(MainApplication.getContextInstance().contentResolver,file.toUri()))
@@ -112,5 +111,24 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
             }
         }
         return false
+    }
+
+    fun addProfile(profile: Profile){
+        profiles.forEach {
+            if(it.id == profile.id){
+               return
+            }
+        }
+        this.profiles.add(profile)
+        notifyItemInserted(this.profiles.indices.last)
+    }
+
+    fun removeProfile(id: Int){
+        profiles.forEach {
+            if(it.id == id){
+                profiles.remove(it)
+                return@forEach
+            }
+        }
     }
 }

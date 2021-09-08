@@ -1,10 +1,14 @@
 package com.example.chatapp.viewModel
 
+import android.util.Base64
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chatapp.models.Profile
 import com.example.chatapp.room.profile.controller.ProfileController
+import com.example.chatapp.utils.MainApplication
 import kotlinx.coroutines.*
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.coroutines.CoroutineContext
 
 class ProfileViewModel : ViewModel(), CoroutineScope {
@@ -47,7 +51,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
             val list = profiles.value?: arrayListOf()
             list.add(profile)
             withContext(Dispatchers.Main) {
-                profiles.value = list
+                profiles.postValue(list)
             }
         }
     }
@@ -64,7 +68,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
         }
     }
 
-    fun getProfile(id: String, onResult: (Profile?) -> Unit) {
+    fun getProfile(id: Int, onResult: (Profile?) -> Unit) {
         launch(Dispatchers.IO) {
             val profile = controller.getById(id)
             withContext(Dispatchers.Main){
@@ -93,6 +97,7 @@ class ProfileViewModel : ViewModel(), CoroutineScope {
             }
         }
     }
+
 
 
 }
