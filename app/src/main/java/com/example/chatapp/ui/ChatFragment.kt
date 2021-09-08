@@ -184,10 +184,9 @@ class ChatFragment : Fragment() {
                     activity?.hideSoftKeyboard()
                 }
                 tictactoe.setOnClickListener {
-                    sendInviteTicTacToe()
                     bottomSheet.whoPlay.visibility = View.VISIBLE
                     if (!isTicTacToePlayRunning) {
-                        sendInviteTicTacToe()
+//                        sendInviteTicTacToe()
                     } else {
                         Snackbar.make(
                             requireView(),
@@ -482,7 +481,9 @@ class ChatFragment : Fragment() {
                             receivePlay(text)
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            receiveInviteTicTacToe(username ?: "Error username", id)
+                            Log.e("Test:", " INVITE RECEIVED")
+                            verifyInvite(ticTacToePlay, username ?: "Error username", id)
+                            // if is receiving a invite or a answer from one
                         }
                         else -> refreshUIChatAndSaveMessageInToRoom(this)
                     }
@@ -520,6 +521,7 @@ class ChatFragment : Fragment() {
         }
     }
 
+
     private fun emptyHistoryCache() {
         File(
             MainApplication.getContextInstance().cacheDir.absolutePath,
@@ -549,9 +551,9 @@ class ChatFragment : Fragment() {
     }
 
 
-    private fun receiveInviteTicTacToe(name: String, opponentId: Int?) {
+    private fun receiveInviteTicTacToe(opponentName: String, opponentId: Int?) {
         val builder = AlertDialog.Builder(requireContext()).apply {
-            setMessage(getString(R.string.invite_received, name))
+            setMessage(getString(R.string.invite_received, opponentName))
             setPositiveButton("ok") { _, _ ->
                 if (opponentId != null) {
                     acceptInviteTicTacToe(opponentId)
@@ -559,11 +561,30 @@ class ChatFragment : Fragment() {
             }
             setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
                 dialog?.dismiss()
-                declineInviteTicTacToe()
+                if (opponentId != null) {
+                    declineInviteTicTacToe(opponentId)
+                }
             }
         }
         builder.show()
     }
+
+    private fun receiveAcceptTicTacToe(opponentId: Int?) {
+        if (opponentId != null) {
+            UsersTicTacToeManager.opponentId = opponentId
+        }
+
+        snackbar.dismiss()
+        canIPlay = true
+        initViewTicTacToe()
+        bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
+
+    }
+
+    private fun receiveDeclinedTicTacToe() {
+
+    }
+
 
     private fun receivePlay(text: String?) {
         Log.e("Received", "play")
@@ -580,29 +601,28 @@ class ChatFragment : Fragment() {
 //      verifyIfHasWinner()
     }
 
-    private fun sendInviteTicTacToe() {
-        val message = Message(
-            Message.MessageType.TICINVITE.code,
-            text = null,
-            id = profileId,
-            base64Data = null,
-            username = profileName,
-            ticTacToePlay = Message.TicTacToePlay(isInviting = true, opponentId = )
-        )
-        sendMessageSocket(message)
-        snackbar = Snackbar.make(
-            requireView(),
-            getString(R.string.waiting_accept),
-            Snackbar.LENGTH_LONG
-        )
-        snackbar.show()
+    private fun verifyInvite(ticTacToePlay: Message.TicTacToePlay?, opponentName: String, opponentId: Int?) {
+        when {
+            ticTacToePlay?.isInviting != null -> {
+                receiveInviteTicTacToe(opponentName, opponentId)
+            }
+            ticTacToePlay?.isAccepting == true -> {
+                receiveAcceptTicTacToe(opponentId)
+            }
+            ticTacToePlay?.isAccepting == false -> {
+                receiveDeclinedTicTacToe()
+            }
+        }
     }
+
 
     private fun acceptInviteTicTacToe(opponentId: Int) {
         binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
         refreshBoard()
+        UsersTicTacToeManager.opponentId = opponentId
         player = UsersTicTacToeManager.OPPONENT
         canIPlay = false
+        UsersTicTacToeManager.opponentId = opponentId
         initViewTicTacToe()
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         val message = Message(
@@ -613,20 +633,23 @@ class ChatFragment : Fragment() {
             username = profileName,
             ticTacToePlay = Message.TicTacToePlay(
                 isAccepting = true,
-                gameEnd = Message.TicTacToeGameEnd.NONE,
                 opponentId = opponentId
             )
         )
         sendMessageSocket(message)
     }
 
-    private fun declineInviteTicTacToe() {
+    private fun declineInviteTicTacToe(opponentId: Int) {
         val message = Message(
             Message.MessageType.TICINVITE.code,
-            text = "declined",
+            text = "",
             id = profileId,
             base64Data = null,
-            username = profileName
+            username = profileName,
+            ticTacToePlay = Message.TicTacToePlay(
+                isAccepting = false,
+                opponentId = opponentId
+            )
         )
         sendMessageSocket(message)
     }
@@ -641,6 +664,7 @@ class ChatFragment : Fragment() {
 
     //bottom sheet functions
     private fun initViewTicTacToe() {
+        bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         isTicTacToePlayRunning = true
         with(binding.bottomSheet) {
             boardCells[0] = btn1
@@ -658,7 +682,7 @@ class ChatFragment : Fragment() {
                 whoPlay.text = getString(R.string.waiting_move)
             }
             rematchButton.setOnClickListener {
-                sendInviteTicTacToe()
+//                sendInviteTicTacToe()
             }
         }
         callClickListener()
@@ -674,11 +698,12 @@ class ChatFragment : Fragment() {
         View.OnClickListener {
         override fun onClick(v: View?) {
 //            if (!UsersTicTacToeManager.gameOver() && canIPlay) {
-            val cell = Cell(place)
-            UsersTicTacToeManager.placeMove(cell, player)
-            sendPlay(place)
+            if (canIPlay) {
+                val cell = Cell(place)
+                UsersTicTacToeManager.placeMove(cell, player)
+                sendPlay(place)
 //                verifyIfHasWinner()
-//            }
+            }
             mapBoardToUi()
         }
     }
@@ -710,7 +735,7 @@ class ChatFragment : Fragment() {
             id = profileId,
             base64Data = null,
             username = profileName,
-            ticTacToePlay = Message.TicTacToePlay(gameEnd = Message.TicTacToeGameEnd.NONE)
+            ticTacToePlay = Message.TicTacToePlay(play = place.toString(), opponentId = UsersTicTacToeManager.opponentId)
         )
         sendMessageSocket(messagePlay)
         binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)

@@ -69,17 +69,18 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                     val message = Message(
                         Message.MessageType.TICINVITE.code,
                         text = null,
-                        id = profile.id,
+                        id = ProfileSharedProfile.getIdProfile(),
                         base64Data = null,
-                        username = profile.name
+                        username = ProfileSharedProfile.getProfile(),
+                        ticTacToePlay = Message.TicTacToePlay(isInviting = true, opponentId = profile.id)
                     )
-                    connectionFactory.sendMessageToSocket(message){}
-                    val snackbar = Snackbar.make(
+                    connectionFactory.sendMessageToSocket(message) {}
+                    val snackBar = Snackbar.make(
                         root,
                         root.context.getString(R.string.waiting_accept),
                         Snackbar.LENGTH_LONG
                     )
-                    snackbar.show()
+                    snackBar.show()
                 }
             }
         }

@@ -2,7 +2,6 @@ package com.example.chatapp.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.chatapp.tictactoe.TicMessages
 import com.squareup.moshi.JsonClass
 import java.io.Serializable
 import java.util.*
@@ -19,7 +18,7 @@ class Message(
     val id: Int?,
     val join: Join? = null,
     val fk_profile: Int? = null,
-    val ticTacToePlay : TicTacToePlay? = null
+    val ticTacToePlay: TicTacToePlay? = null
 ) : Serializable {
 
     @PrimaryKey(autoGenerate = true)
@@ -33,12 +32,12 @@ class Message(
         val isInviting: Boolean? = null,
         val isAccepting: Boolean? = null,
         val play: String? = null,
-        val gameEnd: TicTacToeGameEnd,
+        val gameEnd: TicTacToeGameEnd? = null,
         val opponentId: Int
     )
 
     enum class TicTacToeGameEnd {
-        X_WIN, O_WIN, DRAW, NONE
+        X_WIN, O_WIN, DRAW
     }
 
     companion object {
@@ -46,7 +45,17 @@ class Message(
     }
 
     enum class MessageType(val code: Int) {
-        MESSAGE(0), JOIN(1), VIBRATE(2), AUDIO(3), IMAGE(4), TICINVITE(5), TICPLAY(6), LEAVE(7), ACKNOWLEDGE(8), REVOKED(9)
+        MESSAGE(0),
+        JOIN(1),
+        VIBRATE(2),
+        AUDIO(3),
+        IMAGE(4),
+        TICINVITE(5),
+        TICPLAY(6),
+        LEAVE(7),
+        ACKNOWLEDGE(8),
+        REVOKED(9),
+        TIC_END(10)
     }
 
     enum class MessageStatus(val code: Int) {

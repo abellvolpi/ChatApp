@@ -2,7 +2,6 @@ package com.example.chatapp.room
 
 import androidx.room.TypeConverter
 import com.example.chatapp.models.Message
-import com.example.chatapp.tictactoe.TicMessages
 import com.google.gson.Gson
 
 class TypeConverter {
@@ -14,10 +13,10 @@ class TypeConverter {
     fun jsonToMessage(string: String?): Message.Join? = Gson().fromJson(string, Message.Join::class.java)
 
     @TypeConverter
-    fun ticMessagesToJson(value: TicMessages?): String? = Gson().toJson(value)
+    fun ticTacToePlaysToJson(value: Message.TicTacToePlay?): String? = Gson().toJson(value)
 
     @TypeConverter
-    fun jsonToTicMessages(string: String?): TicMessages? = Gson().fromJson(string, TicMessages::class.java)
+    fun jsonToTicTacToePlays(string: String?): Message.TicTacToePlay? = Gson().fromJson(string, Message.TicTacToePlay::class.java)
 
 
 }

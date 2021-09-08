@@ -161,14 +161,14 @@ class ServerBackgroundService : Service(), CoroutineScope {
             serverRunning = true
             while (true) {
                 try {
-                    if(!serverSocket.isClosed) {
+                    if (!serverSocket.isClosed) {
                         sock = serverSocket.accept()
                         sock.receiveBufferSize = (32 * 1024)
                         sock.sendBufferSize = (32 * 1024)
                         sock.soTimeout = 1500
                         readMessageAndSendToAllSockets(sock)
                         Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
-                    }else{
+                    } else {
                         break
                     }
                 } catch (e: java.net.SocketException) {
@@ -282,19 +282,22 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
                     Message.MessageType.TICINVITE.code -> {
                         Log.d("treatMessage", "received a TICINVITE message")
-                        if (classMessage.text == null) {
+                        if (classMessage.ticTacToePlay?.isInviting != null) {
+                            sendMessageToASocket(socket, classMessage)
                             // == send invite
-                        } else { // = accepted or declined, caso declined, tic messages é null
-                            val ticMessages = classMessage.ticMessages
-                            if (ticMessages != null) {
-                                val player1 = ticMessages.player1Id
-                                val player2 = ticMessages.player2Id
-                                if (player1 != null && player2 != null)
+                        } else if (classMessage.ticTacToePlay?.isAccepting != null) { // = accepted or declined
+                            if (classMessage.ticTacToePlay.isAccepting == true) {
+                                val player1 = classMessage.id
+                                val player2 = classMessage.ticTacToePlay.opponentId
+                                if (player1 != null) {
                                     ServerTicTacToeManager.newGame(player1, player2)
+                                }
+                            }
+                            else{ // =declined
+
                             }
                         }
                     }
-
 
 
                     Message.MessageType.TICPLAY.code -> {
