@@ -227,6 +227,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                 if (it != null) {
                     ProfileSharedProfile.saveProfile(nameField.text.toString())
                     connectionFactory.setSocket(it)
+                    connectionFactory.serverOnline.postValue(true)
                     messageViewModel.deleteAll {
                         profileViewModel.deleteAll {
                             var image = ""

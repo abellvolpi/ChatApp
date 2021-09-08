@@ -52,4 +52,5 @@
     <string name="profile_photo">Foto de Perfil</string>
     <string name="camera">Câmera</string>
     <string name="gallery">Galeria</string>
+    <string name="generating_your_credential">Gerando sua credencial</string>
 </resources>

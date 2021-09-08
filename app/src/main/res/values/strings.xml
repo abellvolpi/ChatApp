@@ -116,6 +116,7 @@
     <!--    Profile Fragment-->
 
     <string name="profile_photo">Profile photo</string>
+    <string name="generating_your_credential">Generating your credential</string>
 
 
 </resources>

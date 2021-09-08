@@ -7,6 +7,7 @@ object UsersTicTacToeManager {
     const val OPPONENT = "X"
     var matchId : Int? = null
     var boardPlaces = arrayOf<String?>()
+    var opponentId : Int = -1
 
 
     fun placeMove(position: Cell, player: String) {

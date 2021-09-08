@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -31,8 +30,6 @@ import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
-import com.example.chatapp.models.Profile
-import com.example.chatapp.tictactoe.TicMessages
 import com.example.chatapp.tictactoe.UsersTicTacToeManager
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
@@ -45,7 +42,6 @@ import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 
 class ChatFragment : Fragment() {
@@ -197,10 +193,9 @@ class ChatFragment : Fragment() {
                     activity?.hideSoftKeyboard()
                 }
                 tictactoe.setOnClickListener {
-                    sendInviteTicTacToe()
                     bottomSheet.whoPlay.visibility = View.VISIBLE
                     if (!isTicTacToePlayRunning) {
-                        sendInviteTicTacToe()
+//                        sendInviteTicTacToe()
                     } else {
                         Snackbar.make(
                             requireView(),
@@ -413,20 +408,7 @@ class ChatFragment : Fragment() {
                                 if (connectionFactory.getIpHost() == Utils.getIpAddress()) {
                                     profile.isAdmin = true
                                 }
-                                if (profile.photoProfile != "" || profile.photoProfile != null) {
-                                    saveAvatarToCacheDir(
-                                        profile.id,
-                                        profile.photoProfile ?: ""
-                                    ) {
-                                        profile.photoProfile = it
-                                        profile.isMemberYet = true
-                                        profileViewModel.insert(profile)
-                                    }
-                                } else {
-                                    profile.photoProfile = ""
-                                    profile.isMemberYet = true
-                                    profileViewModel.insert(profile)
-                                }
+                                profileViewModel.insert(profile)
                             }
                         }
                     }
@@ -438,32 +420,14 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.JOIN.code) {
                 if (id != null) {
                     if (id == profileId) {
-                        saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                            val profile =
-                                Profile(id, username ?: "", it, 0, true, join?.isAdmin)
-//                            profileViewModel.insert(profile)
-                            refreshUIChatAndSaveMessageInToRoom(this)
-                        }
-                    } else {
-                        if (join?.avatar != "" || join.avatar != null) {
-                            saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                                val profile =
-                                    Profile(id, username ?: "", it, 0, true, join?.isAdmin)
-                                profileViewModel.insert(profile)
-//                                refreshUIChatAndSaveMessageInToRoom(this)
-                                refreshUIChatAndSaveMessageInToRoom(this)
-                            }
-                        } else {
-                            val profile = Profile(id, username ?: "", "", 0, true, join.isAdmin)
-                            profileViewModel.insert(profile)
-                            refreshUIChatAndSaveMessageInToRoom(this)
-                        }
+
                     }
-                } else {
-                    Log.e("chatNotRefresh", "an error occurred because id is null")
-                    Log.e("database", "error when insert profile, id is null")
+                    refreshUIChatAndSaveMessageInToRoom(this)
                 }
                 return
+            } else {
+                Log.e("chatNotRefresh", "an error occurred because id is null")
+                Log.e("database", "error when insert profile, id is null")
             }
 
             if (type == Message.MessageType.LEAVE.code) {
@@ -527,9 +491,9 @@ class ChatFragment : Fragment() {
                             receivePlay(text)
                         }
                         Message.MessageType.TICINVITE.code -> {
-                            if(id!=null) {
-                                receiveInviteTicTacToe(id)
-                            }else{}
+                            Log.e("Test:", " INVITE RECEIVED")
+                            verifyInvite(ticTacToePlay, username ?: "Error username", id)
+                            // if is receiving a invite or a answer from one
                         }
                         else -> refreshUIChatAndSaveMessageInToRoom(this)
                     }
@@ -567,6 +531,7 @@ class ChatFragment : Fragment() {
         }
     }
 
+
     private fun emptyHistoryCache() {
         File(
             MainApplication.getContextInstance().cacheDir.absolutePath,
@@ -595,34 +560,41 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun saveAvatarToCacheDir(id: Int, string: String, onResult: (String) -> Unit) {
-        val context = MainApplication.getContextInstance()
-        val output =
-            File(context.cacheDir.absolutePath + "/photosProfile", "profilePhoto_${id}.jpg")
-        val base64 = Base64.decode(string, Base64.NO_WRAP)
-        output.parentFile?.mkdirs()
-        val fos = FileOutputStream(output)
-        fos.write(base64)
-        fos.flush()
-        fos.close()
-        onResult.invoke(output.absolutePath)
-    }
 
-    private fun receiveInviteTicTacToe(id: Int) {
-        profileViewModel.getProfile(id) { profile ->
-            val builder = AlertDialog.Builder(requireContext()).apply {
-                setMessage(getString(R.string.invite_received, profile?.name))
-                setPositiveButton("ok") { _, _ ->
-                    acceptInviteTicTacToe(id)
-                }
-                setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
-                    dialog?.dismiss()
-                    declineInviteTicTacToe()
+    private fun receiveInviteTicTacToe(opponentName: String, opponentId: Int?) {
+        val builder = AlertDialog.Builder(requireContext()).apply {
+            setMessage(getString(R.string.invite_received, opponentName))
+            setPositiveButton("ok") { _, _ ->
+                if (opponentId != null) {
+                    acceptInviteTicTacToe(opponentId)
                 }
             }
-            builder.show()
+            setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
+                dialog?.dismiss()
+                if (opponentId != null) {
+                    declineInviteTicTacToe(opponentId)
+                }
+            }
         }
+        builder.show()
     }
+
+    private fun receiveAcceptTicTacToe(opponentId: Int?) {
+        if (opponentId != null) {
+            UsersTicTacToeManager.opponentId = opponentId
+        }
+
+        snackbar.dismiss()
+        canIPlay = true
+        initViewTicTacToe()
+        bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
+
+    }
+
+    private fun receiveDeclinedTicTacToe() {
+
+    }
+
 
     private fun receivePlay(text: String?) {
         Log.e("Received", "play")
@@ -639,48 +611,55 @@ class ChatFragment : Fragment() {
 //      verifyIfHasWinner()
     }
 
-    private fun sendInviteTicTacToe() {
-        val message = Message(
-            Message.MessageType.TICINVITE.code,
-            text = null,
-            id = profileId,
-            base64Data = null,
-            username = profileName
-        )
-        sendMessageSocket(message)
-        snackbar = Snackbar.make(
-            requireView(),
-            getString(R.string.waiting_accept),
-            Snackbar.LENGTH_LONG
-        )
-        snackbar.show()
+    private fun verifyInvite(ticTacToePlay: Message.TicTacToePlay?, opponentName: String, opponentId: Int?) {
+        when {
+            ticTacToePlay?.isInviting != null -> {
+                receiveInviteTicTacToe(opponentName, opponentId)
+            }
+            ticTacToePlay?.isAccepting == true -> {
+                receiveAcceptTicTacToe(opponentId)
+            }
+            ticTacToePlay?.isAccepting == false -> {
+                receiveDeclinedTicTacToe()
+            }
+        }
     }
 
-    private fun acceptInviteTicTacToe(opponentId: Int?) {
+
+    private fun acceptInviteTicTacToe(opponentId: Int) {
         binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
         refreshBoard()
+        UsersTicTacToeManager.opponentId = opponentId
         player = UsersTicTacToeManager.OPPONENT
         canIPlay = false
+        UsersTicTacToeManager.opponentId = opponentId
         initViewTicTacToe()
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         val message = Message(
             Message.MessageType.TICINVITE.code,
-            text = "accepted",
+            text = "",
             id = profileId,
             base64Data = null,
             username = profileName,
-            ticMessages = TicMessages(player1Id = opponentId, player2Id = profileId)
+            ticTacToePlay = Message.TicTacToePlay(
+                isAccepting = true,
+                opponentId = opponentId
+            )
         )
         sendMessageSocket(message)
     }
 
-    private fun declineInviteTicTacToe() {
+    private fun declineInviteTicTacToe(opponentId: Int) {
         val message = Message(
             Message.MessageType.TICINVITE.code,
-            text = "declined",
+            text = "",
             id = profileId,
             base64Data = null,
-            username = profileName
+            username = profileName,
+            ticTacToePlay = Message.TicTacToePlay(
+                isAccepting = false,
+                opponentId = opponentId
+            )
         )
         sendMessageSocket(message)
     }
@@ -695,6 +674,7 @@ class ChatFragment : Fragment() {
 
     //bottom sheet functions
     private fun initViewTicTacToe() {
+        bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
         isTicTacToePlayRunning = true
         with(binding.bottomSheet) {
             boardCells[0] = btn1
@@ -712,7 +692,7 @@ class ChatFragment : Fragment() {
                 whoPlay.text = getString(R.string.waiting_move)
             }
             rematchButton.setOnClickListener {
-                sendInviteTicTacToe()
+//                sendInviteTicTacToe()
             }
         }
         callClickListener()
@@ -724,15 +704,16 @@ class ChatFragment : Fragment() {
         }
     }
 
-    inner class CellClickListener(private val i: Int) :
+    inner class CellClickListener(private val place: Int) :
         View.OnClickListener {
         override fun onClick(v: View?) {
 //            if (!UsersTicTacToeManager.gameOver() && canIPlay) {
-            val cell = Cell(i)
-            UsersTicTacToeManager.placeMove(cell, player)
-            sendPlay(i)
+            if (canIPlay) {
+                val cell = Cell(place)
+                UsersTicTacToeManager.placeMove(cell, player)
+                sendPlay(place)
 //                verifyIfHasWinner()
-//            }
+            }
             mapBoardToUi()
         }
     }
@@ -757,13 +738,14 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun sendPlay(i: Int) {
+    private fun sendPlay(place: Int) {
         val messagePlay = Message(
             Message.MessageType.TICPLAY.code,
-            text = "$i",
+            text = "",
             id = profileId,
             base64Data = null,
-            username = profileName
+            username = profileName,
+            ticTacToePlay = Message.TicTacToePlay(play = place.toString(), opponentId = UsersTicTacToeManager.opponentId)
         )
         sendMessageSocket(messagePlay)
         binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)
@@ -944,9 +926,21 @@ class ChatFragment : Fragment() {
 
             if (sendImagesOptions.visibility == View.GONE) {
                 sendImagesOptions.visibility = View.VISIBLE
-                ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, 0F, radius).start()
+                ViewAnimationUtils.createCircularReveal(
+                    sendImagesOptions,
+                    centerX,
+                    centerY,
+                    0F,
+                    radius
+                ).start()
             } else {
-                val reveal = ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, radius, 0F).apply {
+                val reveal = ViewAnimationUtils.createCircularReveal(
+                    sendImagesOptions,
+                    centerX,
+                    centerY,
+                    radius,
+                    0F
+                ).apply {
                     addListener(onEnd = {
                         sendImagesOptions.visibility = View.GONE
                     })

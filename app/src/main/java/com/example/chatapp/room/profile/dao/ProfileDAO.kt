@@ -8,7 +8,7 @@ interface ProfileDAO {
     @Query("Select * from Profile")
     fun getAll(): List<Profile>
 
-    @Insert()
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(vararg profile: Profile)
 
     @Query("Delete from Profile where Profile.id = :id")

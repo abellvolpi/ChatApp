@@ -34,6 +34,8 @@
             android:id="@+id/received_image"
             android:layout_width="230dp"
             android:layout_height="180dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="30dp"
             android:layout_gravity="center"
             />
 

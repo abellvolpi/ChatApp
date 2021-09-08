@@ -161,11 +161,18 @@ class ServerBackgroundService : Service(), CoroutineScope {
             serverRunning = true
             while (true) {
                 try {
-                    sock = serverSocket.accept()
-                    sock.soTimeout = 1500
-                    readMessageAndSendToAllSockets(sock)
-                    Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                    if (!serverSocket.isClosed) {
+                        sock = serverSocket.accept()
+                        sock.receiveBufferSize = (32 * 1024)
+                        sock.sendBufferSize = (32 * 1024)
+                        sock.soTimeout = 1500
+                        readMessageAndSendToAllSockets(sock)
+                        Log.d("service", "accepted new user ${sock.getAddressFromSocket()}")
+                    } else {
+                        break
+                    }
                 } catch (e: java.net.SocketException) {
+                    Log.e("Server Accept Sock", "Error when accept new user, cause: $e")
                 }
             }
         }
@@ -226,6 +233,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             with(classMessage) {
                 when (type) {
                     Message.MessageType.JOIN.code -> {
+                        Log.d("treatMessage", "received a Join message")
                         if (password != "".toSHA256()) {
                             if (classMessage.join?.password == password) {
                                 sendIdToSocket(socket, classMessage)
@@ -246,6 +254,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                         }
                     }
                     Message.MessageType.REVOKED.code -> {
+                        Log.d("treatMessage", "received a Revoked message")
                         when (id) {
                             3 -> {
                                 if (socket.getAddressFromSocket() == Utils.getIpAddress()) { //garante que o dono do server está expulsando alguém.
@@ -272,23 +281,27 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     }
 
                     Message.MessageType.TICINVITE.code -> {
-                        if (classMessage.text == null) {
-                            // == send inv
-                                sockets.get(classMessage.username?.toInt())?.let {
-                                        sendMessageToASocket(it, classMessage)
-                                }
-                        } else { // = accepted or declined, caso declined, tic messages é null
-                            val ticMessages = classMessage.ticMessages
-                            if (ticMessages != null) {
-                                val player1 = ticMessages.player1Id
-                                val player2 = ticMessages.player2Id
-                                if (player1 != null && player2 != null)
+                        Log.d("treatMessage", "received a TICINVITE message")
+                        if (classMessage.ticTacToePlay?.isInviting != null) {
+                            sendMessageToASocket(socket, classMessage)
+                            // == send invite
+                        } else if (classMessage.ticTacToePlay?.isAccepting != null) { // = accepted or declined
+                            if (classMessage.ticTacToePlay.isAccepting == true) {
+                                val player1 = classMessage.id
+                                val player2 = classMessage.ticTacToePlay.opponentId
+                                if (player1 != null) {
                                     ServerTicTacToeManager.newGame(player1, player2)
+                                }
+                            }
+                            else{ // =declined
+
                             }
                         }
                     }
 
+
                     Message.MessageType.TICPLAY.code -> {
+                        Log.d("treatMessage", "received a TICPLAY message")
                         val movement = classMessage.text
                         if (movement != null) {
 
@@ -317,6 +330,8 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             id = classMessage.id
                         )
                         sendMessageToASocket(socket, message)
+                    }
+                    Message.MessageType.LEAVE.code -> {
                     }
                     else -> {
                         sendMessageToAllSockets(classMessage)
@@ -404,7 +419,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    @Synchronized
     private suspend fun sendMessageToASocket(socket: Socket, message: Message) {
         withContext(Dispatchers.IO) {
 //            try {
@@ -421,7 +435,6 @@ class ServerBackgroundService : Service(), CoroutineScope {
         }
     }
 
-    @Synchronized
     private suspend fun sendIdToSocket(socket: Socket, message: Message) =
         withContext(Dispatchers.IO) {
             id++

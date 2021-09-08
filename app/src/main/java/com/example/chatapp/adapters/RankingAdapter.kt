@@ -61,4 +61,24 @@ class RankingAdapter(private val profiles: ArrayList<Profile>) : RecyclerView.Ad
         return profiles.size
     }
 
+    fun addProfile(profile: Profile){
+        profiles.forEach {
+            if(it.id == profile.id){
+                return
+            }
+        }
+        this.profiles.add(profile)
+        notifyItemInserted(this.profiles.indices.last)
+    }
+
+    fun removeProfile(id: Int){
+        profiles.forEach {
+            if(it.id == id){
+                profiles.remove(it)
+                return@forEach
+            }
+        }
+    }
+
+
 }

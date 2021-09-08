@@ -13,7 +13,6 @@ import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
 import java.io.DataOutputStream
 import java.net.Socket
 import java.util.*
@@ -41,15 +40,15 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         val context = MainApplication.getContextInstance()
         observerWhenSocketClose()
         GlobalScope.launch(Dispatchers.IO) {
+            var lineReader: String
             while (!socket.isClosed) {
                 if (socket.isConnected || !socket.isClosed) {
                     val reader = Scanner(socket.getInputStream().bufferedReader())
-                    val line: String
                     if (reader.hasNextLine()) {
-                        line = reader.nextLine()
+                        lineReader = reader.nextLine()
                         withContext(Dispatchers.Main) {
-                            if (line != "ping") {
-                                val message = Utils.jsonToMessageClass(line)
+                            if (lineReader != "ping") {
+                                val message = Utils.jsonToMessageClass(lineReader)
                                 if (MainApplication.applicationIsInBackground()) {
                                     backgroundMessages.add(message)
                                     when (message.type) {
@@ -88,8 +87,8 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                                     }
                                     Utils.playBemTeVi()
                                 } else {
-                                    isRead.add(line)
-                                    this@ConnectionFactory.line.postValue(Pair(message, line))
+                                    isRead.add(lineReader)
+                                    this@ConnectionFactory.line.postValue(Pair(message, lineReader))
                                 }
                             }
                         }
@@ -99,7 +98,6 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                         this@ConnectionFactory.line.value = null
                         this@ConnectionFactory.line = MutableLiveData()
                     }
-
                 }
             }
         }
@@ -108,17 +106,21 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
     @Synchronized
     fun sendMessageToSocket(message: Message, onResult: () -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
-            val bw = DataOutputStream(socket.getOutputStream())
-            bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
-            bw.flush()
-            withContext(Dispatchers.Main) {
-                Log.d("server", "Sent Message")
-                onResult.invoke()
+            if (serverOnline.value == true) {
+                val bw = DataOutputStream(socket.getOutputStream())
+                bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
+                bw.flush()
+                withContext(Dispatchers.Main) {
+                    Log.d("send message to serve", "Sent Message")
+                    onResult.invoke()
+                }
             }
         }
     }
 
     fun setSocket(socket: Socket) {
+        socket.receiveBufferSize = (32*1024)
+        socket.sendBufferSize= (32*1024)
         this.socket = socket
     }
 
@@ -152,7 +154,9 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
                             flush()
                         }
                     } catch (e: Exception) {
-                        serverOnline.postValue(false)
+                        withContext(Dispatchers.Main) {
+                            serverOnline.postValue(false)
+                        }
                         Log.e("ConnectionFactory", e.toString())
                         break
                     }
