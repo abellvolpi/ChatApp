@@ -7,7 +7,6 @@ import android.media.MediaRecorder
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +29,6 @@ import com.example.chatapp.adapters.ChatAdapter
 import com.example.chatapp.databinding.FragmentChatBinding
 import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
-import com.example.chatapp.models.Profile
 import com.example.chatapp.tictactoe.UsersTicTacToeManager
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
@@ -43,7 +41,6 @@ import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 
 class ChatFragment : Fragment() {
@@ -402,20 +399,7 @@ class ChatFragment : Fragment() {
                                 if (connectionFactory.getIpHost() == Utils.getIpAddress()) {
                                     profile.isAdmin = true
                                 }
-                                if (profile.photoProfile != "" || profile.photoProfile != null) {
-                                    saveAvatarToCacheDir(
-                                        profile.id,
-                                        profile.photoProfile ?: ""
-                                    ) {
-                                        profile.photoProfile = it
-                                        profile.isMemberYet = true
-                                        profileViewModel.insert(profile)
-                                    }
-                                } else {
-                                    profile.photoProfile = ""
-                                    profile.isMemberYet = true
-                                    profileViewModel.insert(profile)
-                                }
+                                profileViewModel.insert(profile)
                             }
                         }
                     }
@@ -427,38 +411,20 @@ class ChatFragment : Fragment() {
             if (type == Message.MessageType.JOIN.code) {
                 if (id != null) {
                     if (id == profileId) {
-                        saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                            val profile =
-                                Profile(id, username ?: "", it, 0, true, join?.isAdmin)
-//                            profileViewModel.insert(profile)
-                            refreshUIChatAndSaveMessageInToRoom(this)
-                        }
-                    } else {
-                        if (join?.avatar != "" || join.avatar != null) {
-                            saveAvatarToCacheDir(id, join?.avatar ?: "") {
-                                val profile =
-                                    Profile(id, username ?: "", it, 0, true, join?.isAdmin)
-                                profileViewModel.insert(profile)
-//                                refreshUIChatAndSaveMessageInToRoom(this)
-                                refreshUIChatAndSaveMessageInToRoom(this)
-                            }
-                        } else {
-                            val profile = Profile(id, username ?: "", "", 0, true, join.isAdmin)
-                            profileViewModel.insert(profile)
-                            refreshUIChatAndSaveMessageInToRoom(this)
-                        }
+
                     }
-                } else {
-                    Log.e("chatNotRefresh", "an error occurred because id is null")
-                    Log.e("database", "error when insert profile, id is null")
+                    refreshUIChatAndSaveMessageInToRoom(this)
                 }
                 return
+            } else {
+                Log.e("chatNotRefresh", "an error occurred because id is null")
+                Log.e("database", "error when insert profile, id is null")
             }
 
             if (type == Message.MessageType.LEAVE.code) {
                 refreshUIChatAndSaveMessageInToRoom(this)
                 if (id != null) {
-                    profileViewModel.getProfile(id.toString()) {
+                    profileViewModel.getProfile(id) {
                         if (it != null) {
                             it.isMemberYet = false
                             profileViewModel.updateProfile(it)
@@ -582,18 +548,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun saveAvatarToCacheDir(id: Int, string: String, onResult: (String) -> Unit) {
-        val context = MainApplication.getContextInstance()
-        val output =
-            File(context.cacheDir.absolutePath + "/photosProfile", "profilePhoto_${id}.jpg")
-        val base64 = Base64.decode(string, Base64.NO_WRAP)
-        output.parentFile?.mkdirs()
-        val fos = FileOutputStream(output)
-        fos.write(base64)
-        fos.flush()
-        fos.close()
-        onResult.invoke(output.absolutePath)
-    }
 
     private fun receiveInviteTicTacToe(name: String, opponentId: Int?) {
         val builder = AlertDialog.Builder(requireContext()).apply {
@@ -937,9 +891,21 @@ class ChatFragment : Fragment() {
 
             if (sendImagesOptions.visibility == View.GONE) {
                 sendImagesOptions.visibility = View.VISIBLE
-                ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, 0F, radius).start()
+                ViewAnimationUtils.createCircularReveal(
+                    sendImagesOptions,
+                    centerX,
+                    centerY,
+                    0F,
+                    radius
+                ).start()
             } else {
-                val reveal = ViewAnimationUtils.createCircularReveal(sendImagesOptions, centerX, centerY, radius, 0F).apply {
+                val reveal = ViewAnimationUtils.createCircularReveal(
+                    sendImagesOptions,
+                    centerX,
+                    centerY,
+                    radius,
+                    0F
+                ).apply {
                     addListener(onEnd = {
                         sendImagesOptions.visibility = View.GONE
                     })
