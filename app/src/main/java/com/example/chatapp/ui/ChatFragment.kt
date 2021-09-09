@@ -76,7 +76,7 @@ class ChatFragment : Fragment() {
     private lateinit var snackbar: Snackbar
     private var joinMessage: Message? = null
 
-    private val boardCells = arrayOf<ImageButton?>() // Array de image button
+    private val boardCells = arrayOfNulls<ImageButton?>(9) // Array de image button
 
     //    private var board = Board()
     private var canIPlay: Boolean = false
@@ -103,7 +103,6 @@ class ChatFragment : Fragment() {
                             buttonVoiceMessageRecord.visibility = View.GONE
                         }
                     }
-
                 }
             }
         }
@@ -951,7 +950,7 @@ class ChatFragment : Fragment() {
         with(binding) {
             val centerX = (sendImagesOptions.left + sendImagesOptions.right) / 2
             val centerY = (sendImagesOptions.top) / 2
-            val radius = Math.max(sendImagesOptions.width, sendImagesOptions.height) * 2.0f
+            val radius = sendImagesOptions.width.coerceAtLeast(sendImagesOptions.height) * 2.0f
 
             if (sendImagesOptions.visibility == View.GONE) {
                 sendImagesOptions.visibility = View.VISIBLE

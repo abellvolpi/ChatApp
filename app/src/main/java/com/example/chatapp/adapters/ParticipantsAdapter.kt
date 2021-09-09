@@ -75,12 +75,15 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                         ticTacToePlay = Message.TicTacToePlay(isInviting = true, opponentId = profile.id)
                     )
                     connectionFactory.sendMessageToSocket(message) {}
+
                     val snackBar = Snackbar.make(
                         root,
                         root.context.getString(R.string.waiting_accept),
                         Snackbar.LENGTH_LONG
                     )
                     snackBar.show()
+                    val context = MainApplication.getContextInstance()
+                    context.
                 }
             }
         }

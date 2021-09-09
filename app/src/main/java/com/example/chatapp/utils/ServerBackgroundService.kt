@@ -283,14 +283,17 @@ class ServerBackgroundService : Service(), CoroutineScope {
                     Message.MessageType.TICINVITE.code -> {
                         Log.d("treatMessage", "received a TICINVITE message")
                         if (classMessage.ticTacToePlay?.isInviting != null) {
-                            sendMessageToASocket(socket, classMessage)
-                            // == send invite
+                            val socket2 = sockets[classMessage.ticTacToePlay.opponentId]
+                            if (socket2 != null) {
+                                sendMessageToASocket(socket2, classMessage)
+                                // == send invite
+                            }
                         } else if (classMessage.ticTacToePlay?.isAccepting != null) { // = accepted or declined
                             if (classMessage.ticTacToePlay.isAccepting == true) {
-                                val player1 = classMessage.id
-                                val player2 = classMessage.ticTacToePlay.opponentId
-                                if (player1 != null) {
-                                    ServerTicTacToeManager.newGame(player1, player2)
+                                val player1Id = classMessage.id
+                                val player2Id = classMessage.ticTacToePlay.opponentId
+                                if (player1Id != null) {
+                                    ServerTicTacToeManager.newGame(player1Id, player2Id)
                                 }
                             }
                             else{ // =declined
@@ -302,18 +305,21 @@ class ServerBackgroundService : Service(), CoroutineScope {
 
                     Message.MessageType.TICPLAY.code -> {
                         Log.d("treatMessage", "received a TICPLAY message")
-                        val movement = classMessage.text
+                        val movement = classMessage.ticTacToePlay?.play
                         if (movement != null) {
-
                             val id = classMessage.id
-
                             if (id != null) {
-
                                 if (ServerTicTacToeManager.searchInMatches(id)) {
-
                                     if (ServerTicTacToeManager.placeMove(id, movement.toInt())) {
-
-
+                                        val message = Message(
+                                            Message.MessageType.TICPLAY.code,
+                                            username = classMessage.username,
+                                            text = "",
+                                            base64Data = null,
+                                            id = classMessage.id,
+                                            ticTacToePlay = Message.TicTacToePlay(play = movement, opponentId = classMessage.ticTacToePlay.opponentId)
+                                        )
+                                        sendMessageToASocket(socket, message)
                                     } else {
                                         Log.w("Error:", "This place is already being used")
                                     }
@@ -322,14 +328,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                 }
                             }
                         }
-                        val message = Message(
-                            Message.MessageType.TICPLAY.code,
-                            username = classMessage.username,
-                            text = classMessage.text,
-                            base64Data = null,
-                            id = classMessage.id
-                        )
-                        sendMessageToASocket(socket, message)
+
                     }
                     Message.MessageType.LEAVE.code -> {
                     }
@@ -425,7 +424,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
             val bw = DataOutputStream(socket.getOutputStream())
             bw.write((Utils.messageClassToJSON(message) + "\n").toByteArray(Charsets.UTF_8))
             bw.flush()
-            Log.d("service", "Sent message to a socket")
+            Log.d("service", "Sent message to a socket ip ${socket.localSocketAddress}")
 //            }catch (e: Exception){
 //                val messageJson = Utils.messageClassToJSON(message)
 //                Log.e("error send message:", messageJson)
