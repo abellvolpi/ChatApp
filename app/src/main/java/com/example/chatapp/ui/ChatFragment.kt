@@ -1,5 +1,6 @@
 package com.example.chatapp.ui
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.pm.PackageManager
@@ -9,10 +10,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewAnimationUtils
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -35,19 +33,27 @@ import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
 import com.example.chatapp.utils.Utils
+import com.example.chatapp.utils.swipeUpButtonListener.OnSwipeTouchListener
 import com.example.chatapp.viewModel.ConnectionFactory
 import com.example.chatapp.viewModel.MessageViewModel
 import com.example.chatapp.viewModel.ProfileViewModel
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
 class ChatFragment : Fragment() {
+    //record Audio
     private lateinit var output: String
     private lateinit var mediaRecorder: MediaRecorder
     private var state: Boolean = false
+
+    //------
     private lateinit var binding: FragmentChatBinding
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var adapter: ChatAdapter
@@ -158,6 +164,7 @@ class ChatFragment : Fragment() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initView() {
         readMessageMissed()
         with(binding) {
@@ -235,14 +242,37 @@ class ChatFragment : Fragment() {
                     override fun afterTextChanged(s: Editable?) {}
                 })
 
-                buttonVoiceMessageRecord.setOnClickListener {
-                    checkPermission(android.Manifest.permission.RECORD_AUDIO, RECORD_PERMISSION)
-                    if (!state) {
-                        startRecording()
-                    } else {
-                        stopRecording()
+                buttonVoiceMessageRecord.setOnLongClickListener {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val millis = System.currentTimeMillis()
+                        checkPermission(
+                            android.Manifest.permission.RECORD_AUDIO,
+                            RECORD_PERMISSION
+                        )
+                        if (!state) {
+                            startRecording()
+                        }
+                        while (state) {
+                            if (!it.isPressed) {
+                                withContext(Dispatchers.Main) {
+                                    if (state) {
+                                        stopRecording()
+                                    }
+                                }
+                            }
+                        }
                     }
+                    true
                 }
+
+                buttonVoiceMessageRecord.setOnTouchListener(@SuppressLint("ClickableViewAccessibility")
+                object : OnSwipeTouchListener(requireContext(), {
+                    if (it == MotionEvent.ACTION_UP) {
+                        Toast.makeText(requireContext(), "swipeUp", Toast.LENGTH_LONG).show()
+                    }
+                }) {})
+
+
 
                 buttonClip.setOnClickListener {
                     setAnimation()
@@ -530,7 +560,6 @@ class ChatFragment : Fragment() {
 //            }
         }
     }
-
 
     private fun emptyHistoryCache() {
         File(
