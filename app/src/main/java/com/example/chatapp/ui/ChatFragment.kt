@@ -40,18 +40,17 @@ import com.example.chatapp.viewModel.ProfileViewModel
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.IOException
+import kotlin.coroutines.CoroutineContext
 
-class ChatFragment : Fragment() {
+class ChatFragment : Fragment(), CoroutineScope {
     //record Audio
     private lateinit var output: String
     private lateinit var mediaRecorder: MediaRecorder
     private var state: Boolean = false
+    override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
 
     //------
     private lateinit var binding: FragmentChatBinding
@@ -198,18 +197,18 @@ class ChatFragment : Fragment() {
                 constraintLayout.setOnClickListener {
                     activity?.hideSoftKeyboard()
                 }
-                tictactoe.setOnClickListener {
-                    bottomSheet.whoPlay.visibility = View.VISIBLE
-                    if (!isTicTacToePlayRunning) {
-//                        sendInviteTicTacToe()
-                    } else {
-                        Snackbar.make(
-                            requireView(),
-                            R.string.game_started,
-                            Snackbar.LENGTH_LONG
-                        ).show()
-                    }
-                }
+//                tictactoe.setOnClickListener {
+//                    bottomSheet.whoPlay.visibility = View.VISIBLE
+//                    if (!isTicTacToePlayRunning) {
+////                        sendInviteTicTacToe()
+//                    } else {
+//                        Snackbar.make(
+//                            requireView(),
+//                            R.string.game_started,
+//                            Snackbar.LENGTH_LONG
+//                        ).show()
+//                    }
+//                }
                 messageField.addTextChangedListener(object : TextWatcher {
                     override fun beforeTextChanged(
                         s: CharSequence?,
@@ -311,8 +310,8 @@ class ChatFragment : Fragment() {
                     progressBarSendMessage.visibility = View.VISIBLE
                     when {
                         sentImageFrameLayout.visibility == View.VISIBLE -> {
-                            //       val bitmap = sentImage.drawable.toBitmap()
-
+                            progressBarSendMessage2.visibility = View.VISIBLE
+                            restartUI()
                             Utils.bitmapToByteArray3(sentImage.drawable) {
                                 val message = Message(
                                     Message.MessageType.IMAGE.code,
@@ -321,10 +320,14 @@ class ChatFragment : Fragment() {
                                     text = null,
                                     username = profileName
                                 )
-                                sendMessageSocket(message)
-                                restartUI()
+                                val result = async{
+                                    sendMessageSocket(message)
+                                }
+                                launch (Dispatchers.Main){
+                                    result.await()
+                                    progressBarSendMessage2.visibility = View.GONE
+                                }
                             }
-
                         }
                         messageField.text.isNotBlank() -> {
                             val message =

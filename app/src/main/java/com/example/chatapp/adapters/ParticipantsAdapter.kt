@@ -101,19 +101,18 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         holder.bind(profiles[position])
 
-        holder.itemView.setOnClickListener {
-            val message = Message(
-                Message.MessageType.TICINVITE.code,
-                text = null,
-                id = ProfileSharedProfile.getIdProfile(),
-                base64Data = null,
-                username = ProfileSharedProfile.getProfile(),
-                ticTacToePlay = Message.TicTacToePlay(isInviting = true, opponentId = profiles[position].id)
-            )
-            connectionFactory.sendMessageToSocket(message) {}
-            it.findNavController().popBackStack()
-        }
-
+//        holder.itemView.setOnClickListener {
+//            val message = Message(
+//                Message.MessageType.TICINVITE.code,
+//                text = null,
+//                id = ProfileSharedProfile.getIdProfile(),
+//                base64Data = null,
+//                username = ProfileSharedProfile.getProfile(),
+//                ticTacToePlay = Message.TicTacToePlay(isInviting = true, opponentId = profiles[position].id)
+//            )
+//            connectionFactory.sendMessageToSocket(message) {}
+//            it.findNavController().popBackStack()
+//        }
 
     }
 

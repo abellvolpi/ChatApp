@@ -106,17 +106,21 @@
 
 
     <!--    ChatDetails Fragment-->
+
     <string name="participants">Participants</string>
     <string name="ranking" translatable="false">Ranking</string>
     <string name="password">Password</string>
     <string name="Kick">kick</string>
     <string name="admin">Admin</string>
+    <string name="warning">Ops, we are still working on it!</string>
 
 
     <!--    Profile Fragment-->
 
     <string name="profile_photo">Profile photo</string>
     <string name="generating_your_credential">Generating your credential</string>
+
+
 
 
 </resources>

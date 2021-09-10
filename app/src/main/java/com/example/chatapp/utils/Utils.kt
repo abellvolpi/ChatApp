@@ -319,7 +319,7 @@ object Utils : CoroutineScope {
 
     fun bitmapToByteArray3(image: Drawable, onResult: (String) -> Unit) {
         launch(Dispatchers.Default) {
-            val bitmap = (image as BitmapDrawable).bitmap.scale(640, 480)
+            val bitmap = (image as BitmapDrawable).bitmap
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
             val base64 = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)

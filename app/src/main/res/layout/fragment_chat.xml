@@ -160,15 +160,15 @@
                     android:src="@drawable/ic_x_white" />
             </FrameLayout>
 
-            <ImageView
-                android:id="@+id/tictactoe"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="5dp"
-                android:src="@drawable/ic_tictactoe"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/frame_layout"
-                app:layout_constraintStart_toStartOf="parent" />
+<!--            <ImageView-->
+<!--                android:id="@+id/tictactoe"-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="40dp"-->
+<!--                android:layout_marginStart="5dp"-->
+<!--                android:src="@drawable/ic_tictactoe"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                app:layout_constraintEnd_toStartOf="@id/frame_layout"-->
+<!--                app:layout_constraintStart_toStartOf="parent" />-->
 
             <FrameLayout
                 android:id="@+id/frame_layout"
@@ -176,7 +176,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/layoutButtons"
-                app:layout_constraintStart_toEndOf="@id/tictactoe">
+                app:layout_constraintStart_toStartOf="parent">
 
                 <EditText
                     android:id="@+id/message_field"
@@ -238,6 +238,7 @@
                         android:src="@drawable/ic_record" />
                 </LinearLayout>
 
+
                 <ProgressBar
                     android:id="@+id/progress_bar_send_message"
                     android:layout_width="40dp"
@@ -246,7 +247,20 @@
                     android:padding="5dp"
                     android:visibility="gone" />
             </FrameLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ProgressBar
+            android:id="@+id/progress_bar_send_message2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/layout_button"
+            android:padding="5dp"
+            android:visibility="gone"
+            android:layout_margin="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/layout"
+            app:layout_constraintEnd_toEndOf="parent"
+             />
 
         <LinearLayout
             android:id="@+id/centerProgressBar"

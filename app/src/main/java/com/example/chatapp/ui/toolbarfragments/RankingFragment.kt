@@ -33,19 +33,19 @@ class RankingFragment : Fragment() {
         binding = FragmentRankingBinding.inflate(inflater, container, false)
 
 
-        profileController.ranking.value.let {
-            if(it != null){
-                rankingAdapter = RankingAdapter(it)
-                with(binding.recyclerView){
-                    adapter = rankingAdapter
-                    layoutManager = LinearLayoutManager(requireContext())
-                    addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
-                }
-            }else{
-                Log.e("participantsFragment", "Arraylist is empty")
-            }
-        }
-        initObservers()
+//        profileController.ranking.value.let {
+//            if(it != null){
+//                rankingAdapter = RankingAdapter(it)
+//                with(binding.recyclerView){
+//                    adapter = rankingAdapter
+//                    layoutManager = LinearLayoutManager(requireContext())
+//                    addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
+//                }
+//            }else{
+//                Log.e("participantsFragment", "Arraylist is empty")
+//            }
+//        }
+//        initObservers()
         return binding.root
     }
 
