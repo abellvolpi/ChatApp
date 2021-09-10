@@ -3,7 +3,6 @@ package com.example.chatapp.room.message.controller
 import androidx.room.Room
 import com.example.chatapp.models.Message
 import com.example.chatapp.room.appDataBase.AppDataBase
-import com.example.chatapp.room.withs.MessagesWithProfile
 import com.example.chatapp.utils.MainApplication
 
 

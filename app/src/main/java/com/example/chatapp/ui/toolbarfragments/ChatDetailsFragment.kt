@@ -15,9 +15,6 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class ChatDetailsFragment : Fragment() {
 
-    private lateinit var binding: FragmentChatDetailsBinding
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

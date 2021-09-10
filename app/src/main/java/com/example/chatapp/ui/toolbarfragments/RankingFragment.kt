@@ -18,7 +18,7 @@ import com.example.chatapp.viewModel.ProfileViewModel
 import kotlinx.coroutines.runBlocking
 
 
-class RankingFragment() : Fragment() {
+class RankingFragment : Fragment() {
 
     private lateinit var binding: FragmentRankingBinding
     private val profileController : ProfileViewModel by activityViewModels()
@@ -37,7 +37,7 @@ class RankingFragment() : Fragment() {
             if(it != null){
                 rankingAdapter = RankingAdapter(it)
                 with(binding.recyclerView){
-                    setAdapter(rankingAdapter)
+                    adapter = rankingAdapter
                     layoutManager = LinearLayoutManager(requireContext())
                     addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
                 }
@@ -60,9 +60,9 @@ class RankingFragment() : Fragment() {
                             runBlocking {
                                 profileController.insert(profile)
                             }
-                            profileController.getProfile(profile.id){
-                                if(it != null) {
-                                    rankingAdapter.addProfile(it)
+                            profileController.getProfile(profile.id){ profile2 ->
+                                if(profile2 != null) {
+                                    rankingAdapter.addProfile(profile2)
                                 }else{
                                     Log.e("RankingFragment", "error when getProfile from data base")
                                 }

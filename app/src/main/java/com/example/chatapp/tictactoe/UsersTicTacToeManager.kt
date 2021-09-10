@@ -5,7 +5,7 @@ import com.example.chatapp.models.Cell
 object UsersTicTacToeManager {
     const val PLAYER = "O"
     const val OPPONENT = "X"
-    var matchId : Int? = null
+    private var matchId : Int? = null
     var boardPlaces = arrayOf<String?>()
     var opponentId : Int = -1
 

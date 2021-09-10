@@ -65,9 +65,9 @@ class ParticipantsFragment : Fragment() {
                             runBlocking {
                                 profileController.insert(profile)
                             }
-                            profileController.getProfile(profile.id){
-                                if(it!=null) {
-                                    participantsAdapter.addProfile(it)
+                            profileController.getProfile(profile.id){ profile2 ->
+                                if(profile2!=null) {
+                                    participantsAdapter.addProfile(profile2)
                                 }else{
                                     Log.e("ParticipantsFragment", "Error get profile from data base")
                                 }

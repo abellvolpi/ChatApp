@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp.R
 import com.example.chatapp.databinding.ParticipantsItemBinding
@@ -82,8 +83,6 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                         Snackbar.LENGTH_LONG
                     )
                     snackBar.show()
-                    val context = MainApplication.getContextInstance()
-                    context.
                 }
             }
         }
@@ -101,6 +100,21 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         holder.bind(profiles[position])
+
+        holder.itemView.setOnClickListener {
+            val message = Message(
+                Message.MessageType.TICINVITE.code,
+                text = null,
+                id = ProfileSharedProfile.getIdProfile(),
+                base64Data = null,
+                username = ProfileSharedProfile.getProfile(),
+                ticTacToePlay = Message.TicTacToePlay(isInviting = true, opponentId = profiles[position].id)
+            )
+            connectionFactory.sendMessageToSocket(message) {}
+            it.findNavController().popBackStack()
+        }
+
+
     }
 
     override fun getItemCount(): Int {

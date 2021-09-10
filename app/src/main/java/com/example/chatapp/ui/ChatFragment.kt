@@ -73,7 +73,7 @@ class ChatFragment : Fragment() {
     private val navController by lazy {
         findNavController()
     }
-    private lateinit var snackbar: Snackbar
+    private lateinit var snackBar: Snackbar
     private var joinMessage: Message? = null
 
     private val boardCells = arrayOfNulls<ImageButton?>(9) // Array de image button
@@ -534,7 +534,7 @@ class ChatFragment : Fragment() {
 //                Message.INVITE_TICTACTOE -> {
 //                    if (message == "accepted") {
 //                        refreshBoard()
-//                        snackbar.dismiss()
+//                        snackBar.dismiss()
 //                        player = Board.O
 //                        canIPlay = true
 //                        initViewTicTacToe()
@@ -542,15 +542,15 @@ class ChatFragment : Fragment() {
 //                        return
 //                    }
 //                    if (message == "declined") {
-//                        snackbar.dismiss()
+//                        snackBar.dismiss()
 //                        val parent =
 //                            requireActivity().window.decorView.findViewById<View>(android.R.id.content)
-//                        snackbar = Snackbar.make(
+//                        snackBar = SnackBar.make(
 //                            requireView(),
 //                            R.string.invite_rejected.toString(),
-//                            Snackbar.LENGTH_LONG
+//                            snackBar.LENGTH_LONG
 //                        )
-//                        snackbar.show()
+//                        snackBar.show()
 //                    }
 //                }
 //                Message.NOTIFY_CHAT -> {
@@ -612,7 +612,7 @@ class ChatFragment : Fragment() {
             UsersTicTacToeManager.opponentId = opponentId
         }
 
-        snackbar.dismiss()
+        snackBar.dismiss()
         canIPlay = true
         initViewTicTacToe()
         bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED

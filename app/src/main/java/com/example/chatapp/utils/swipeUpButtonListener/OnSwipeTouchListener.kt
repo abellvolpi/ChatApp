@@ -19,8 +19,8 @@ open class OnSwipeTouchListener(val context: Context, val action : (Int) -> Unit
                 }
 
             }
-            view.onTouchEvent(motionEvent);
-            return true;
+            view.onTouchEvent(motionEvent)
+            return true
         }
         return false
     }
