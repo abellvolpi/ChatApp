@@ -16,7 +16,9 @@ class ReplyReceiver : BroadcastReceiver() {
                 username = ProfileSharedProfile.getProfile(),
                 text = textReceived,
                 id = ProfileSharedProfile.getIdProfile(),
-                base64Data = null
+                dataBuffer = null,
+                partNumber = null,
+                dataSize = null
             )
         val notificationManager = context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(Utils.NOTIFICATION_ID)

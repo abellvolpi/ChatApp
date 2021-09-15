@@ -201,6 +201,7 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 Log.e("service sendToAll", e.toString())
                 removeSocket(socket.value)
             }
+            delay(100)
         }
     }
 
@@ -243,7 +244,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
                                     Message.MessageType.REVOKED.code,
                                     username = null,
                                     text = null,
-                                    base64Data = null,
+                                    dataBuffer = null,
+                                    partNumber = null,
+                                    dataSize = null,
                                     id = 1
                                 )
                                 sendMessageToASocket(socket, message)
@@ -321,7 +324,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
                             Message.MessageType.TICPLAY.code,
                             username = classMessage.username,
                             text = classMessage.text,
-                            base64Data = null,
+                            dataSize = null,
+                            partNumber = null,
+                            dataBuffer = null,
                             id = classMessage.id
                         )
                         sendMessageToASocket(socket, message)
@@ -441,7 +446,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
                 type = Message.MessageType.ACKNOWLEDGE.code,
                 username = null,
                 text = shareProfilesToNewMember(),
-                base64Data = null,
+                dataBuffer = null,
+                partNumber = null,
+                dataSize = null,
                 id = id
             )
             Log.d("service", "Message ACKNOWLEDGE generated to $id")
@@ -458,7 +465,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
             username = message.username,
             join = join,
             text = null,
-            base64Data = null
+            dataSize = null,
+            partNumber = null,
+            dataBuffer = null
         )
         sendMessageToAllSockets(messageToSend)
     }
@@ -470,7 +479,9 @@ class ServerBackgroundService : Service(), CoroutineScope {
             type = Message.MessageType.LEAVE.code,
             username = username,
             join = null,
-            base64Data = null,
+            dataBuffer = null,
+            partNumber = null,
+            dataSize = null,
             text = null
         )
         sendMessageToAllSockets(messageToSend)

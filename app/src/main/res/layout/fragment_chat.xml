@@ -194,6 +194,14 @@
                     android:layout_gravity="end|center"
                     android:layout_marginEnd="20dp"
                     android:src="@drawable/ic_clip" />
+                <TextView
+                    android:id="@+id/AudioTimeRecorder"
+                    android:visibility="gone"
+                    android:textSize="20dp"
+                    android:layout_marginEnd="50dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|end"/>
             </FrameLayout>
 
             <FrameLayout

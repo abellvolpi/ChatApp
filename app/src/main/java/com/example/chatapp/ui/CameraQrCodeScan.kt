@@ -87,7 +87,9 @@ class CameraQrCodeScan : Fragment(), ZXingScannerView.ResultHandler {
                             type = Message.MessageType.JOIN.code,
                             username = ProfileSharedProfile.getProfile(),
                             text = null,
-                            base64Data = null,
+                            dataBuffer = null,
+                            partNumber = null,
+                            dataSize = null,
                             join = Message.Join(
                                 avatar = image,
                                 password = "".toSHA256(),

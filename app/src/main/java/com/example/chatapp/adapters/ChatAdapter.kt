@@ -1,6 +1,5 @@
 package com.example.chatapp.adapters
 
-import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.util.Log
 import android.view.LayoutInflater
@@ -24,7 +23,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -47,17 +45,17 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                Log.w("Image: ", msg.base64Data.toString())
+                Log.w("Image: ", msg.internalCacheDir ?: "")
                 name.text = msg.username
-                time.text = timeFormatter(msg.time)
-                msg.base64Data?.let {
+                time.text = Utils.timeFormatter(msg.time)
+                msg.internalCacheDir?.let {
                     val file = File(it)
                     Utils.uriToBitmap(file.toUri(), context.contentResolver) { bitmap ->
                         receivedImage.setImageBitmap(bitmap)
                     }
                 }
                 receivedImage.setOnClickListener { view ->
-                    val uri = msg.base64Data
+                    val uri = msg.internalCacheDir
                     val extras = FragmentNavigatorExtras(receivedImage to "image_big")
                     findNavController(view).navigate(
                         R.id.action_chatFragment_to_imageFragment,
@@ -77,17 +75,17 @@ class ChatAdapter(
             with(binding) {
                 Log.w(
                     "" +
-                            "Image: ", msg.base64Data.toString()
+                            "Image: ", msg.internalCacheDir ?: ""
                 )
                 name.text = msg.text
-                time.text = timeFormatter(msg.time)
-                msg.base64Data?.let {
+                time.text = Utils.timeFormatter(msg.time)
+                msg.internalCacheDir?.let {
                     val file = File(it)
                     Utils.uriToBitmap(file.toUri(), context.contentResolver) { bitmap ->
                         sentImage.setImageBitmap(bitmap)
                     }
                     sentImage.setOnClickListener { view ->
-                        val uri = msg.base64Data
+                        val uri = msg.internalCacheDir ?: ""
                         val extras = FragmentNavigatorExtras(sentImage to "image_big")
                         findNavController(view).navigate(
                             R.id.action_chatFragment_to_imageFragment,
@@ -107,7 +105,7 @@ class ChatAdapter(
             with(binding) {
                 message.text = msg.text
                 name.text = msg.username
-                time.text = timeFormatter(msg.time)
+                time.text = Utils.timeFormatter(msg.time)
             }
         }
     }
@@ -116,11 +114,11 @@ class ChatAdapter(
         BaseViewHolder(binding.root) {
         override fun bind(msg: Message) {
             with(binding) {
-                time.text = timeFormatter(msg.time)
-                if (msg.base64Data == null) {
+                time.text = Utils.timeFormatter(msg.time)
+                if (msg.internalCacheDir == null) {
                     message.text = msg.text
                 } else {
-                    message.text = msg.base64Data
+                    message.text = msg.internalCacheDir
                 }
             }
         }
@@ -178,12 +176,12 @@ class ChatAdapter(
                 getAudio(msg) {
                     message.text = context.getString(
                         R.string.audio,
-                        getTimeAudioInString(it.duration.toLong())
+                        Utils.getTimeAudioInString(it.duration.toLong())
                     )
                     seekBarAudio.max = it.duration
                 }
 
-                time.text = timeFormatter(msg.time)
+                time.text = Utils.timeFormatter(msg.time)
                 startAudio.setOnClickListener {
                     startAudio(
                         msg,
@@ -192,13 +190,13 @@ class ChatAdapter(
                     ) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
-                            reproduceTimeAudio.text = getTimeAudioInString(long)
+                            reproduceTimeAudio.text = Utils.getTimeAudioInString(long)
                             seekBarAudio.progress = long.toInt()
                         }
                         mediaPlayer.setOnCompletionListener {
                             liveDataToObserve.changeAudioRunning(false, layoutPosition)
                             positionMessageAudioRunning = -1
-                            reproduceTimeAudio.text = getTimeAudioInString(0)
+                            reproduceTimeAudio.text = Utils.getTimeAudioInString(0)
                             seekBarAudio.progress = 0
                         }
                         seekBarAudio.setOnSeekBarChangeListener(object :
@@ -262,11 +260,11 @@ class ChatAdapter(
                 getAudio(msg) {
                     message.text = context.getString(
                         R.string.audio,
-                        getTimeAudioInString(it.duration.toLong())
+                        Utils.getTimeAudioInString(it.duration.toLong())
                     )
                     seekBarAudio.max = it.duration
                 }
-                time.text = timeFormatter(msg.time)
+                time.text = Utils.timeFormatter(msg.time)
                 startAudio.setOnClickListener {
                     startAudio(
                         msg,
@@ -275,13 +273,13 @@ class ChatAdapter(
                     ) { long: Long ->
                         if (msg == data[positionMessageAudioRunning]) {
                             positionMessageAudioRunning = layoutPosition
-                            reproduceTimeAudio.text = getTimeAudioInString(long)
+                            reproduceTimeAudio.text = Utils.getTimeAudioInString(long)
                             seekBarAudio.progress = long.toInt()
                         }
                         mediaPlayer.setOnCompletionListener {
                             liveDataToObserve.changeAudioRunning(false, layoutPosition)
                             positionMessageAudioRunning = -1
-                            reproduceTimeAudio.text = getTimeAudioInString(0)
+                            reproduceTimeAudio.text = Utils.getTimeAudioInString(0)
                             seekBarAudio.progress = 0
                         }
                         seekBarAudio.setOnSeekBarChangeListener(object :
@@ -416,12 +414,6 @@ class ChatAdapter(
         return position.toLong()
     }
 
-    @SuppressLint("SimpleDateFormat")
-    private fun timeFormatter(time: Long): String {
-        val dtf = SimpleDateFormat("HH:mm")
-        return dtf.format(time)
-    }
-
     fun addData(message: Message) {
         data.add(message)
         notifyItemInserted(data.size - 1)
@@ -464,10 +456,6 @@ class ChatAdapter(
             positionMessageAudioRunning = -1
             mediaPlayer.stop()
         }
-    }
-
-    private fun getTimeAudioInString(long: Long): String {
-        return SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(long))
     }
 
     private fun getAudio(msg: Message, onResult: (MediaPlayer) -> Unit) {

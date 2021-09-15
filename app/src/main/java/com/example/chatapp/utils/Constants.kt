@@ -5,6 +5,8 @@ object Constants {
         var takePicture = false
         var gallery = false
 
+        var valueByteToTranferToSocket = 1023
+
 
 
 }

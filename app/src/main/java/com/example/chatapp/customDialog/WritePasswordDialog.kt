@@ -41,7 +41,9 @@ class WritePasswordDialog: DialogFragment() {
                 type = Message.MessageType.JOIN.code,
                 username = ProfileSharedProfile.getProfile(),
                 text = null,
-                base64Data = null,
+                dataSize = null,
+                    partNumber = null,
+                    dataBuffer = null,
                 join = Message.Join(
                     avatar = ProfileSharedProfile.getProfilePhotoBase64(),
                     password = passwordField.text.toString().toSHA256(), false),

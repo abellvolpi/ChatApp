@@ -9,7 +9,10 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewAnimationUtils
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -29,6 +32,7 @@ import com.example.chatapp.models.Cell
 import com.example.chatapp.models.Message
 import com.example.chatapp.tictactoe.TicMessages
 import com.example.chatapp.tictactoe.UsersTicTacToeManager
+import com.example.chatapp.utils.Constants
 import com.example.chatapp.utils.Extensions.hideSoftKeyboard
 import com.example.chatapp.utils.MainApplication
 import com.example.chatapp.utils.ProfileSharedProfile
@@ -40,20 +44,26 @@ import com.example.chatapp.viewModel.ProfileViewModel
 import com.example.chatapp.viewModel.UtilsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.IOException
+import java.sql.Timestamp
+import java.util.*
 
 class ChatFragment : Fragment() {
     //record Audio
     private lateinit var output: String
     private lateinit var mediaRecorder: MediaRecorder
     private var state: Boolean = false
-
     //------
+
+    //received Audio Message
+    //arrayList index is from ID Profile - Pair First is audioPart, Pair Second is BufferDataString
+    private var audioMultiPartUnformattedHash: HashMap<Int, String> = hashMapOf()
+    private var dataSizeToReceived = 0L
+    private var dataSizeReceived = 0L
+    //-----
+
     private lateinit var binding: FragmentChatBinding
     private val connectionFactory: ConnectionFactory by activityViewModels()
     private lateinit var adapter: ChatAdapter
@@ -156,6 +166,7 @@ class ChatFragment : Fragment() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initView() {
         readMessageMissed()
         with(binding) {
@@ -242,11 +253,22 @@ class ChatFragment : Fragment() {
                             RECORD_PERMISSION
                         )
                         if (!state) {
-                            startRecording()
+                            withContext(Dispatchers.Main) {
+                                startRecording()
+                            }
                         }
                         while (state) {
-                            if (!it.isPressed) {
-                                withContext(Dispatchers.Main) {
+                            withContext(Dispatchers.Main) {
+                                val millis2 = Timestamp(System.currentTimeMillis()).time
+                                val timeFormatted = Utils.getTimeAudioInString(millis2 - millis)
+                                binding.AudioTimeRecorder.text = timeFormatted
+                                layoutButtons.setOnDragListener(
+                                    OnSwipeTouchListener(
+                                        requireContext(),
+                                        layoutButtons
+                                    )
+                                )
+                                if (!it.isPressed) {
                                     if (state) {
                                         stopRecording()
                                     }
@@ -257,268 +279,438 @@ class ChatFragment : Fragment() {
                     true
                 }
 
-                    buttonVoiceMessageRecord.setOnTouchListener(@SuppressLint("ClickableViewAccessibility")
-                    object : OnSwipeTouchListener(requireContext(), {
-                        if (it == MotionEvent.ACTION_UP) {
-                            Toast.makeText(requireContext(), "swipeUp", Toast.LENGTH_LONG).show()
-                        }
-                    }) {})
-
-
-
-                    buttonClip.setOnClickListener {
-                        setAnimation()
+                buttonClip.setOnClickListener {
+                    setAnimation()
 //                    if (sendImagesOptions.visibility == View.GONE) {
 //                        sendImagesOptions.visibility = View.VISIBLE
 //                    } else {
 //                        sendImagesOptions.visibility = View.GONE
 //                    }
+                }
+
+                cardViewCamera.setOnClickListener {
+                    sendImagesOptions.visibility = View.GONE
+                    checkPermission(android.Manifest.permission.CAMERA, REQUEST_IMAGE_CAPTURE)
+                    if (ContextCompat.checkSelfPermission(
+                            requireContext(),
+                            android.Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        registerUseCamera.launch(null)
                     }
 
-                    cardViewCamera.setOnClickListener {
-                        sendImagesOptions.visibility = View.GONE
-                        checkPermission(android.Manifest.permission.CAMERA, REQUEST_IMAGE_CAPTURE)
-                        if (ContextCompat.checkSelfPermission(
-                                requireContext(),
-                                android.Manifest.permission.CAMERA
-                            ) == PackageManager.PERMISSION_GRANTED
-                        ) {
-                            registerUseCamera.launch(null)
-                        }
 
+                }
+                cardViewGallery.setOnClickListener {
+                    sendImagesOptions.visibility = View.GONE
+                    startActivityLaunch.launch("image/*")
+                    buttonSend.visibility = View.VISIBLE
+                    buttonVoiceMessageRecord.visibility = View.GONE
+                }
 
-                    }
-                    cardViewGallery.setOnClickListener {
-                        sendImagesOptions.visibility = View.GONE
-                        startActivityLaunch.launch("image/*")
-                        buttonSend.visibility = View.VISIBLE
-                        buttonVoiceMessageRecord.visibility = View.GONE
-                    }
+                closeImageButton.setOnClickListener {
+                    restartUI()
+                }
 
-                    closeImageButton.setOnClickListener {
-                        restartUI()
-                    }
+                buttonSend.setOnClickListener {
+                    progressBarSendMessage.visibility = View.VISIBLE
+                    when {
+                        sentImageFrameLayout.visibility == View.VISIBLE -> {
+                            //       val bitmap = sentImage.drawable.toBitmap()
 
-                    buttonSend.setOnClickListener {
-                        progressBarSendMessage.visibility = View.VISIBLE
-                        when {
-                            sentImageFrameLayout.visibility == View.VISIBLE -> {
-                                //       val bitmap = sentImage.drawable.toBitmap()
-
-                                Utils.bitmapToByteArray3(sentImage.drawable) {
-                                    val message = Message(
-                                        Message.MessageType.IMAGE.code,
-                                        id = profileId,
-                                        base64Data = it,
-                                        text = null,
-                                        username = profileName
-                                    )
-                                    sendMessageSocket(message)
-                                    restartUI()
-                                }
-
+                            Utils.bitmapToByteArray3(sentImage.drawable) {
+                                val messageImage = Message(
+                                    Message.MessageType.IMAGE.code,
+                                    id = profileId,
+                                    dataBuffer = it,
+                                    partNumber = null,
+                                    dataSize = null,
+                                    text = null,
+                                    username = profileName
+                                )
+                                sendMessageSocket(messageImage)
+                                restartUI()
                             }
-                            messageField.text.isNotBlank() -> {
-                                val message =
-                                    Message(
-                                        Message.MessageType.MESSAGE.code,
-                                        username = profileName,
-                                        text = messageField.text.toString(),
-                                        id = profileId,
-                                        base64Data = null
+
+                        }
+                        messageField.text.isNotBlank() -> {
+                            val messageText =
+                                Message(
+                                    Message.MessageType.MESSAGE.code,
+                                    username = profileName,
+                                    text = messageField.text.toString(),
+                                    id = profileId,
+                                    dataSize = null,
+                                    partNumber = null,
+                                    dataBuffer = null
+                                )
+                            sendMessageSocket(messageText)
+                            messageField.text.clear()
+                        }
+                        else -> {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.message_blank,
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                        }
+                    }
+                    progressBarSendMessage.visibility = View.GONE
+                }
+                inflateToolBarOptions()
+            } else {
+                startHistoryMode()
+            }
+        }
+    }
+
+
+    private fun sendMessageSocket(message: Message) {
+        when (message.type) {
+            Message.MessageType.AUDIO.code -> {
+                with(message) {
+                    val cloneMessage = this.clone() as Message
+                    refreshUIChatAndSaveMessageInToRoom(cloneMessage)
+                    if (dataBuffer != null) {
+                        val sizeOfDataBuffer = dataBuffer!!.length
+                        if (sizeOfDataBuffer <= Constants.valueByteToTranferToSocket + 1) {
+                            partNumber = 1
+                            dataSize = sizeOfDataBuffer.toLong()
+                            connectionFactory.sendMessageToSocket(this) {}
+                        } else {
+                            sendMultiPartDataToSocket(
+                                this,
+                                Message.MessageType.AUDIO_MULTIPART,
+                                sizeOfDataBuffer
+                            )
+                        }
+                    } else {
+                        Log.e("error send Audio", "Audio Data Buffer is null or empty")
+                    }
+                }
+            }
+            Message.MessageType.IMAGE.code -> {
+                with(message) {
+                    val cloneMessage = this.clone() as Message
+                    refreshUIChatAndSaveMessageInToRoom(cloneMessage)
+                    if (dataBuffer != null) {
+                        val sizeOfDataBuffer = dataBuffer!!.length
+                        if (sizeOfDataBuffer <= Constants.valueByteToTranferToSocket + 1) {
+                            partNumber = 1
+                            dataSize = sizeOfDataBuffer.toLong()
+                            connectionFactory.sendMessageToSocket(this) {}
+                        } else {
+                            sendMultiPartDataToSocket(
+                                this,
+                                Message.MessageType.IMAGE_MULTIPART,
+                                sizeOfDataBuffer
+                            )
+                        }
+                    } else {
+                        Log.e("error send Image", "Image Data Buffer is null or empty")
+                    }
+                }
+            }
+            else -> {
+                connectionFactory.sendMessageToSocket(message) {}
+                if (message.type != Message.MessageType.JOIN.code) {
+                    refreshUIChatAndSaveMessageInToRoom(message)
+                }
+            }
+        }
+    }
+
+    private fun sendMultiPartDataToSocket(
+        message: Message,
+        messageType: Message.MessageType,
+        sizeOfDataBuffer: Int
+    ) {
+        CoroutineScope(Dispatchers.Default).launch {
+            with(message) {
+                val arrayIndices = ((sizeOfDataBuffer) / Constants.valueByteToTranferToSocket)
+                var restant = sizeOfDataBuffer
+                val listOfBufferSizeBy1Mb = arrayListOf<String>()
+                var lastPointValue = 0
+                for (i in 0..arrayIndices) {
+                    if (i != arrayIndices) {
+                        when (i) {
+                            0 -> {
+                                listOfBufferSizeBy1Mb.add(
+                                    dataBuffer!!.slice(
+                                        lastPointValue..Constants.valueByteToTranferToSocket
                                     )
-                                sendMessageSocket(message)
-                                messageField.text.clear()
+                                )
+                                lastPointValue = Constants.valueByteToTranferToSocket + 1
+                                restant -= Constants.valueByteToTranferToSocket //+ 1
                             }
                             else -> {
-                                Toast.makeText(
-                                    requireContext(),
-                                    R.string.message_blank,
-                                    Toast.LENGTH_LONG
+                                val index = (Constants.valueByteToTranferToSocket) * (i + 1)
+                                listOfBufferSizeBy1Mb.add(
+                                    dataBuffer!!.slice(
+                                        lastPointValue..index
+                                    )
                                 )
-                                    .show()
-                            }
-                        }
-                        progressBarSendMessage.visibility = View.GONE
-                    }
-                    inflateToolBarOptions()
-                } else {
-                    startHistoryMode()
-                }
-            }
-        }
-
-
-        private fun sendMessageSocket(message: Message) {
-            connectionFactory.sendMessageToSocket(message) {}
-            if (message.type != Message.MessageType.JOIN.code) {
-                refreshUIChatAndSaveMessageInToRoom(message)
-            }
-        }
-
-        private fun refreshUiChat(message: Message) {
-            adapter.addData(message)
-            if (message.status == Message.MessageStatus.SENT.code) {
-                binding.messagesRecyclerview.scrollToPosition(data.size - 1)
-            } else {
-                binding.messagesRecyclerview.apply {
-                    if (!canScrollVertically(1)) {
-                        scrollToPosition(data.size - 1)
-                    }
-                }
-            }
-        }
-
-        private fun refreshUIChatAndSaveMessageInToRoom(message: Message) {
-            when (message.type) {
-                Message.MessageType.AUDIO.code -> {
-                    Utils.saveMessageAudioByteToCacheDir(message) {
-                        message.base64Data = it
-                        refreshUiChat(message)
-                        messageViewModel.insertMessage(message)
-                    }
-                }
-                Message.MessageType.IMAGE.code -> {
-                    Utils.saveMessageImageByteToCacheDirPNG(message) {
-                        message.base64Data = it
-                        refreshUiChat(message)
-                        messageViewModel.insertMessage(message)
-                    }
-
-                }
-                Message.MessageType.JOIN.code -> {
-                    refreshUiChat(message)
-                    messageViewModel.insertMessage(message)
-                }
-                else -> {
-                    refreshUiChat(message)
-                    messageViewModel.insertMessage(message)
-                }
-            }
-        }
-
-        private fun returnToHomeFragmentWithMessage(message: String) {
-            val action =
-                ChatFragmentDirections.actionChatFragmentToHomeFragment(message)
-            navController.navigate(action)
-        }
-
-        private fun validReceivedMessage(messageReceived: Message) {
-            with(messageReceived) {
-                if (type == Message.MessageType.REVOKED.code) {
-                    when (id) {
-                        1 -> {
-                            val action =
-                                ChatFragmentDirections.actionChatFragmentToWritePasswordDialog()
-                            navController.navigate(action)
-                        }
-                        2 -> {
-                            returnToHomeFragmentWithMessage("Server Security Kick")
-                        }
-                        3 -> returnToHomeFragmentWithMessage("Admin kicked you")
-                    }
-                    return
-                }
-                if (type == Message.MessageType.ACKNOWLEDGE.code) {
-                    if (id != null) {
-                        ProfileSharedProfile.saveIdProfile(id)
-                        emptyHistoryCache()
-                        if (text != null) {
-                            profileViewModel.deleteAll {
-                                Utils.listJsonToProfiles(text)?.forEach { profile ->
-                                    if (connectionFactory.getIpHost() == Utils.getIpAddress()) {
-                                        profile.isAdmin = true
-                                    }
-                                    profileViewModel.insert(profile)
-                                }
-                            }
-                        }
-                    }
-                    binding.centerProgressBar.visibility = View.GONE
-                    return
-                }
-
-                if (type == Message.MessageType.JOIN.code) {
-                    if (id != null) {
-                        if (id == profileId) {
-
-                        }
-                        refreshUIChatAndSaveMessageInToRoom(this)
-                    }
-                    return
-                } else {
-                    Log.e("chatNotRefresh", "an error occurred because id is null")
-                    Log.e("database", "error when insert profile, id is null")
-                }
-
-                if (type == Message.MessageType.LEAVE.code) {
-                    refreshUIChatAndSaveMessageInToRoom(this)
-                    if (id != null) {
-                        profileViewModel.getProfile(id) {
-                            if (it != null) {
-                                it.isMemberYet = false
-                                profileViewModel.updateProfile(it)
-                            } else {
-                                Log.e(
-                                    "database",
-                                    "error when update profile because ID doesn't exists"
-                                )
+                                lastPointValue = index + 1
+                                restant -= Constants.valueByteToTranferToSocket  //+ 1
                             }
                         }
                     } else {
-                        Log.e(
-                            "database",
-                            "error when delete profile because id from server is null"
+                        listOfBufferSizeBy1Mb.add(
+                            dataBuffer!!.slice(
+                                lastPointValue..lastPointValue + (restant - 2)
+                            )
                         )
                     }
-                    return
                 }
-                if (id == profileId) {
-                    if (status == Message.MessageStatus.RECEIVED.code) {
-                        status = Message.MessageStatus.SENT.code
+                Log.d(
+                    "DataBuffer divided to",
+                    "${listOfBufferSizeBy1Mb.size}" + " parts"
+                )
+                for (i in listOfBufferSizeBy1Mb.indices) {
+                    if (listOfBufferSizeBy1Mb[i].isNotEmpty()) {
+                        if (i == 0) {
+                            dataSize = sizeOfDataBuffer.toLong()
+                        } else {
+                            dataSize = null
+                        }
+                        type = messageType.code
+                        partNumber = i + 1
+                        dataBuffer = listOfBufferSizeBy1Mb[i]
+                        withContext(Dispatchers.Main) {
+                            val async = async {
+                                connectionFactory.sendMessageToSocket(this@with) {}
+                            }
+                            async.await()
+
+
+//                            val async = async {
+//                                validReceivedMessage(this@with)
+//                            }
+//                            async.await()
+                        }
+                        delay(50)
+                    } else {
+                        Log.e(
+                            "Send Multi part",
+                            "Skipped a message because list of data buffer contains a value empty"
+                        )
                     }
-                } else {
-                    status = Message.MessageStatus.RECEIVED.code
+                }
+            }
+        }
+    }
+
+    private fun refreshUiChat(message: Message) {
+        adapter.addData(message)
+        if (message.status == Message.MessageStatus.SENT.code) {
+            binding.messagesRecyclerview.scrollToPosition(data.size - 1)
+        } else {
+            binding.messagesRecyclerview.apply {
+                if (!canScrollVertically(1)) {
+                    scrollToPosition(data.size - 1)
+                }
+            }
+        }
+    }
+
+    private fun refreshUIChatAndSaveMessageInToRoom(message: Message) {
+        when (message.type) {
+            Message.MessageType.AUDIO_MULTIPART.code -> {
+
+            }
+            Message.MessageType.IMAGE_MULTIPART.code -> {
+            }
+
+            Message.MessageType.AUDIO.code -> {
+                Utils.saveMessageAudioByteToCacheDir(message) {
+                    message.internalCacheDir = it
+                    refreshUiChat(message)
+                    messageViewModel.insertMessage(message)
+                }
+            }
+            Message.MessageType.IMAGE.code -> {
+                Utils.saveMessageImageByteToCacheDirPNG(message) {
+                    message.internalCacheDir = it
+                    refreshUiChat(message)
+                    messageViewModel.insertMessage(message)
                 }
 
-                when (status) {
-                    Message.MessageStatus.SENT.code -> {
-//                    when (type) {
-//                        Message.MessageType.MESSAGE.code -> {
-//                            refreshUIChatAndSaveMessageInToRoom(this)
-//                        }
-//                        Message.MessageType.AUDIO.code -> {
-//                            refreshUIChatAndSaveMessageInToRoom(this)
-//                        }
-//                        Message.MessageType.IMAGE.code -> {
-//                            refreshUIChatAndSaveMessageInToRoom(this)
-//                        }
-//                    }
-                    }
+            }
+            Message.MessageType.JOIN.code -> {
+                refreshUiChat(message)
+                messageViewModel.insertMessage(message)
+            }
+            else -> {
+                refreshUiChat(message)
+                messageViewModel.insertMessage(message)
+            }
+        }
+    }
 
-                    Message.MessageStatus.RECEIVED.code -> {
-                        when (type) {
-                            Message.MessageType.MESSAGE.code -> {
-                                refreshUIChatAndSaveMessageInToRoom(this)
-                                Log.i("received", "Received Message")
+    private fun returnToHomeFragmentWithMessage(message: String) {
+        val action =
+            ChatFragmentDirections.actionChatFragmentToHomeFragment(message)
+        navController.navigate(action)
+    }
+
+    @Synchronized
+    private fun validReceivedMessage(messageReceived: Message) {
+        with(messageReceived) {
+            if (type == Message.MessageType.AUDIO_MULTIPART.code) {
+                if (messageReceived.partNumber != null && messageReceived.dataBuffer != null) {
+                    audioMultiPartUnformattedHash[partNumber!!] = dataBuffer!!
+                    dataSizeReceived += dataBuffer!!.length
+                    if (messageReceived.partNumber == 1) {
+                        dataSizeToReceived = messageReceived.dataSize!!
+                    }
+                }
+                Log.d("dataSizeToReceived", "$dataSizeToReceived")
+                Log.d("dataSizeReceived", "$dataSizeReceived")
+                if (dataSizeToReceived == dataSizeReceived) {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        var dataBufferCompleted = ""
+                        audioMultiPartUnformattedHash.values.forEach {
+                            dataBufferCompleted += it
+                        }
+                        dataBuffer = dataBufferCompleted
+                        type = Message.MessageType.AUDIO.code
+                        withContext(Dispatchers.Main) {
+                            refreshUIChatAndSaveMessageInToRoom(this@with)
+                        }
+                        audioMultiPartUnformattedHash = hashMapOf()
+                        dataSizeToReceived = 0
+                        dataSizeReceived = 0
+                    }
+                }
+            }
+
+            if (type == Message.MessageType.IMAGE_MULTIPART.code) {
+                if (messageReceived.partNumber != null && messageReceived.dataBuffer != null) {
+                    audioMultiPartUnformattedHash[partNumber!!] = dataBuffer!!
+                    dataSizeReceived += dataBuffer!!.length
+                    if (messageReceived.partNumber == 1) {
+                        dataSizeToReceived = messageReceived.dataSize!!
+                    }
+                }
+                Log.d("dataSizeToReceived", "$dataSizeToReceived")
+                Log.d("dataSizeReceived", "$dataSizeReceived")
+                if (dataSizeToReceived == dataSizeReceived) {
+                    var dataBufferCompleted = ""
+                    audioMultiPartUnformattedHash.values.forEach {
+                        dataBufferCompleted += it
+                    }
+                    dataBuffer = dataBufferCompleted
+                    type = Message.MessageType.IMAGE.code
+                    refreshUIChatAndSaveMessageInToRoom(this)
+                    audioMultiPartUnformattedHash = hashMapOf()
+                    dataSizeToReceived = 0
+                    dataSizeReceived = 0
+                }
+            }
+
+
+            if (type == Message.MessageType.REVOKED.code) {
+                when (id) {
+                    1 -> {
+                        val action =
+                            ChatFragmentDirections.actionChatFragmentToWritePasswordDialog()
+                        navController.navigate(action)
+                    }
+                    2 -> {
+                        returnToHomeFragmentWithMessage("Server Security Kick")
+                    }
+                    3 -> returnToHomeFragmentWithMessage("Admin kicked you")
+                }
+                return
+            }
+            if (type == Message.MessageType.ACKNOWLEDGE.code) {
+                if (id != null) {
+                    ProfileSharedProfile.saveIdProfile(id)
+                    emptyHistoryCache()
+                    if (text != null) {
+                        profileViewModel.deleteAll {
+                            Utils.listJsonToProfiles(text)?.forEach { profile ->
+                                if (connectionFactory.getIpHost() == Utils.getIpAddress()) {
+                                    profile.isAdmin = true
+                                }
+                                profileViewModel.insert(profile)
                             }
-                            Message.MessageType.AUDIO.code -> {
-                                refreshUIChatAndSaveMessageInToRoom(this)
-                            }
-                            Message.MessageType.IMAGE.code -> {
-                                refreshUIChatAndSaveMessageInToRoom(this)
-                            }
-                            Message.MessageType.TICPLAY.code -> {
-                                receivePlay(text)
-                            }
-                            Message.MessageType.TICINVITE.code -> {
-                                receiveInviteTicTacToe(username ?: "Error username", id)
-                            }
-                            else -> refreshUIChatAndSaveMessageInToRoom(this)
                         }
                     }
-                    else -> false
                 }
+                binding.centerProgressBar.visibility = View.GONE
+                return
+            }
+
+            if (type == Message.MessageType.JOIN.code) {
+                if (id != null) {
+                    refreshUIChatAndSaveMessageInToRoom(this)
+                }
+                return
+            } else {
+                Log.e("chatNotRefresh", "an error occurred because id is null")
+                Log.e("database", "error when insert profile, id is null")
+            }
+
+            if (type == Message.MessageType.LEAVE.code) {
+                refreshUIChatAndSaveMessageInToRoom(this)
+                if (id != null) {
+                    profileViewModel.getProfile(id) {
+                        if (it != null) {
+                            it.isMemberYet = false
+                            profileViewModel.updateProfile(it)
+                        } else {
+                            Log.e(
+                                "database",
+                                "error when update profile because ID doesn't exists"
+                            )
+                        }
+                    }
+                } else {
+                    Log.e(
+                        "database",
+                        "error when delete profile because id from server is null"
+                    )
+                }
+                return
+            }
+            if (id == profileId) {
+                if (status == Message.MessageStatus.RECEIVED.code) {
+                    status = Message.MessageStatus.SENT.code
+                }
+            } else {
+                status = Message.MessageStatus.RECEIVED.code
+            }
+
+            when (status) {
+                Message.MessageStatus.SENT.code -> {
+                    //do nothing because action sent auto-update the list. And Socket-Server doesn't send message when message-id is equals ProfileSharedPreferences instanced.
+                }
+
+                Message.MessageStatus.RECEIVED.code -> {
+                    when (type) {
+                        Message.MessageType.MESSAGE.code -> {
+                            refreshUIChatAndSaveMessageInToRoom(this)
+                            Log.i("received", "Received Message")
+                        }
+                        Message.MessageType.AUDIO.code -> {
+                            refreshUIChatAndSaveMessageInToRoom(this)
+                        }
+                        Message.MessageType.IMAGE.code -> {
+                            refreshUIChatAndSaveMessageInToRoom(this)
+                        }
+                        Message.MessageType.TICPLAY.code -> {
+                            receivePlay(text)
+                        }
+                        Message.MessageType.TICINVITE.code -> {
+                            receiveInviteTicTacToe(username ?: "Error username", id)
+                        }
+                        else -> refreshUIChatAndSaveMessageInToRoom(this)
+                    }
+                }
+                else -> false
+            }
 
 //            when(type){
 //                Message.INVITE_TICTACTOE -> {
@@ -547,204 +739,212 @@ class ChatFragment : Fragment() {
 //                    refreshUIChat(this)
 //                }
 //            }
-            }
         }
+    }
 
-        private fun emptyHistoryCache() {
-            File(
-                MainApplication.getContextInstance().cacheDir.absolutePath,
-                "/photosProfile"
-            ).apply {
-                if (exists()) {
-                    listFiles()?.forEach {
-                        it.delete()
-                    }
-                }
-            }
-
-            File(MainApplication.getContextInstance().cacheDir.absolutePath, "audios").apply {
-                if (exists()) {
-                    listFiles()?.forEach {
-                        it.delete()
-                    }
-                }
-            }
-            File(MainApplication.getContextInstance().cacheDir.absolutePath, "images").apply {
-                if (exists()) {
-                    listFiles()?.forEach {
-                        it.delete()
-                    }
+    private fun emptyHistoryCache() {
+        File(
+            MainApplication.getContextInstance().cacheDir.absolutePath,
+            "/photosProfile"
+        ).apply {
+            if (exists()) {
+                listFiles()?.forEach {
+                    it.delete()
                 }
             }
         }
 
-
-        private fun receiveInviteTicTacToe(name: String, id: Int?) {
-            val builder = AlertDialog.Builder(requireContext()).apply {
-                setMessage(getString(R.string.invite_received, name))
-                setPositiveButton("ok") { _, _ ->
-                    acceptInviteTicTacToe(id)
-                }
-                setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
-                    dialog?.dismiss()
-                    declineInviteTicTacToe()
+        File(MainApplication.getContextInstance().cacheDir.absolutePath, "audios").apply {
+            if (exists()) {
+                listFiles()?.forEach {
+                    it.delete()
                 }
             }
-            builder.show()
         }
-
-        private fun receivePlay(text: String?) {
-            Log.e("Received", "play")
-            val move: Int?
-            if (text != null) {
-                move = text.toInt()
-                val cell = Cell(move)
-                UsersTicTacToeManager.placeMove(cell, player)
+        File(MainApplication.getContextInstance().cacheDir.absolutePath, "images").apply {
+            if (exists()) {
+                listFiles()?.forEach {
+                    it.delete()
+                }
             }
-            mapBoardToUi()
-            binding.bottomSheet.whoPlay.text =
-                getString(R.string.your_move, player)
-            canIPlay = true
+        }
+    }
+
+
+    private fun receiveInviteTicTacToe(name: String, id: Int?) {
+        val builder = AlertDialog.Builder(requireContext()).apply {
+            setMessage(getString(R.string.invite_received, name))
+            setPositiveButton("ok") { _, _ ->
+                acceptInviteTicTacToe(id)
+            }
+            setNegativeButton(R.string.cancel) { dialog: DialogInterface?, _: Int ->
+                dialog?.dismiss()
+                declineInviteTicTacToe()
+            }
+        }
+        builder.show()
+    }
+
+    private fun receivePlay(text: String?) {
+        Log.e("Received", "play")
+        val move: Int?
+        if (text != null) {
+            move = text.toInt()
+            val cell = Cell(move)
+            UsersTicTacToeManager.placeMove(cell, player)
+        }
+        mapBoardToUi()
+        binding.bottomSheet.whoPlay.text =
+            getString(R.string.your_move, player)
+        canIPlay = true
 //      verifyIfHasWinner()
-        }
+    }
 
-        private fun sendInviteTicTacToe() {
-            val message = Message(
-                Message.MessageType.TICINVITE.code,
-                text = null,
-                id = profileId,
-                base64Data = null,
-                username = profileName
-            )
-            sendMessageSocket(message)
-            snackbar = Snackbar.make(
-                requireView(),
-                getString(R.string.waiting_accept),
-                Snackbar.LENGTH_LONG
-            )
-            snackbar.show()
-        }
+    private fun sendInviteTicTacToe() {
+        val messageTicTacInvite = Message(
+            Message.MessageType.TICINVITE.code,
+            text = null,
+            id = profileId,
+            dataBuffer = null,
+            username = profileName,
+            partNumber = null,
+            dataSize = null
+        )
+        sendMessageSocket(messageTicTacInvite)
+        snackbar = Snackbar.make(
+            requireView(),
+            getString(R.string.waiting_accept),
+            Snackbar.LENGTH_LONG
+        )
+        snackbar.show()
+    }
 
-        private fun acceptInviteTicTacToe(opponentId: Int?) {
-            binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
-            refreshBoard()
-            player = UsersTicTacToeManager.OPPONENT
-            canIPlay = false
-            initViewTicTacToe()
-            bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
-            val message = Message(
-                Message.MessageType.TICINVITE.code,
-                text = "accepted",
-                id = profileId,
-                base64Data = null,
-                username = profileName,
-                ticMessages = TicMessages(player1Id = opponentId, player2Id = profileId)
-            )
-            sendMessageSocket(message)
-        }
+    private fun acceptInviteTicTacToe(opponentId: Int?) {
+        binding.bottomSheet.bottomSheetLayout.visibility = View.VISIBLE
+        refreshBoard()
+        player = UsersTicTacToeManager.OPPONENT
+        canIPlay = false
+        initViewTicTacToe()
+        bottomSheetForConfig.state = BottomSheetBehavior.STATE_EXPANDED
+        val messageTICINVITE = Message(
+            Message.MessageType.TICINVITE.code,
+            text = "accepted",
+            id = profileId,
+            dataBuffer = null,
+            dataSize = null,
+            partNumber = null,
+            username = profileName,
+            ticMessages = TicMessages(player1Id = opponentId, player2Id = profileId)
+        )
+        sendMessageSocket(messageTICINVITE)
+    }
 
-        private fun declineInviteTicTacToe() {
-            val message = Message(
-                Message.MessageType.TICINVITE.code,
-                text = "declined",
-                id = profileId,
-                base64Data = null,
-                username = profileName
-            )
-            sendMessageSocket(message)
-        }
+    private fun declineInviteTicTacToe() {
+        val messageDeclineTICINVITE = Message(
+            Message.MessageType.TICINVITE.code,
+            text = "declined",
+            id = profileId,
+            dataBuffer = null,
+            partNumber = null,
+            dataSize = null,
+            username = profileName
+        )
+        sendMessageSocket(messageDeclineTICINVITE)
+    }
 
-        override fun onStart() {
-            super.onStart()
-            connectionFactory.getBackgroundMessages().forEach {
-                validReceivedMessage(it)
+    override fun onStart() {
+        super.onStart()
+        connectionFactory.getBackgroundMessages().forEach {
+            validReceivedMessage(it)
+        }
+        connectionFactory.emptyBackgroundMessages()
+    }
+
+    //bottom sheet functions
+    private fun initViewTicTacToe() {
+        isTicTacToePlayRunning = true
+        with(binding.bottomSheet) {
+            boardCells[0] = btn1
+            boardCells[1] = btn2
+            boardCells[2] = btn3
+            boardCells[3] = btn4
+            boardCells[4] = btn5
+            boardCells[5] = btn6
+            boardCells[6] = btn7
+            boardCells[7] = btn8
+            boardCells[8] = btn9
+            if (canIPlay) {
+                whoPlay.text = getString(R.string.your_move, player)
+            } else {
+                whoPlay.text = getString(R.string.waiting_move)
             }
-            connectionFactory.emptyBackgroundMessages()
-        }
-
-        //bottom sheet functions
-        private fun initViewTicTacToe() {
-            isTicTacToePlayRunning = true
-            with(binding.bottomSheet) {
-                boardCells[0] = btn1
-                boardCells[1] = btn2
-                boardCells[2] = btn3
-                boardCells[3] = btn4
-                boardCells[4] = btn5
-                boardCells[5] = btn6
-                boardCells[6] = btn7
-                boardCells[7] = btn8
-                boardCells[8] = btn9
-                if (canIPlay) {
-                    whoPlay.text = getString(R.string.your_move, player)
-                } else {
-                    whoPlay.text = getString(R.string.waiting_move)
-                }
-                rematchButton.setOnClickListener {
-                    sendInviteTicTacToe()
-                }
-            }
-            callClickListener()
-        }
-
-        private fun callClickListener() {
-            for (i in boardCells.indices) {
-                boardCells[i]?.setOnClickListener(CellClickListener(i))
+            rematchButton.setOnClickListener {
+                sendInviteTicTacToe()
             }
         }
+        callClickListener()
+    }
 
-        inner class CellClickListener(private val i: Int) :
-            View.OnClickListener {
-            override fun onClick(v: View?) {
+    private fun callClickListener() {
+        for (i in boardCells.indices) {
+            boardCells[i]?.setOnClickListener(CellClickListener(i))
+        }
+    }
+
+    inner class CellClickListener(private val i: Int) :
+        View.OnClickListener {
+        override fun onClick(v: View?) {
 //            if (!UsersTicTacToeManager.gameOver() && canIPlay) {
-                val cell = Cell(i)
-                UsersTicTacToeManager.placeMove(cell, player)
-                sendPlay(i)
+            val cell = Cell(i)
+            UsersTicTacToeManager.placeMove(cell, player)
+            sendPlay(i)
 //                verifyIfHasWinner()
 //            }
-                mapBoardToUi()
-            }
+            mapBoardToUi()
         }
+    }
 
-        private fun mapBoardToUi() {
-            for (i in UsersTicTacToeManager.boardPlaces.indices) {
-                when (UsersTicTacToeManager.boardPlaces[i]) {
-                    UsersTicTacToeManager.OPPONENT -> {
-                        boardCells[i]?.setImageResource(R.drawable.ic_circle)
-                        boardCells[i]?.isEnabled = false
-                    }
-                    UsersTicTacToeManager.PLAYER -> {
-                        boardCells[i]?.setImageResource(R.drawable.ic_x)
-                        boardCells[i]?.isEnabled = false
-                    }
-                    //servirá para limpar o board após o restart
-                    else -> {
-                        boardCells[i]?.setImageResource(0)
-                        boardCells[i]?.isEnabled = true
-                    }
+    private fun mapBoardToUi() {
+        for (i in UsersTicTacToeManager.boardPlaces.indices) {
+            when (UsersTicTacToeManager.boardPlaces[i]) {
+                UsersTicTacToeManager.OPPONENT -> {
+                    boardCells[i]?.setImageResource(R.drawable.ic_circle)
+                    boardCells[i]?.isEnabled = false
+                }
+                UsersTicTacToeManager.PLAYER -> {
+                    boardCells[i]?.setImageResource(R.drawable.ic_x)
+                    boardCells[i]?.isEnabled = false
+                }
+                //servirá para limpar o board após o restart
+                else -> {
+                    boardCells[i]?.setImageResource(0)
+                    boardCells[i]?.isEnabled = true
                 }
             }
         }
+    }
 
-        private fun sendPlay(i: Int) {
-            val messagePlay = Message(
-                Message.MessageType.TICPLAY.code,
-                text = "$i",
-                id = profileId,
-                base64Data = null,
-                username = profileName
-            )
-            sendMessageSocket(messagePlay)
-            binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)
-            canIPlay = false
-            Log.e("Sent", "play")
+    private fun sendPlay(i: Int) {
+        val messagePlay = Message(
+            Message.MessageType.TICPLAY.code,
+            text = "$i",
+            id = profileId,
+            dataBuffer = null,
+            dataSize = null,
+            partNumber = null,
+            username = profileName
+        )
+        sendMessageSocket(messagePlay)
+        binding.bottomSheet.whoPlay.text = getString(R.string.waiting_move)
+        canIPlay = false
+        Log.e("Sent", "play")
 //        verifyIfHasWinner()
-        }
+    }
 
-        private fun refreshBoard() {
+    private fun refreshBoard() {
 //        board = Board()
-            mapBoardToUi()
-        }
+        mapBoardToUi()
+    }
 
 //    private fun verifyIfHasWinner() {
 //        with(binding.bottomSheet) {
@@ -772,174 +972,185 @@ class ChatFragment : Fragment() {
 //        }
 //    }
 
-        private fun checkPermission(permission: String, requestCode: Int) {
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    permission
-                ) == PackageManager.PERMISSION_DENIED
-            ) {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(permission),
-                    requestCode
-                )
-            }
+    private fun checkPermission(permission: String, requestCode: Int) {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission
+            ) == PackageManager.PERMISSION_DENIED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(permission),
+                requestCode
+            )
         }
+    }
 
-        private fun startRecording() {
-            try {
-                mediaRecorder = MediaRecorder()
-                output =
-                    MainApplication.getContextInstance().cacheDir.absolutePath + "/recordVoice.mp3"
-                mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-                mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                mediaRecorder.setOutputFile(output)
-                mediaRecorder.prepare()
-                mediaRecorder.start()
-                state = true
-                binding.buttonVoiceMessageRecord.background =
-                    ContextCompat.getDrawable(requireContext(), R.drawable.layout_button_red)
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.recording_audio),
-                    Toast.LENGTH_SHORT
-                ).show()
-            } catch (e: Exception) {
-                checkPermission(android.Manifest.permission.RECORD_AUDIO, RECORD_PERMISSION)
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+    private fun startRecording() {
+        try {
+            mediaRecorder = MediaRecorder()
+            output =
+                MainApplication.getContextInstance().cacheDir.absolutePath + "/recordVoice.mp3"
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mediaRecorder.setOutputFile(output)
+            mediaRecorder.prepare()
+            mediaRecorder.start()
+            state = true
+            binding.buttonVoiceMessageRecord.background =
+                ContextCompat.getDrawable(requireContext(), R.drawable.layout_button_red)
+            binding.AudioTimeRecorder.visibility = View.VISIBLE
+            binding.buttonClip.visibility = View.GONE
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.recording_audio),
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            checkPermission(android.Manifest.permission.RECORD_AUDIO, RECORD_PERMISSION)
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
+    }
 
-        private fun stopRecording() {
+    private fun stopRecording() {
+        try {
+            binding.progressBarSendMessage.visibility = View.VISIBLE
             mediaRecorder.stop()
             mediaRecorder.release()
-            binding.progressBarSendMessage.visibility = View.VISIBLE
-            state = false
-            binding.buttonVoiceMessageRecord.background =
-                ContextCompat.getDrawable(requireContext(), R.drawable.layout_button)
             Utils.parseAnythingToByteString(File(output)) {
-                val message = Message(
+                val messageAudio = Message(
                     Message.MessageType.AUDIO.code,
                     id = profileId,
-                    base64Data = it,
+                    dataBuffer = it,
+                    partNumber = null,
+                    dataSize = null,
                     text = null,
                     username = profileName
                 )
-                sendMessageSocket(message)
-                binding.progressBarSendMessage.visibility = View.GONE
+                sendMessageSocket(messageAudio)
             }
-        }
-
-        private fun restartUI() {
-            with(binding) {
-                buttonClip.visibility = View.VISIBLE
-                sentImageFrameLayout.visibility = View.GONE
-                buttonSend.visibility = View.GONE
-                buttonVoiceMessageRecord.visibility = View.VISIBLE
-            }
-        }
-
-        companion object {
-            private const val RECORD_PERMISSION = 102
-            const val REQUEST_IMAGE_CAPTURE = 1
-
-        }
-
-        private fun startHistoryMode() {
-            with(binding) {
-                chatToolbar.title = getString(R.string.history_title)
-                layout.visibility = View.GONE
-                centerProgressBar.visibility = View.VISIBLE
-                messagesRecyclerview.alpha = 0.5f
-                messageViewModel.getAllMessages {
-                    val arrayList = arrayListOf<Message>()
-                    arrayList.addAll(it)
-                    adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner)
-                    messagesRecyclerview.adapter = adapter
-                    messagesRecyclerview.apply {
-                        layoutManager = LinearLayoutManager(requireContext())
-                        scrollToPosition(it.size - 1)
-                    }
-                    centerProgressBar.visibility = View.GONE
-                    messagesRecyclerview.alpha = 1f
-                    chatToolbar.apply {
-                        navigationIcon =
-                            ContextCompat.getDrawable(requireContext(), R.drawable.back_icon)
-                        chatToolbar.setNavigationOnClickListener {
-                            val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("")
-                            navController.navigate(action)
-                        }
-                    }
-                }
-            }
-        }
-
-        private fun inflateToolBarOptions() {
-            with(binding) {
-                chatToolbar.apply {
-                    setOnClickListener {
-                        navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
-                    }
-                    overflowIcon =
-                        AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
-                    inflateMenu(R.menu.chat_menu)
-                    setOnMenuItemClickListener { item ->
-                        when (item?.itemId) {
-                            R.id.perfil -> {
-                                navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
-                            }
-                            R.id.share_link -> {
-                                navController.navigate(
-                                    ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
-                                        connectionFactory.getIpHost(),
-                                        connectionFactory.getIpPort().toInt()
-                                    )
-                                )
-                            }
-                        }
-                        true
-                    }
-                }
-            }
-        }
-
-        private fun setAnimation() {
-            with(binding) {
-                val centerX = (sendImagesOptions.left + sendImagesOptions.right) / 2
-                val centerY = (sendImagesOptions.top) / 2
-                val radius = Math.max(sendImagesOptions.width, sendImagesOptions.height) * 2.0f
-
-                if (sendImagesOptions.visibility == View.GONE) {
-                    sendImagesOptions.visibility = View.VISIBLE
-                    ViewAnimationUtils.createCircularReveal(
-                        sendImagesOptions,
-                        centerX,
-                        centerY,
-                        0F,
-                        radius
-                    ).start()
-                } else {
-                    val reveal = ViewAnimationUtils.createCircularReveal(
-                        sendImagesOptions,
-                        centerX,
-                        centerY,
-                        radius,
-                        0F
-                    ).apply {
-                        addListener(onEnd = {
-                            sendImagesOptions.visibility = View.GONE
-                        })
-                    }
-                    reveal.start()
-                }
-            }
-        }
-
-        override fun onDestroy() {
-            super.onDestroy()
-            connectionFactory.setFirstAccessChatFragment(true)
-            connectionFactory.closeSocket()
+        } catch (e: Exception) {
+            Log.e("Error create audio", "$e")
+        } finally {
+            binding.progressBarSendMessage.visibility = View.GONE
+            state = false
+            binding.buttonVoiceMessageRecord.background =
+                ContextCompat.getDrawable(requireContext(), R.drawable.layout_button)
+            binding.AudioTimeRecorder.visibility = View.GONE
+            binding.buttonClip.visibility = View.VISIBLE
         }
     }
+
+    private fun restartUI() {
+        with(binding) {
+            buttonClip.visibility = View.VISIBLE
+            sentImageFrameLayout.visibility = View.GONE
+            buttonSend.visibility = View.GONE
+            buttonVoiceMessageRecord.visibility = View.VISIBLE
+        }
+    }
+
+    companion object {
+        private const val RECORD_PERMISSION = 102
+        const val REQUEST_IMAGE_CAPTURE = 1
+
+    }
+
+    private fun startHistoryMode() {
+        with(binding) {
+            chatToolbar.title = getString(R.string.history_title)
+            layout.visibility = View.GONE
+            centerProgressBar.visibility = View.VISIBLE
+            messagesRecyclerview.alpha = 0.5f
+            messageViewModel.getAllMessages {
+                val arrayList = arrayListOf<Message>()
+                arrayList.addAll(it)
+                adapter = ChatAdapter(arrayList, utilsViewModel, viewLifecycleOwner)
+                messagesRecyclerview.adapter = adapter
+                messagesRecyclerview.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    scrollToPosition(it.size - 1)
+                }
+                centerProgressBar.visibility = View.GONE
+                messagesRecyclerview.alpha = 1f
+                chatToolbar.apply {
+                    navigationIcon =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.back_icon)
+                    chatToolbar.setNavigationOnClickListener {
+                        val action = ChatFragmentDirections.actionChatFragmentToHomeFragment("")
+                        navController.navigate(action)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun inflateToolBarOptions() {
+        with(binding) {
+            chatToolbar.apply {
+                setOnClickListener {
+                    navController.navigate(ChatFragmentDirections.actionChatFragmentToChatDetailsFragment())
+                }
+                overflowIcon =
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_more_vert)
+                inflateMenu(R.menu.chat_menu)
+                setOnMenuItemClickListener { item ->
+                    when (item?.itemId) {
+                        R.id.perfil -> {
+                            navController.navigate(ChatFragmentDirections.actionChatFragmentToProfileFragment())
+                        }
+                        R.id.share_link -> {
+                            navController.navigate(
+                                ChatFragmentDirections.actionChatFragmentToShareLinkBottomSheetDialogFragment(
+                                    connectionFactory.getIpHost(),
+                                    connectionFactory.getIpPort().toInt()
+                                )
+                            )
+                        }
+                    }
+                    true
+                }
+            }
+        }
+    }
+
+    private fun setAnimation() {
+        with(binding) {
+            val centerX = (sendImagesOptions.left + sendImagesOptions.right) / 2
+            val centerY = (sendImagesOptions.top) / 2
+            val radius = Math.max(sendImagesOptions.width, sendImagesOptions.height) * 2.0f
+
+            if (sendImagesOptions.visibility == View.GONE) {
+                sendImagesOptions.visibility = View.VISIBLE
+                ViewAnimationUtils.createCircularReveal(
+                    sendImagesOptions,
+                    centerX,
+                    centerY,
+                    0F,
+                    radius
+                ).start()
+            } else {
+                val reveal = ViewAnimationUtils.createCircularReveal(
+                    sendImagesOptions,
+                    centerX,
+                    centerY,
+                    radius,
+                    0F
+                ).apply {
+                    addListener(onEnd = {
+                        sendImagesOptions.visibility = View.GONE
+                    })
+                }
+                reveal.start()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        connectionFactory.setFirstAccessChatFragment(true)
+        connectionFactory.closeSocket()
+    }
+}

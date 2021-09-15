@@ -174,7 +174,9 @@ class ConnectionFactory : CoroutineScope, ViewModel() {
         val message = Message(
             Message.MessageType.REVOKED.code,
             id = 3,
-            base64Data = "",
+            dataSize = null,
+            partNumber = null,
+            dataBuffer = null,
             text = profile.id.toString(),
             username = ""
         )

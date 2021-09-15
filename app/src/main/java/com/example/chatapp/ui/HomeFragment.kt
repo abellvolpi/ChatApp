@@ -127,7 +127,7 @@ class HomeFragment : Fragment(), CoroutineScope {
                     Snackbar.make(
                         requireContext(),
                         requireView(),
-                        getString(R.string.server_disconnected, message),
+                        getString(R.string.server_disconnected),
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
@@ -239,7 +239,9 @@ class HomeFragment : Fragment(), CoroutineScope {
                                     type = Message.MessageType.JOIN.code,
                                     username = nameField.text.toString(),
                                     text = null,
-                                    base64Data = null,
+                                    dataSize = null,
+                                    partNumber = null,
+                                    dataBuffer = null,
                                     join = Message.Join(
                                         avatar = image,
                                         password = password.text.toString().toSHA256(), false

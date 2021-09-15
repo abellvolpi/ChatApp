@@ -1,5 +1,6 @@
 package com.example.chatapp.utils
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -38,6 +39,9 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.net.Socket
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 
 object Utils : CoroutineScope {
@@ -55,7 +59,6 @@ object Utils : CoroutineScope {
 
     fun messageClassToJSON(dataClass: Message): String {
         val moshi = Moshi.Builder().build()
-
         val adapter = moshi.adapter(Message::class.java)
         val json = adapter.toJson(dataClass)
         Log.d("messageClassToJSON", json)
@@ -74,8 +77,10 @@ object Utils : CoroutineScope {
             type = Message.MessageType.REVOKED.code,
             id = 2,
             text = null,
-            base64Data = null,
-            username = null
+            dataBuffer = null,
+            username = null,
+            dataSize = null,
+            partNumber = null
         ) //server kick member because security system
     }
 
@@ -200,11 +205,10 @@ object Utils : CoroutineScope {
     }
 
     fun parseAnythingToByteString(file: File, onResult: (String) -> Unit) {
-        var encoded: String
         launch(Dispatchers.IO) {
-            encoded = Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
+            val base64 = Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
             withContext(Dispatchers.Main) {
-                onResult.invoke(encoded)
+                onResult.invoke(base64)
             }
         }
     }
@@ -225,8 +229,8 @@ object Utils : CoroutineScope {
     }
 
     fun getAudioFromCache(message: Message): File? {
-        if (message.base64Data != null || message.base64Data != "") {
-            return File(message.base64Data!!)
+        if (message.internalCacheDir != null || message.internalCacheDir != "") {
+            return File(message.internalCacheDir!!)
         }
         return null
     }
@@ -238,7 +242,7 @@ object Utils : CoroutineScope {
                 context.cacheDir.absolutePath + "/audios",
                 "audio_${message.id}_${message.time}.mp3"
             )
-        val base64 = Base64.decode(message.base64Data, Base64.NO_WRAP)
+        val base64 = Base64.decode(message.dataBuffer, Base64.NO_WRAP)
         launch(Dispatchers.IO) {
             output.parentFile?.mkdirs()
             val fos = FileOutputStream(output)
@@ -253,13 +257,13 @@ object Utils : CoroutineScope {
 
     fun saveMessageImageByteToCacheDirPNG(message: Message, onResult: (String?) -> Unit) {
         val context = MainApplication.getContextInstance()
-        if (message.base64Data != null || message.base64Data != "") {
+        if (message.dataBuffer != null || message.dataBuffer != "") {
             val output =
                 File(
                     context.cacheDir.absolutePath + "/images",
                     "image_${message.id}_${message.time}.png"
                 )
-            val base64 = Base64.decode(message.base64Data, Base64.NO_WRAP)
+            val base64 = Base64.decode(message.dataBuffer, Base64.NO_WRAP)
             launch(Dispatchers.IO) {
                 output.parentFile?.mkdirs()
                 val fos = FileOutputStream(output)
@@ -339,5 +343,15 @@ object Utils : CoroutineScope {
                 })
                 onResult.invoke(image)
             }
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    fun timeFormatter(time: Long): String {
+        val dtf = SimpleDateFormat("HH:mm")
+        return dtf.format(time)
+    }
+
+    fun getTimeAudioInString(long: Long): String {
+        return SimpleDateFormat("mm:ss", Locale.getDefault()).format(Date(long))
     }
 }

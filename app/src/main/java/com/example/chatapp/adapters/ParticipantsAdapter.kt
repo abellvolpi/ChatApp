@@ -56,7 +56,8 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                         kickButton.visibility = View.VISIBLE
                     }
                     setOnClickListener {
-                        val message = Message(Message.MessageType.REVOKED.code, id = 3, text = profile.id.toString(), base64Data = "", username = "")
+                        val message = Message(Message.MessageType.REVOKED.code, id = 3, text = profile.id.toString(), dataSize = null, username = "", partNumber = null,
+                        dataBuffer = null)
                         connectionFactory.sendMessageToSocket(message){}
                     }
                 }
@@ -70,7 +71,9 @@ class ParticipantsAdapter(private val profiles: ArrayList<Profile>, private val 
                         Message.MessageType.TICINVITE.code,
                         text = null,
                         id = profile.id,
-                        base64Data = null,
+                        dataBuffer = null,
+                        partNumber = null,
+                        dataSize = null,
                         username = profile.name
                     )
                     connectionFactory.sendMessageToSocket(message){}
